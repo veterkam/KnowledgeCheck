@@ -1,8 +1,8 @@
-package quiz.model.dao;
+package com.epam.javatraining.knowledgecheck.datalayer.dao;
 
-import quiz.model.bean.Student;
-import quiz.model.bean.User;
-import quiz.model.db.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.datalayer.model.Student;
+import com.epam.javatraining.knowledgecheck.datalayer.model.User;
+import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

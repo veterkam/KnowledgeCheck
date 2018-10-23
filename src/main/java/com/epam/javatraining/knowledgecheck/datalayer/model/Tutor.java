@@ -1,4 +1,4 @@
-package quiz.model.bean;
+package com.epam.javatraining.knowledgecheck.datalayer.model;
 
 import java.util.ArrayList;
 import java.util.List;

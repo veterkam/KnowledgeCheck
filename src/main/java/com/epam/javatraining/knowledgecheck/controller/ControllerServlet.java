@@ -1,11 +1,11 @@
-package quiz.controller;
+package com.epam.javatraining.knowledgecheck.controller;
 
+import com.epam.javatraining.knowledgecheck.datalayer.dao.UserDao;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import quiz.model.bean.User;
-import quiz.model.dao.UserDao;
-import quiz.model.db.ConnectionPool;
-import quiz.model.mail.MailSender;
+import com.epam.javatraining.knowledgecheck.datalayer.model.User;
+import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.service.mail.MailSender;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 /**
  * This servlet acts as a page controller for the application,

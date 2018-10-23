@@ -1,10 +1,9 @@
-package quiz.model.dao;
+package com.epam.javatraining.knowledgecheck.datalayer.dao;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import quiz.controller.ControllerServlet;
-import quiz.model.db.ConnectionPool;
-import quiz.model.bean.User;
+import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.datalayer.model.User;
 
 import java.sql.*;
 import java.util.ArrayList;

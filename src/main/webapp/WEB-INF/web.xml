@@ -19,7 +19,7 @@
   </context-param>
   <servlet>
     <servlet-name>ControllerServlet</servlet-name>
-    <servlet-class>quiz.controller.ControllerServlet</servlet-class>
+    <servlet-class>com.epam.javatraining.knowledgecheck.controller.ControllerServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ControllerServlet</servlet-name>

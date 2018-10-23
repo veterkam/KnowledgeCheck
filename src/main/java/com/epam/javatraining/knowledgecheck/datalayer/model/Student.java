@@ -1,4 +1,4 @@
-package quiz.model.bean;
+package com.epam.javatraining.knowledgecheck.datalayer.model;
 
 public class Student extends User{
     private String specialty;

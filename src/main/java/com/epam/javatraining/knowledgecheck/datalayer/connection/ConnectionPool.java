@@ -1,4 +1,4 @@
-package quiz.model.db;
+package com.epam.javatraining.knowledgecheck.datalayer.connection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

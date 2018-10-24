@@ -1,4 +1,4 @@
-package com.epam.javatraining.knowledgecheck.datalayer.model;
+package com.epam.javatraining.knowledgecheck.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,10 +51,5 @@ public class Tutor extends User {
 
     public void setAcademicTitle(String academicTitle) {
         this.academicTitle = academicTitle;
-    }
-
-    @Override
-    public Role getRole() {
-        return Role.TUTOR;
     }
 }

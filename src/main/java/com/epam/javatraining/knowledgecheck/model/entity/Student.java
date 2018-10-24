@@ -1,4 +1,4 @@
-package com.epam.javatraining.knowledgecheck.datalayer.model;
+package com.epam.javatraining.knowledgecheck.model.entity;
 
 public class Student extends User{
     private String specialty;
@@ -35,10 +35,5 @@ public class Student extends User{
 
     public void setGroup(String group) {
         this.group = group;
-    }
-
-    @Override
-    public Role getRole() {
-        return Role.STUDENT;
     }
 }

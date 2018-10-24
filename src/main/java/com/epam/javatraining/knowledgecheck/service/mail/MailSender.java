@@ -9,7 +9,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 public class MailSender {
-    private static final Logger logger = LogManager.getLogger(MailSender.class.getName());
+    private static final Logger logger = LogManager.getLogger("service");
 
     private String username;
     private String password;

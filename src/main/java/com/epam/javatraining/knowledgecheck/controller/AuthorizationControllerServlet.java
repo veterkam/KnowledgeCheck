@@ -1,58 +1,25 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
-import com.epam.javatraining.knowledgecheck.datalayer.dao.UserDao;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import com.epam.javatraining.knowledgecheck.datalayer.model.User;
-import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
+import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.mail.MailSender;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
-/**
- * This servlet acts as a page controller for the application,
- * handling all requests from the user.
- */
-public class ControllerServlet extends HttpServlet {
-    private static final Logger logger = LogManager.getLogger(ControllerServlet.class.getName());
-
-    private ConnectionPool connectionPool;
-
-
-    @Override
-    public void init() throws ServletException {
-        String url = getServletContext().getInitParameter("url");
-        String username = getServletContext().getInitParameter("username");
-        String password = getServletContext().getInitParameter("password");
-
-        try {
-            this.connectionPool = new ConnectionPool(url, username, password);
-        } catch (SQLException | ClassNotFoundException e) {
-            logger.error(e.getMessage(), e);
-
-            throw new ServletException(e);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        logger.trace("Begin destroy");
-        logger.trace("Connection pool size: " + this.connectionPool.getSize());
-        try {
-            this.connectionPool.release();
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-        }
-        logger.trace("Connection pool size: " + this.connectionPool.getSize());
-        logger.trace("End destroy");
-    }
+@WebServlet(urlPatterns = {
+        "/authorization/login",
+        "/authorization/logout",
+        "/authorization/register",
+        "/authorization/sendmail"
+})
+public class AuthorizationControllerServlet extends AbstractBaseControllerServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -69,13 +36,17 @@ public class ControllerServlet extends HttpServlet {
         String action = request.getServletPath();
         try {
             switch (action) {
-                case "/register":
+                case "/authorization/register":
+                    // TODO верификация
                     register(request, response);
                     break;
-                case "/logout":
+                case "/authorization/login":
+                    login(request, response);
+                    break;
+                case "/authorization/logout":
                     logout(request, response);
                     break;
-                case "/sendmail":
+                case "/authorization/sendmail":
                     sendMail(request, response);
                     break;
                 default:
@@ -95,22 +66,22 @@ public class ControllerServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         if (username == null || password == null) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/LoginForm.jsp");
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
             dispatcher.forward(request, response);
             return;
         }
 
-        UserDao UserDao = new UserDao(connectionPool);
+        UserDao UserDao = new UserDao(getConnectionPool());
         User user = UserDao.get(username);
 
         if (user != null && user.getPassword().equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/Welcome.jsp");
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
             dispatcher.forward(request, response);
         } else {
             request.setAttribute("loginFailed", "true");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/LoginForm.jsp");
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
             dispatcher.forward(request, response);
         }
     }
@@ -119,29 +90,36 @@ public class ControllerServlet extends HttpServlet {
             throws IOException, ServletException, SQLException {
         String firstname = request.getParameter("firstname");
         String lastname = request.getParameter("lastname");
+        String email = request.getParameter("email");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String role = request.getParameter("role");
 
-        if (firstname == null || lastname == null || username == null || password == null) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/RegisterForm.jsp");
+
+
+        // Add list of User.Roles to request
+        request.setAttribute("roles", User.Role.values());
+
+        if (firstname == null || lastname == null || email == null || username == null || password == null || role == null) {
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_REGISTER_FORM);
             dispatcher.forward(request, response);
             return;
         }
 
-        UserDao UserDao = new UserDao(connectionPool);
+        UserDao UserDao = new UserDao(getConnectionPool());
         // Is the username unique?
         User user = UserDao.get(username);
         String errorMsg;
 
         if (user == null) {
             // The username is unique.
-            user = new User(firstname, lastname, "test@google.com", User.Role.ADMINISTRATOR, username, password);
+            user = new User(firstname, lastname, email, User.Role.valueOf(role), username, password);
             // Insert user to data base.
             boolean isInserted = UserDao.insert(user);
             if (isInserted) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
-                RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/Welcome.jsp");
+                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
                 dispatcher.forward(request, response);
                 return;
             } else {
@@ -152,7 +130,7 @@ public class ControllerServlet extends HttpServlet {
         }
 
         request.setAttribute("registerFailedMsg", errorMsg);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/view/RegisterForm.jsp");
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_REGISTER_FORM);
         dispatcher.forward(request, response);
     }
 

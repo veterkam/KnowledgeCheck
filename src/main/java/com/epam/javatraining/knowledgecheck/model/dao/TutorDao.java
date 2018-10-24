@@ -1,8 +1,8 @@
-package com.epam.javatraining.knowledgecheck.datalayer.dao;
+package com.epam.javatraining.knowledgecheck.model.dao;
 
-import com.epam.javatraining.knowledgecheck.datalayer.model.Tutor;
-import com.epam.javatraining.knowledgecheck.datalayer.model.User;
-import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.entity.Tutor;
+import com.epam.javatraining.knowledgecheck.model.entity.User;
+import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 
 import java.sql.*;
 

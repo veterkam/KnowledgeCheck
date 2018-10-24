@@ -1,13 +1,6 @@
-package com.epam.javatraining.knowledgecheck.datalayer.model;
+package com.epam.javatraining.knowledgecheck.model.entity;
 
 public class User {
-    public enum Role{
-        ADMINISTRATOR,
-        TUTOR,
-        STUDENT;
-
-        public static Role fromOrdinal(int n) {return values()[n];}
-    }
 
     private int id;
     private String firstname;
@@ -103,5 +96,24 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public enum Role{
+        ADMINISTRATOR("Administrator"),
+        TUTOR("Tutor"),
+        STUDENT("Student");
+
+        private String caption;
+
+        Role(String caption) {
+            this.caption = caption;
+        }
+
+        @Override
+        public String toString() {
+            return caption;
+        }
+
+        public static Role fromOrdinal(int n) {return values()[n];}
     }
 }

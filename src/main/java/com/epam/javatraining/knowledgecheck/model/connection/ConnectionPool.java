@@ -1,4 +1,4 @@
-package com.epam.javatraining.knowledgecheck.datalayer.connection;
+package com.epam.javatraining.knowledgecheck.model.connection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

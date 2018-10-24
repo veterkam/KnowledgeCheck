@@ -1,16 +1,16 @@
-package com.epam.javatraining.knowledgecheck.datalayer.dao;
+package com.epam.javatraining.knowledgecheck.model.dao;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.epam.javatraining.knowledgecheck.datalayer.connection.ConnectionPool;
-import com.epam.javatraining.knowledgecheck.datalayer.model.User;
+import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.entity.User;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
-    private static final Logger logger = LogManager.getLogger(UserDao.class.getName());
+    private static final Logger logger = LogManager.getLogger("DAO");
     protected ConnectionPool connectionPool;
 
     public UserDao(ConnectionPool connectionPool) {

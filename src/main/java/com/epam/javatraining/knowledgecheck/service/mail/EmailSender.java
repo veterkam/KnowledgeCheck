@@ -8,14 +8,14 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
-public class MailSender {
+public class EmailSender {
     private static final Logger logger = LogManager.getLogger("service");
 
     private String username;
     private String password;
     private Properties props;
 
-    public MailSender(String username, String password) {
+    public EmailSender(String username, String password) {
         this.username = username;
         this.password = password;
 

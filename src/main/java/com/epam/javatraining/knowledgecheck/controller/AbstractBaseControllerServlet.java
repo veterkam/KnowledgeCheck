@@ -20,9 +20,9 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     private void initConnectionPool() throws ServletException {
         // Init connectionPoll
-        String url = getServletContext().getInitParameter("url");
-        String username = getServletContext().getInitParameter("username");
-        String password = getServletContext().getInitParameter("password");
+        String url = getServletContext().getInitParameter("dbUrl");
+        String username = getServletContext().getInitParameter("dbUsername");
+        String password = getServletContext().getInitParameter("dbPassword");
 
         if (url == null || username == null || password == null) {
             throw new ServletException("Unable to find init parameters");

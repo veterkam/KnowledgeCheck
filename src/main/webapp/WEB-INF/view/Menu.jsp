@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<div align="right" style="background-color: orangered">
+<div align="right" style="background-color:lightgray">
     <c:if test="${user != null}">
         <span>Welcome <c:out value="${user.username}"/>!</span>
         <span><a href="${pageContext.request.contextPath}/authorization/sendmail">Send e-mail</a></span>

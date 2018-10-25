@@ -7,7 +7,7 @@
     <h1>
         Sorry, page not found!
     </h1>
-    <div align="center"><a href="${pageContext.request.contextPath}/">Go Home.</a></div>
+    <div align="center"><a href="${pageContext.request.contextPath}/">Go Home</a></div>
 </div>
 </body>
 </html>

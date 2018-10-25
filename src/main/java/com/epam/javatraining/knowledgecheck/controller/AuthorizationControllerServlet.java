@@ -4,6 +4,7 @@ import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.mail.EmailSender;
 import com.epam.javatraining.knowledgecheck.service.mail.Validator;
+import com.mysql.cj.exceptions.MysqlErrorNumbers;
 
 import javax.mail.MessagingException;
 import javax.servlet.RequestDispatcher;
@@ -14,13 +15,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Set;
 
 @WebServlet(urlPatterns = {
         "/authorization/login",
         "/authorization/logout",
-        "/authorization/register"
+        "/authorization/register",
+        "/authorization/register/back",
+        "/authorization/register/confirm",
+        "/authorization/register/verify"
 })
 public class AuthorizationControllerServlet extends AbstractBaseControllerServlet {
 
@@ -40,8 +42,21 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         try {
             switch (action) {
                 case "/authorization/register":
-                    // TODO верификация
-                    register(request, response);
+                    request.getSession().setAttribute("anonym", null);
+                    forwardToRegisterForm(request, response);
+                    break;
+                case "/authorization/register/back":
+                    forwardToRegisterForm(request, response);
+                    break;
+                case "/authorization/register/verify":
+                    // User click button Next, verify the fields
+                    verifyUserInfo(request, response);
+                    break;
+                case "/authorization/register/confirm":
+                    confirmEmailAndRegister(request, response);
+                    break;
+                case "/authorization/restore":
+                    login(request, response);
                     break;
                 case "/authorization/login":
                     login(request, response);
@@ -156,6 +171,18 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             errorMsg += "Passwords are different.<br>";
         }
 
+        User anonym = new User();
+        anonym.setFirstname(firstname);
+        anonym.setLastname(lastname);
+        anonym.setEmail(email);
+        anonym.setUsername(username.toLowerCase());
+        anonym.setPassword(password);
+        anonym.setRole( (role != "") ? User.Role.valueOf(role) : User.Role.ADMINISTRATOR );
+
+        // Store user info in session for form autofilling
+        HttpSession session = request.getSession();
+        session.setAttribute("anonym", anonym);
+
         if(!errorMsg.isEmpty()) {
             forwardToRegisterForm(request, response, errorMsg);
             return;
@@ -170,77 +197,72 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // The username is unique.
 
             // Generate e-mail verification code
-            Integer rnd = (int)(Math.random() * 1000000 + 999999);
-            String[] code = new String[] {rnd.toString()};
+            Integer rnd = (int)(Math.random() * 1000000 + 1000000);
+            String code = rnd.toString();
 
             try {
-                sendEmailVerificationCode(email, code[0]);
+                sendEmailVerificationCode(email, code);
             } catch(MessagingException e) {
+                logger.error(e.getMessage(), e);
                 errorMsg = "Can't send message. Verify your e-mail and try again!";
                 forwardToRegisterForm(request, response, errorMsg);
             }
 
-            // Store code in parameters
-            Map<String, String[]> parameters = request.getParameterMap();
-            parameters.put("code", code);
-            // Store parameters in session
-            request.getSession().setAttribute("userInfo", parameters);
+            session.setAttribute("verificationCode", code);
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
         } else {
+            // The username is not unique.
             errorMsg = "Registration failed. A user with this username already exists. Please, try again!";
         }
 
         forwardToRegisterForm(request, response, errorMsg);
     }
 
-    private void verifyCodeAndRegister(HttpServletRequest request, HttpServletResponse response) {
+    private void confirmEmailAndRegister(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, SQLException, IOException {
         String code = request.getParameter("verificationCode");
-        if(code == null) {
+        HttpSession session = request.getSession();
+        String expectedCode = (String) session.getAttribute("verificationCode");
+        User user = (User) session.getAttribute("anonym");
+        if(expectedCode.equals(code)) {
 
+            // Insert user to data base.
+            boolean isInserted = false;
+            String errorMsg = "";
+            try {
+                isInserted = new UserDao(getConnectionPool()).insert(user);
+            } catch (SQLException e) {
+
+                if(e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
+                    errorMsg += "Sorry, it's too late, username is already busy.\n";
+                } else {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            if (isInserted) {
+                // Success!
+                // Store user data in session
+                session.setAttribute("anonym", null);
+                session.setAttribute("user", user);
+                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
+                dispatcher.forward(request, response);
+                return;
+            } else {
+                // Failed! Come back to edit user info
+                errorMsg += "Registration failed. Please, try again!";
+                forwardToRegisterForm(request, response, errorMsg);
+                return;
+            }
+        } else {
+            // Verification code is wrong. Come back to edit verification code
+            String errorMsg = "Verification code is wrong. Please, try again!";
+            // Put flag of e-mail verification into attributes
+            request.setAttribute("verifyEmail", "true");
+            forwardToRegisterForm(request, response, errorMsg);
+            return;
         }
-    }
-
-    private void register(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, SQLException {
-        // Are there parameters?
-        String action = request.getParameter("action");
-        action = (action == null) ? "" : action;
-
-        switch("action") {
-            case "Next":
-                verifyUserInfo(request, response);
-                break;
-            case "Back":
-                break;
-            case "Cancel":
-                forwardToRegisterForm(request, response);
-                break;
-            case "Register":
-                verifyCodeAndRegister(request, response);
-                break;
-            default:
-                forwardToRegisterForm(request, response);
-                break;
-        }
-
-
-
-
-
-//            user = new User(firstname, lastname, email, User.Role.valueOf(role), username, password);
-//            // Insert user to data base.
-//            boolean isInserted = UserDao.insert(user);
-//            if (isInserted) {
-//                HttpSession session = request.getSession();
-//                session.setAttribute("user", user);
-//                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
-//                dispatcher.forward(request, response);
-//                return;
-//            } else {
-//                errorMsg = "Registration failed. Please, try again!";
-//            }
-
     }
 
     private void logout(HttpServletRequest request, HttpServletResponse response)
@@ -249,6 +271,4 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         request.getSession().invalidate();
         response.sendRedirect(request.getContextPath() + "/");
     }
-
-
 }

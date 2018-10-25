@@ -116,6 +116,9 @@ from users
 where role = 2;
 
 
+delete from users where email LIKE "%@mail.%";
+select * from users;
+
 
 
 

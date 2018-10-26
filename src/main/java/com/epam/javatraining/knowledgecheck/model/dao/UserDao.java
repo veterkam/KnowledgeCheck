@@ -29,6 +29,7 @@ public class UserDao {
         Connection connection = connectionPool.getConnection();
         PreparedStatement statement = connection.prepareStatement(
                 sql, Statement.RETURN_GENERATED_KEYS);
+
         statement.setString(1, user.getFirstname());
         statement.setString(2, user.getLastname());
         statement.setString(3, user.getEmail());

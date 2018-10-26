@@ -20,6 +20,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_REGISTER_FORM = "/WEB-INF/view/RegisterForm.jsp";
     protected final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/PasswordRecoveryForm.jsp";
     protected final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/PageNotFound.jsp";
+    protected final String VIEW_HOME = "/WEB-INF/view/Home.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
     private static ConnectionPool connectionPool = null;

@@ -20,6 +20,7 @@
 
         <input type="submit" name="loginButton" value="Login">
         <h3>You don't have an account? <a href="${pageContext.request.contextPath}/authorization/register">Register</a></h3>
+        <h3>You don't remember a password? <a href="${pageContext.request.contextPath}/authorization/recovery">Recovery</a></h3>
 
     </form>
 </div>

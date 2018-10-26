@@ -5,8 +5,6 @@ import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.mail.EmailSender;
 import com.epam.javatraining.knowledgecheck.service.mail.Validator;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
-import com.mysql.cj.util.StringUtils;
-
 
 import javax.mail.MessagingException;
 import javax.servlet.RequestDispatcher;
@@ -17,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/authorization/login",
@@ -115,7 +115,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
             dispatcher.forward(request, response);
         } else {
-            request.setAttribute("ErrorMessage",
+            request.setAttribute("errorMessage",
                     "Username or password is wrong. Please, try again!");
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
             dispatcher.forward(request, response);
@@ -134,7 +134,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     private void forwardToRegisterForm(HttpServletRequest request, HttpServletResponse response, String error)
             throws ServletException, IOException {
         if (error.length() > 0) {
-            request.setAttribute("ErrorMessage", error);
+            request.setAttribute("errorMessage", error);
         }
 
         forwardToRegisterForm(request, response);
@@ -180,23 +180,20 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        // Are there empty parameters?
+        Validator validator = new Validator();
+        validator.validateFirstName(firstname);
+        validator.validateLastName(lastname);
+        validator.validateEmail(email);
+        validator.validateUsername(username);
+        validator.validatePassword(password);
+        validator.validatePassword(repeatPassword, "repeat password");
+        validator.isNotBlank(role, "role");
+
         String errorMsg = "";
-        errorMsg += (firstname.isEmpty()) ? "firstname, " : "";
-        errorMsg += (lastname.isEmpty()) ? "lastname, " : "";
-        errorMsg += (email.isEmpty()) ? "email, " : "";
-        errorMsg += (username.isEmpty()) ? "username, " : "";
-        errorMsg += (password.isEmpty()) ? "password, " : "";
-        errorMsg += (repeatPassword.isEmpty()) ? "repeatPassword, " : "";
-        errorMsg += (role.isEmpty()) ? "role, " : "";
 
-        if (!errorMsg.isEmpty()) {
-            errorMsg = errorMsg.substring(0, errorMsg.length() - 2);
-            errorMsg = "Some of the fields are empty: " + errorMsg + ".<br>";
-        }
-
-        if (!Validator.validateEmail(email)) {
-            errorMsg += "E-mail is invalid.<br>";
+        if(validator.isFailed()) {
+            List<String> errors = validator.getErrors();
+            errorMsg += String.join("<br>", errors) + "<br>";
         }
 
         if (!password.equals(repeatPassword)) {
@@ -233,6 +230,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
+                session.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
                 errorMsg = "Can't send message. Verify your e-mail address and try again!";
@@ -308,7 +306,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     private void forwardToRecoveryForm(HttpServletRequest request, HttpServletResponse response, String error)
             throws ServletException, IOException {
         if (error.length() > 0) {
-            request.setAttribute("ErrorMessage", error);
+            request.setAttribute("errorMessage", error);
         }
 
         forwardToRecoveryForm(request, response);
@@ -331,20 +329,17 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        // Are there empty parameters?
+        Validator validator = new Validator();
+        validator.validateEmail(email);
+        validator.validateUsername(username);
+        validator.validatePassword(password);
+        validator.validatePassword(repeatPassword);
+
         String errorMsg = "";
-        errorMsg += (email.isEmpty()) ? "email, " : "";
-        errorMsg += (username.isEmpty()) ? "username, " : "";
-        errorMsg += (password.isEmpty()) ? "password, " : "";
-        errorMsg += (repeatPassword.isEmpty()) ? "repeatPassword, " : "";
 
-        if (!errorMsg.isEmpty()) {
-            errorMsg = errorMsg.substring(0, errorMsg.length() - 2);
-            errorMsg = "Some of the fields are empty: " + errorMsg + ".<br>";
-        }
-
-        if (email.length() > 0 && !Validator.validateEmail(email)) {
-            errorMsg += "E-mail is invalid.<br>";
+        if(validator.isFailed()) {
+            List<String> errors = validator.getErrors();
+            errorMsg += String.join("<br>", errors) + "<br>";
         }
 
         if (!password.equals(repeatPassword)) {
@@ -380,6 +375,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
+                session.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
                 errorMsg = "Can't send message. Verify your e-mail address and try again!";

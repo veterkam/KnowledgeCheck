@@ -6,6 +6,7 @@
 <div align="center">
     <h2>Password recovery</h2>
     <%@ include file = "ErrorMessage.jsp" %>
+    <%@ include file = "AttentionMessage.jsp" %>
     <form method="post" name="recoveryForm" onsubmit="return validate();">
         <table>
             <tr>

@@ -415,4 +415,7 @@ JOIN subjects s on s.id = tests.subject_id
 JOIN questions q on tests.id = q.test_id
 JOIN answers a on a.question_id = q.id;
 
+SET @dt = NOW();
+select @dt;
 
+select * from users;

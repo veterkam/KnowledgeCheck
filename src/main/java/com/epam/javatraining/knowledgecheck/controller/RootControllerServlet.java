@@ -1,11 +1,15 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
+import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
+import com.epam.javatraining.knowledgecheck.model.entity.User;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * This servlet acts as a page controller for the application,
@@ -51,8 +55,7 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
 
     private void home(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/WEB-INF/view/Home.jsp");
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_HOME);
         dispatcher.forward(request, response);
     }
 }

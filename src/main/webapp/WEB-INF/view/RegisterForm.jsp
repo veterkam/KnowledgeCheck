@@ -6,7 +6,7 @@
 <div align="center">
     <h2>Registration</h2>
     <%@ include file = "ErrorMessage.jsp" %>
-    <form method="get" name="registerForm" onsubmit="return validate();">
+    <form method="post" name="registerForm" onsubmit="return validate();">
         <table>
             <tr>
                 <td>First Name:</td>

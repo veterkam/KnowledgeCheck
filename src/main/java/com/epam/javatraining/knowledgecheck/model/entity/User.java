@@ -116,4 +116,16 @@ public class User {
 
         public static Role fromOrdinal(int n) {return values()[n];}
     }
+
+    public boolean isIncorrect() {
+        return  firstname.isEmpty() ||
+                lastname.isEmpty() ||
+                username.isEmpty() ||
+                password.isEmpty() ||
+                email.isEmpty();
+    }
+
+    public boolean isCorrect() {
+        return !isIncorrect();
+    }
 }

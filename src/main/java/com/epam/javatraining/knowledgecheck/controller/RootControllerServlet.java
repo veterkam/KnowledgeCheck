@@ -55,11 +55,4 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/WEB-INF/view/Home.jsp");
         dispatcher.forward(request, response);
     }
-
-    private void pageNotFound(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/WEB-INF/view/PageNotFound.jsp");
-        dispatcher.forward(request, response);
-    }
 }

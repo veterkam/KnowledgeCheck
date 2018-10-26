@@ -19,10 +19,7 @@ public class UserDao {
 
     public boolean insert(User user) throws SQLException {
 
-        if(user.getFirstname() == "" ||
-                user.getLastname() == "" ||
-                user.getUsername() == "" ||
-                user.getPassword() == "") {
+        if(user.isIncorrect()) {
             return false;
         }
 
@@ -104,10 +101,7 @@ public class UserDao {
 
     public boolean update(User user) throws SQLException {
 
-        if(user.getFirstname() == "" ||
-                user.getLastname() == "" ||
-                user.getUsername() == "" ||
-                user.getPassword() == "") {
+        if(user.isIncorrect()) {
             return false;
         }
 

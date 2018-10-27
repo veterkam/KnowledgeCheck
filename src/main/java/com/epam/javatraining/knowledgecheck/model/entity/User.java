@@ -1,5 +1,7 @@
 package com.epam.javatraining.knowledgecheck.model.entity;
 
+import org.apache.logging.log4j.util.Strings;
+
 public class User {
 
     private int id;
@@ -118,11 +120,11 @@ public class User {
     }
 
     public boolean isIncorrect() {
-        return  firstname.isEmpty() ||
-                lastname.isEmpty() ||
-                username.isEmpty() ||
-                password.isEmpty() ||
-                email.isEmpty();
+        return  Strings.isBlank(firstname) ||
+                Strings.isBlank(lastname) ||
+                Strings.isBlank(username) ||
+                Strings.isBlank(password) ||
+                Strings.isBlank(email);
     }
 
     public boolean isCorrect() {

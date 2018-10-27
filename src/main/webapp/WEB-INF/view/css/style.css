@@ -1,0 +1,11 @@
+.top-menu {
+    height:20px;
+    background: lightgrey;
+}
+.top-menu .left {
+    float:left;
+}
+
+.top-menu .right {
+    float:right;
+}

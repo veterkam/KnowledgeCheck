@@ -138,6 +138,7 @@ create table `tests` (
   `id` bigint(11) not null auto_increment primary key,
   `subject_id` int(11),
   `tutor_id` int(11),
+  `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `description` varchar(10000)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
@@ -173,10 +174,10 @@ values('computer science'),
 
 select * from subjects;
 
-insert into `tests`(`subject_id`, `tutor_id`, `description`)
-values(7, 7, 'Biology Practice Test'),
-      (2, 3, 'TEst teST'),
-      (8,11, 'Geography test');
+insert into `tests`(`subject_id`, `tutor_id`, `description`, `update_time`)
+values(7, 7, 'Biology Practice Test', '2018-10-24 12:00:00'),
+      (2, 3, 'TEst teST', '2018-10-25 14:40:00'),
+      (8,11, 'Geography test', '2018-10-26 10:15:00');
 
 insert into `questions`(`test_id`, `description`)
 values(1, 'When the chromosomes line up in mitosis this is known as which phase?'),

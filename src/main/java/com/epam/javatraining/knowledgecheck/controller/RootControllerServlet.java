@@ -46,10 +46,10 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
                     pageNotFound(request, response);
                     break;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
 
-            throw new ServletException(e);
+            throw e;
         }
     }
 

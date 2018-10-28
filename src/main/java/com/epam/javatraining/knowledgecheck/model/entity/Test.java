@@ -4,8 +4,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-//java.util.Date date = new Date();
-//        Object param = new java.sql.Timestamp(date.getTime());
+//java.util.Date updateTime = new Date();
+//        Object param = new java.sql.Timestamp(updateTime.getTime());
 //// The JDBC driver knows what to do with a java.sql type:
 //        preparedStatement.setObject(param);
 //
@@ -14,7 +14,7 @@ public class Test {
     private Subject subject;
     private Tutor tutor;
     private String description;
-    private Timestamp date;
+    private Timestamp updateTime;
     private List<Question> questions = new ArrayList<>();
 
     public Test() {
@@ -24,12 +24,12 @@ public class Test {
         this.id = id;
     }
 
-    public Test(long id, Subject subject, Tutor tutor, String description, Timestamp date) {
+    public Test(long id, Subject subject, Tutor tutor, String description, Timestamp updateTime) {
         this.id = id;
         this.subject = subject;
         this.tutor = tutor;
         this.description = description;
-        this.date = date;
+        this.updateTime = updateTime;
     }
 
     public long getId() {
@@ -64,12 +64,12 @@ public class Test {
         this.description = description;
     }
 
-    public Timestamp getDate() {
-        return date;
+    public Timestamp getUpdateTime() {
+        return updateTime;
     }
 
-    public void setDate(Timestamp date) {
-        this.date = date;
+    public void setUpdateTime(Timestamp updateTime) {
+        this.updateTime = updateTime;
     }
 
     public List<Question> getQuestions() {
@@ -79,5 +79,13 @@ public class Test {
     public void setQuestions(List<Question> questions) {
         this.questions.clear();
         this.questions = questions;
+    }
+
+    public int getSubjectId() {
+        return (subject == null) ? 0 : subject.getId();
+    }
+
+    public int getTutorId() {
+        return (tutor == null) ? 0 : tutor.getId();
     }
 }

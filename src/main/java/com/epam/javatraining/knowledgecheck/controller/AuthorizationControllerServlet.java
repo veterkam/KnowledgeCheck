@@ -1,5 +1,6 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
+import com.epam.javatraining.knowledgecheck.exception.DAOException;
 import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.mail.EmailSender;
@@ -15,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 
 @WebServlet(urlPatterns = {
@@ -85,10 +85,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     pageNotFound(request, response);
                     break;
             }
-        } catch (IOException | ServletException | SQLException e) {
+        } catch (DAOException e) {
             logger.error(e.getMessage(), e);
 
-            throw new ServletException(e);
+            throw new ServletException(e.getMessage(), e);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw e;
@@ -96,7 +96,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void login(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, SQLException {
+            throws IOException, ServletException, DAOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
@@ -158,9 +158,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void registerVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, SQLException {
+            throws IOException, ServletException, DAOException{
         // Process parameters
-
         String firstname = request.getParameter("firstname");
         String lastname = request.getParameter("lastname");
         String email = request.getParameter("email");
@@ -169,13 +168,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         String repeatPassword = request.getParameter("repeatPassword");
         String role = request.getParameter("role");
 
-        if (firstname == null ||
-                lastname == null ||
-                email == null ||
-                username == null ||
-                password == null ||
-                repeatPassword == null ||
-                role == null) {
+        if (Validator.containNull(firstname, lastname,
+                email, username, password, repeatPassword, role)) {
             pageNotFound(request, response);
             return;
         }
@@ -230,7 +224,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
-                session.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
+                request.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
                 errorMsg = "Can't send message. Verify your e-mail address and try again!";
@@ -245,13 +239,13 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, SQLException, IOException {
+            throws ServletException, IOException {
         String code = request.getParameter("verificationCode");
         HttpSession session = request.getSession();
         String expectedCode = (String) session.getAttribute("verificationCode");
         User user = (User) session.getAttribute("anonym");
 
-        if (code == null || expectedCode == null || user == null ) {
+        if (Validator.containNull(code, expectedCode, user)) {
             pageNotFound(request, response);
             return;
         }
@@ -259,40 +253,40 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (expectedCode.equals(code)) {
 
             // Insert user to data base.
-            boolean isInserted = false;
             String errorMsg = "";
             try {
-                isInserted = new UserDao(getConnectionPool()).insert(user);
-            } catch (SQLException e) {
+                new UserDao(getConnectionPool()).insert(user);
+            } catch (DAOException e) {
 
-                if (e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
-                    errorMsg += "Sorry, it's too late, username is already busy.\n";
-                } else {
-                    logger.error(e.getMessage(), e);
+                Throwable childException = e.getCause();
+                if(childException instanceof SQLException) {
+                    SQLException sqlException = (SQLException) childException;
+                    if (sqlException.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
+                        errorMsg += "Sorry, it's too late, username is already busy.\n";
+                    } else {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
-            }
 
-            if (isInserted) {
-                // Success!
-                // Store user data in session
-                session.setAttribute("anonym", null);
-                session.setAttribute("user", user);
-                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
-                dispatcher.forward(request, response);
-                return;
-            } else {
                 // Failed! Come back to edit user info
                 errorMsg += "Registration failed. Please, try again!";
                 forwardToRegisterForm(request, response, errorMsg);
                 return;
             }
+
+            // Success!
+            // Store user data in session
+            session.setAttribute("anonym", null);
+            session.setAttribute("user", user);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
+            dispatcher.forward(request, response);
+
         } else {
             // Verification code is wrong. Come back to edit verification code
             String errorMsg = "Verification code is wrong. Please, try again!";
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
             forwardToRegisterForm(request, response, errorMsg);
-            return;
         }
     }
 
@@ -313,18 +307,14 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void recoveryVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, SQLException {
+            throws IOException, ServletException, DAOException {
         // Process parameters
         String email = request.getParameter("email");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String repeatPassword = request.getParameter("repeatPassword");
 
-        if (    email == null ||
-                username == null ||
-                password == null ||
-                repeatPassword == null ) {
-
+        if (Validator.containNull(email, username, password, repeatPassword)) {
             pageNotFound(request, response);
             return;
         }
@@ -375,7 +365,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
-                session.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
+                request.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
                 errorMsg = "Can't send message. Verify your e-mail address and try again!";
@@ -386,13 +376,13 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, SQLException, IOException {
+            throws ServletException, DAOException, IOException {
         String code = request.getParameter("verificationCode");
         HttpSession session = request.getSession();
         String expectedCode = (String) session.getAttribute("verificationCode");
         User anonym = (User) session.getAttribute("anonym");
 
-        if (code == null || expectedCode == null || anonym == null) {
+        if (Validator.containNull(code, expectedCode, anonym)) {
             pageNotFound(request, response);
             return;
         }

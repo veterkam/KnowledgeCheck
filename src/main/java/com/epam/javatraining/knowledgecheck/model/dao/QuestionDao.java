@@ -81,6 +81,7 @@ public class QuestionDao {
     public List<Question> listForTest(long testId) throws DAOException {
         List<Question> questionList = listForTestSingle(testId);
 
+        // attach answers
         AnswerDao dao = new AnswerDao(connectionPool);
         for(Question question : questionList) {
             List<Answer> answerList = dao.listForQuestion(question.getId());

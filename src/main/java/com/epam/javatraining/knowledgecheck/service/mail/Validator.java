@@ -40,6 +40,21 @@ public class Validator {
         return !isSuccess();
     }
 
+    /**
+     *
+     * @param objects
+     * @return true if list of objects contains null pointer
+     */
+    public static boolean containNull(Object... objects) {
+        for(Object obj : objects) {
+            if(obj == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public boolean validateFirstName(String firstName) {
         String error = validate(firstName, NAME_PATTERN, FIRST_NAME_MAX_LENGTH);
 

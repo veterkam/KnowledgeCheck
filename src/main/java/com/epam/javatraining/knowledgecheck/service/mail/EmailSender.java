@@ -31,23 +31,20 @@ public class EmailSender {
 
     public void send(String subject, String text, String fromEmail, String toEmail)
         throws MessagingException {
-        logger.trace("Begin send message");
         Session session = Session.getDefaultInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password);
             }
         });
-        logger.trace("Create mail session");
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
         message.setRecipients(Message.RecipientType.TO,
                 InternetAddress.parse(toEmail));
         message.setSubject(subject);
         message.setText(text);
-        logger.trace("Send message");
+
         Transport.send(message);
-        logger.trace("End send message");
     }
 
 }

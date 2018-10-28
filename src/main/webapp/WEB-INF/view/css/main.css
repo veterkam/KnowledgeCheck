@@ -1,0 +1,100 @@
+.error-message, .attention-message {
+    margin-top: 2rem;
+    margin-bottom: 20px;
+    border-radius: .25rem;
+    font-size: small;
+}
+
+.error-message {
+    background-color: #ff7581;
+}
+
+.attention-message {
+    background-color: #76cd9c;
+}
+
+.element .left {
+    float: left;
+}
+
+.element .right {
+    float: right;
+}
+
+.block {
+    padding: 0;
+    font-size: 14px;
+}
+
+.block .element {
+    border: solid 1px #C7CADD;
+    margin: 0px 3px 3px 0px;
+    padding: 0px 0px 0px 0px;
+    height: 100px;
+}
+
+.block .element:hover {
+    border: solid 1px #000;
+    margin: 0px 3px 3px 0px;
+    padding: 0;
+    height: 100px;
+    background: #FFFAE7;
+}
+
+.block .text {
+    text-decoration: none;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+
+.text-center {
+    text-align: center !important;
+}
+
+body {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-top: 100px;
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+}
+
+.nav-link, .navbar-brand {
+    cursor: pointer;
+    border-radius: .2rem;
+}
+
+.navbar-brand {
+    margin-right: 1em !important;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.navbar-brand:hover {
+    background: #505050;
+    color: #0093ff;
+}
+
+.navbar-collapse {
+    justify-content: flex-end;
+}
+
+.form-login {
+    width: 100%;
+    max-width: 330px;
+    padding: 50px;
+    margin: auto;
+}
+
+.form-login input[type="username"] {
+    margin-bottom: 3px;
+}
+
+.form-login button[type="submit"] {
+    margin-top: 15px;
+    margin-bottom: 30px;
+}

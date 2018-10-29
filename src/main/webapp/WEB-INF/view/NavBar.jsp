@@ -1,6 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!-- navbar -->
-<nav class="navbar navbar-expand-lg fixed-top bg-dark">
+<nav class="navbar navbar-expand-sm fixed-top bg-dark navbar-dark">
     <a class="navbar-brand" href="${pageContext.request.contextPath}/">Home</a>
     <c:if test="${user != null}">
         <c:if test="${user.role=='TUTOR' || user.role=='STUDENT'}">
@@ -8,12 +8,31 @@
             <a class="navbar-brand" href="${pageContext.request.contextPath}/rating">Student Rating</a>
         </c:if>
     </c:if>
+    <!-- Links -->
+    <%--<ul class="navbar-nav">--%>
+        <%--<!-- Dropdown -->--%>
+        <%--<li class="nav-item dropdown">--%>
+            <%--<a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">--%>
+                <%--Dropdown link--%>
+            <%--</a>--%>
+            <%--<div class="dropdown-menu">--%>
+                <%--<a class="dropdown-item" href="#">Link 1</a>--%>
+                <%--<a class="dropdown-item" href="#">Link 2</a>--%>
+                <%--<a class="dropdown-item" href="#">Link 3</a>--%>
+            <%--</div>--%>
+        <%--</li>--%>
+    <%--</ul>--%>
 
-    <div class="collapse navbar-collapse " id="navbarSupportedContent">
+    <!-- Toggler/collapsibe Button -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-right" id="collapsibleNavbar">
         <c:if test="${user != null}">
-            <span style="color: whitesmoke">Welcome <c:out value="${user.username}"/>!</span>
+            <span class="navbar-text">Welcome <c:out value="${user.username}"/>!</span>
         </c:if>
-        <ul class="navbar-nav mr-4">
+        <ul class="navbar-nav">
             <c:if test="${user != null}">
                 <li class="nav-item">
                     <a class="nav-link" data-value="logout"

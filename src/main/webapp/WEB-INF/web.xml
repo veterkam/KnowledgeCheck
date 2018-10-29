@@ -27,25 +27,10 @@
     <param-value>J@v@15648977</param-value>
   </context-param>
 
-
-  <!--<servlet>-->
-    <!--<servlet-name>ControllerServlet</servlet-name>-->
-    <!--<servlet-class>com.epam.javatraining.knowledgecheck.controller.RootControllerServlet</servlet-class>-->
-    <!--<load-on-startup>1</load-on-startup>-->
-  <!--</servlet>-->
-  <!--<servlet>-->
-    <!--<servlet-name>AuthorizationControllerServlet</servlet-name>-->
-    <!--<servlet-class>com.epam.javatraining.knowledgecheck.controller.AuthorizationControllerServlet</servlet-class>-->
-  <!--</servlet>-->
-
-  <!--<servlet-mapping>-->
-    <!--<servlet-name>ControllerServlet</servlet-name>-->
-    <!--<url-pattern>/</url-pattern>-->
-  <!--</servlet-mapping>-->
-  <!--<servlet-mapping>-->
-    <!--<servlet-name>AuthorizationControllerServlet</servlet-name>-->
-    <!--<url-pattern>/authorization/*</url-pattern>-->
-  <!--</servlet-mapping>-->
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/resources/*</url-pattern>
+  </servlet-mapping>
 
   <error-page>
     <exception-type>java.lang.Exception</exception-type>

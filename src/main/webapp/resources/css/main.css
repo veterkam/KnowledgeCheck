@@ -1,16 +1,6 @@
-.error-message, .attention-message {
-    margin-top: 2rem;
-    margin-bottom: 20px;
-    border-radius: .25rem;
-    font-size: small;
-}
-
-.error-message {
-    background-color: #ff7581;
-}
-
-.attention-message {
-    background-color: #76cd9c;
+.kc-error-message, .kc-attention-message{
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .element .left {
@@ -48,11 +38,6 @@
     margin: 0;
 }
 
-
-.text-center {
-    text-align: center !important;
-}
-
 body {
     display: -ms-flexbox;
     display: flex;
@@ -86,7 +71,6 @@ body {
 .form-login {
     width: 100%;
     max-width: 330px;
-    padding: 50px;
     margin: auto;
 }
 
@@ -97,4 +81,10 @@ body {
 .form-login button[type="submit"] {
     margin-top: 15px;
     margin-bottom: 30px;
+}
+
+.form-register {
+    width: 100%;
+    max-width: 330px;
+    margin: auto;
 }

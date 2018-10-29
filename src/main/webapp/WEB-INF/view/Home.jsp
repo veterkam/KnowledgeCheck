@@ -3,7 +3,9 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file = "Header.jsp" %>
 <%@ include file = "NavBar.jsp" %>
-<div align="center">
+<div class="container">
+    <h1 class="h3 mb-3 font-weight-normal">Latest tests</h1>
+    <%@ include file="Alert.jsp" %>
     <h2> Test list1 </h2>
     <div class="block">
         <div class="element">

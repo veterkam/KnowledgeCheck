@@ -3,8 +3,9 @@ package com.epam.javatraining.knowledgecheck.controller;
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
 import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
-import com.epam.javatraining.knowledgecheck.service.mail.EmailSender;
-import com.epam.javatraining.knowledgecheck.service.mail.Validator;
+import com.epam.javatraining.knowledgecheck.service.AlertManager;
+import com.epam.javatraining.knowledgecheck.service.EmailSender;
+import com.epam.javatraining.knowledgecheck.service.Validator;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
 
 import javax.mail.MessagingException;
@@ -131,10 +132,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         dispatcher.forward(request, response);
     }
 
-    private void forwardToRegisterForm(HttpServletRequest request, HttpServletResponse response, String error)
+    private void forwardToRegisterForm(HttpServletRequest request, HttpServletResponse response, AlertManager alerter)
             throws ServletException, IOException {
-        if (error.length() > 0) {
-            request.setAttribute("errorMessage", error);
+        if (!alerter.isEmpty()) {
+            request.setAttribute("alerts", alerter.getAlerts());
         }
 
         forwardToRegisterForm(request, response);
@@ -174,7 +175,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        Validator validator = new Validator();
+        AlertManager alerter = new AlertManager();
+        Validator validator = new Validator(alerter);
         validator.validateFirstName(firstname);
         validator.validateLastName(lastname);
         validator.validateEmail(email);
@@ -183,15 +185,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         validator.validatePassword(repeatPassword, "repeat password");
         validator.isNotBlank(role, "role");
 
-        String errorMsg = "";
-
-        if(validator.isFailed()) {
-            List<String> errors = validator.getErrors();
-            errorMsg += String.join("<br>", errors) + "<br>";
-        }
 
         if (!password.equals(repeatPassword)) {
-            errorMsg += "Passwords are different.<br>";
+            alerter.danger("Passwords are different.");
         }
 
         User anonym = new User();
@@ -206,15 +202,14 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         HttpSession session = request.getSession();
         session.setAttribute("anonym", anonym);
 
-        if (!errorMsg.isEmpty()) {
-            forwardToRegisterForm(request, response, errorMsg);
+        if (!alerter.isEmpty()) {
+            forwardToRegisterForm(request, response, alerter);
             return;
         }
 
         UserDao userDao = new UserDao(getConnectionPool());
         // Is the username unique?
         User user = userDao.get(username);
-        errorMsg = "";
 
         if (user == null) {
             // The username is unique.
@@ -227,15 +222,15 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 request.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
-                errorMsg = "Can't send message. Verify your e-mail address and try again!";
+                alerter.danger("Can't send message. Verify your e-mail address and try again!");
             }
 
         } else {
             // The username is not unique.
-            errorMsg = "Registration failed. A user with this username already exists. Please, try again!";
+            alerter.danger("Registration failed. A user with this username already exists. Please, try again!");
         }
 
-        forwardToRegisterForm(request, response, errorMsg);
+        forwardToRegisterForm(request, response, alerter);
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -250,6 +245,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
+        AlertManager alerter = new AlertManager();
+
         if (expectedCode.equals(code)) {
 
             // Insert user to data base.
@@ -262,20 +259,22 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 if(childException instanceof SQLException) {
                     SQLException sqlException = (SQLException) childException;
                     if (sqlException.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
-                        errorMsg += "Sorry, it's too late, username is already busy.\n";
+                        alerter.danger("Sorry, it's too late, username is already busy.\n");
                     } else {
                         logger.error(e.getMessage(), e);
                     }
                 }
 
                 // Failed! Come back to edit user info
-                errorMsg += "Registration failed. Please, try again!";
-                forwardToRegisterForm(request, response, errorMsg);
+                alerter.danger("Registration failed. Please, try again!");
+                forwardToRegisterForm(request, response, alerter);
                 return;
             }
 
             // Success!
             // Store user data in session
+            alerter.success("Registration success!");
+            request.setAttribute("alerts", alerter.getAlerts());
             session.setAttribute("anonym", null);
             session.setAttribute("user", user);
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
@@ -283,10 +282,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            String errorMsg = "Verification code is wrong. Please, try again!";
+            alerter.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            forwardToRegisterForm(request, response, errorMsg);
+            forwardToRegisterForm(request, response, alerter);
         }
     }
 
@@ -297,10 +296,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         dispatcher.forward(request, response);
     }
 
-    private void forwardToRecoveryForm(HttpServletRequest request, HttpServletResponse response, String error)
+    private void forwardToRecoveryForm(HttpServletRequest request, HttpServletResponse response, AlertManager alerter)
             throws ServletException, IOException {
-        if (error.length() > 0) {
-            request.setAttribute("errorMessage", error);
+        if (!alerter.isEmpty()) {
+            request.setAttribute("alerts", alerter.getAlerts());
         }
 
         forwardToRecoveryForm(request, response);
@@ -319,21 +318,15 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        Validator validator = new Validator();
+        AlertManager alerter = new AlertManager();
+        Validator validator = new Validator(alerter);
         validator.validateEmail(email);
         validator.validateUsername(username);
         validator.validatePassword(password);
         validator.validatePassword(repeatPassword);
 
-        String errorMsg = "";
-
-        if(validator.isFailed()) {
-            List<String> errors = validator.getErrors();
-            errorMsg += String.join("<br>", errors) + "<br>";
-        }
-
         if (!password.equals(repeatPassword)) {
-            errorMsg += "Passwords are different.<br>";
+            alerter.danger("Passwords are different.");
         }
 
         User anonym = new User();
@@ -345,18 +338,18 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         HttpSession session = request.getSession();
         session.setAttribute("anonym", anonym);
 
-        if (!errorMsg.isEmpty()) {
-            forwardToRecoveryForm(request, response, errorMsg);
+        if (!alerter.isEmpty()) {
+            forwardToRecoveryForm(request, response, alerter);
             return;
         }
 
         UserDao userDao = new UserDao(getConnectionPool());
         User user = userDao.get(anonym.getUsername());
-        errorMsg = "";
 
         if (user == null || !user.getEmail().equals(email)) {
-            errorMsg = "Can't find username " + anonym.getUsername() +
+            String errorMsg = "Can't find username " + anonym.getUsername() +
                     " with e-mail " + email + ". Please, try again!";
+            alerter.danger(errorMsg);
         } else {
 
             try {
@@ -365,14 +358,14 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
-                request.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
+                alerter.success("We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
-                errorMsg = "Can't send message. Verify your e-mail address and try again!";
+                alerter.danger("Can't send message. Verify your e-mail address and try again!");
             }
         }
 
-        forwardToRecoveryForm(request, response, errorMsg);
+        forwardToRecoveryForm(request, response, alerter);
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -387,7 +380,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        String errorMsg;
+        AlertManager alerter = new AlertManager();
 
         if (expectedCode.equals(code)) {
             UserDao userDao = new UserDao(getConnectionPool());
@@ -402,16 +395,16 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 dispatcher.forward(request, response);
                 return;
             } else {
-                errorMsg = "Sorry, can't find " + anonym.getUsername() + ". Please, try again!";
+                alerter.danger("Sorry, can't find " + anonym.getUsername() + ". Please, try again!");
             }
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            errorMsg = "Verification code is wrong. Please, try again!";
+            alerter.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
         }
-        forwardToRecoveryForm(request, response, errorMsg);
+        forwardToRecoveryForm(request, response, alerter);
     }
 
     private void logout(HttpServletRequest request, HttpServletResponse response)

@@ -1,4 +1,4 @@
-package com.epam.javatraining.knowledgecheck.service.mail;
+package com.epam.javatraining.knowledgecheck.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -3,10 +3,12 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file = "Header.jsp" %>
 <%@ include file = "NavBar.jsp" %>
-<div align="center">
-    <h1>
-        Sorry, page not found!
-    </h1>
-    <div align="center"><a href="${pageContext.request.contextPath}/">Go Home</a></div>
+<div class="container">
+    <h1 class="h3 mb-3 font-weight-normal">Sorry, page not found!</h1>
+    <%@ include file = "Alert.jsp" %>
+    <p class="text-center mt-5">
+        Do you have an account?
+        <a href="${pageContext.request.contextPath}/">Go Home</a>
+    </p>
 </div>
 <%@ include file="Footer.jsp" %>

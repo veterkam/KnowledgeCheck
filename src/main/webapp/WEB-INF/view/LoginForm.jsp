@@ -5,7 +5,7 @@
 <%@ include file="NavBar.jsp" %>
 <div class="container">
     <h1 class="h3 mb-3 font-weight-normal">Please login</h1>
-    <%@ include file="ErrorMessage.jsp" %>
+    <%@ include file="Alert.jsp" %>
     <form class="form-login" method="post" action="${pageContext.request.contextPath}/authorization/login" name="loginForm">
         <div class="form-group">
             <label for="inputUsername" class="sr-only">Username</label>

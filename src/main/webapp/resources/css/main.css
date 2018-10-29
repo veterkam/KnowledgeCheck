@@ -68,10 +68,17 @@ body {
     justify-content: flex-end;
 }
 
-.form-login {
+.form-login, .form-register, .form-recovery {
     width: 100%;
-    max-width: 330px;
     margin: auto;
+}
+
+.form-login {
+    max-width: 330px;
+}
+
+.form-register, .form-recovery {
+    max-width: 450px;
 }
 
 .form-login input[type="username"] {
@@ -83,8 +90,6 @@ body {
     margin-bottom: 30px;
 }
 
-.form-register {
-    width: 100%;
-    max-width: 330px;
-    margin: auto;
+.text-capitalize {
+    text-transform: capitalize;
 }

@@ -1,4 +1,4 @@
-package com.epam.javatraining.knowledgecheck.service.mail;
+package com.epam.javatraining.knowledgecheck.service;
 
 
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Validator {
-    private List<String> errors = new ArrayList<>();
+    private AlertManager alerter;
 
     private final String NAME_PATTERN = "[a-zA-Zа-яА-ЯёЁ]+([\\sa-zA-Zа-яА-ЯёЁ-]*[a-zA-Zа-яА-ЯёЁ]+)*$";
     private final String EMAIL_PATTERN = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
@@ -20,20 +20,24 @@ public class Validator {
     private final int USERNAME_MAX_LENGTH = 20;
     private final int PASSWORD_MAX_LENGTH = 30;
 
-    public Validator() {
-
+    public Validator(AlertManager alerter) {
+        this.alerter = alerter;
     }
 
-    public List<String> getErrors() {
-        return errors;
+    public AlertManager getAlerter() {
+        return alerter;
+    }
+
+    public void setAlerter(AlertManager alerter) {
+        this.alerter = alerter;
     }
 
     public void reset() {
-        errors.clear();
+        alerter.getAlerts().clear();
     }
 
     public boolean isSuccess() {
-        return errors.isEmpty();
+        return alerter.getAlerts().isEmpty();
     }
 
     public boolean isFailed() {
@@ -60,7 +64,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, "first name");
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -71,7 +75,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, "last name");
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -84,7 +88,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, "username");
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -104,7 +108,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, fieldName);
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -116,7 +120,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, "e-mail");
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -136,7 +140,7 @@ public class Validator {
 
         if(error != null) {
             error = String.format(error, fieldName);
-            errors.add(error);
+            alerter.danger(error);
         }
 
         return error == null;
@@ -144,15 +148,15 @@ public class Validator {
 
     private String validate(String str, String regexp, int maxlen) {
         if(str == null) {
-            return "%s is null";
+            return "Field %s is null";
         }
 
         if(str.isEmpty()) {
-            return "%s is empty";
+            return "Field %s is empty";
         }
 
         if(str.length() > maxlen) {
-            return "length of %s should not be greater " + maxlen;
+            return "Length of %s should not be greater " + maxlen;
         }
 
         if(regexp != null) {
@@ -160,7 +164,7 @@ public class Validator {
             Matcher matcher = pattern.matcher(str);
 
             if (!matcher.matches()) {
-                return "invalid string format of %s";
+                return "Invalid string format of %s";
             }
         }
 

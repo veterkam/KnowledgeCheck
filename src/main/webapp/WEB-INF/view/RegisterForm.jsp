@@ -4,54 +4,54 @@
 <%@ include file="Header.jsp" %>
 <%@ include file = "NavBar.jsp" %>
 <div class="container">
-    <h1 class="h3 mb-3 font-weight-normal">Registration</h1>
-    <%@ include file = "ErrorMessage.jsp" %>
-    <%@ include file = "AttentionMessage.jsp" %>
-    <form class="form-register text-left" method="post">
-        <div class="form-group">
-            <label for="inputFirstName">First Name:</label>
-            <input id="inputFirstName" class="form-control" name="firstname"
+    <h1 class="h3 mb-3 font-weight-normal">Register</h1>
+    <%@ include file = "Alert.jsp" %>
+    <form class="form-register text-left col-12" method="post">
+
+        <div class="form-row">
+            <label class="col-sm-4 col-form-label" for="inputFirstName">First Name:</label>
+            <input id="inputFirstName" class="form-control col-sm-8 mb-1" name="firstname"
                    placeholder="Enter your first name" required="" autofocus="" type="text"
                    value="<c:out value="${anonym.firstname}"/>"
                    <c:if test="${verifyEmail != null}">disabled</c:if>>
         </div>
-        <div class="form-group">
-            <label for="inputLastName" >Last Name:</label>
-            <input id="inputLastName" class="form-control" name="lastname"
+        <div class="form-row">
+            <label class="col-sm-4 col-form-label" for="inputLastName" >Last Name:</label>
+            <input id="inputLastName" class="form-control col-sm-8 mb-1" name="lastname"
                    placeholder="Enter your last name" required="" autofocus="" type="text"
                    value="<c:out value="${anonym.lastname}"/>"
                    <c:if test="${verifyEmail != null}">disabled</c:if>>
         </div>
-        <div class="form-group">
-            <label for="inputEmail" >E-mail:</label>
-            <input id="inputEmail" class="form-control" name="email"
-                   placeholder="Enter your real e-mail address" required="" autofocus="" type="email"
-                   value="<c:out value="${anonym.email}"/>"
-                   <c:if test="${verifyEmail != null}">disabled</c:if>>
-        </div>
-        <div class="form-group">
-            <label for="inputUsername" >Username:</label>
-            <input id="inputUsername" class="form-control" name="username"
+        <div class="form-row">
+            <label class="col-sm-4 col-form-label" for="inputUsername" >Username:</label>
+            <input id="inputUsername" class="form-control col-sm-8 mb-1" name="username"
                    placeholder="Enter your username" required="" autofocus="" type="username"
                    value="<c:out value="${anonym.username}"/>"
                    <c:if test="${verifyEmail != null}">disabled</c:if>>
         </div>
+        <div class="form-row">
+            <label class="col-sm-4 col-form-label" for="inputEmail" >E-mail:</label>
+            <input id="inputEmail" class="form-control col-sm-8 mb-1" name="email"
+                   placeholder="Enter your real e-mail address" required="" autofocus="" type="email"
+                   value="<c:out value="${anonym.email}"/>"
+                   <c:if test="${verifyEmail != null}">disabled</c:if>>
+        </div>
         <c:if test="${verifyEmail == null}">
-            <div class="form-group">
-                <label for="inputPassword" >Password:</label>
-                <input id="inputPassword" class="form-control" name="password"
+            <div class="form-row">
+                <label class="col-sm-4 col-form-label" for="inputPassword" >Password:</label>
+                <input id="inputPassword" class="form-control col-sm-8 mb-1" name="password"
                        placeholder="Enter your password" required="" type="password"
                        value="<c:out value="${anonym.password}"/>">
             </div>
-            <div class="form-group">
-                <label for="inputRepeatPassword" class="sr-only">Password:</label>
-                <input id="inputRepeatPassword" class="form-control" name="repeatPassword"
+            <div class="form-row">
+                <label class="col-sm-4 col-form-label" for="inputRepeatPassword" class="sr-only">Repeat Password:</label>
+                <input id="inputRepeatPassword" class="form-control col-sm-8 mb-1" name="repeatPassword"
                        placeholder="Repeat your password" required="" type="password">
             </div>
         </c:if>
-        <div class="form-group">
-            <label for="selectRole" >Role:</label>
-            <select id="selectRole" name="role" class="custom-select mb-3"
+        <div class="form-row">
+            <label class="col-sm-4 col-form-label" for="selectRole" >Role:</label>
+            <select id="selectRole" name="role" class="custom-select form-control col-sm-8 mb-1"
                     <c:if test="${verifyEmail != null}">disabled</c:if>>
                 <option disabled>Choose a role</option>
                 <c:forEach var="role" items="${roles}">
@@ -62,39 +62,53 @@
             </select>
         </div>
         <c:if test="${verifyEmail != null}">
-            <div class="form-group">
-                <label for="inputVerificationCode" >Verification code:</label>
-                <input id="inputVerificationCode" class="form-control" name="verificationCode"
+            <div class="form-row">
+                <label class="col-sm-4 col-form-label" for="inputVerificationCode" >Verification code:</label>
+                <input id="inputVerificationCode" class="form-control col-sm-8 mb-1" name="verificationCode"
                        placeholder="Enter verification code" required="" autofocus="" type="text">
             </div>
         </c:if>
 
+        <div class="row">
         <c:if test="${verifyEmail != null}">
-            <div class="form-group text-center">
-                <button class="btn btn-dark" type="submit" name="btnCancel" formnovalidate
+            <div class="col-4">
+                <button class="btn btn-dark btn-block m-1" type="submit" name="btnCancel" formnovalidate
                         formaction="${pageContext.request.contextPath}/authorization/register">
                     Cancel
                 </button>
-                <button class="btn btn-dark" type="submit" name="btnBack" formnovalidate
+            </div>
+            <div class="col-4">
+                <button class="btn btn-dark btn-block m-1" type="submit" name="btnBack" formnovalidate
                         formaction="${pageContext.request.contextPath}/authorization/register/back">
                     Back
                 </button>
-                <button class="btn btn-dark" type="submit" name="btnRegister"
+            </div>
+            <div class="col-4">
+                <button class="btn btn-dark btn-block m-1" type="submit" name="btnRegister"
                         formaction="${pageContext.request.contextPath}/authorization/register/confirm">
                     Register
                 </button>
             </div>
         </c:if>
         <c:if test="${verifyEmail == null}">
-            <button class="btn btn-dark btn-block" type="submit" name="btnNext"
-                    formaction="${pageContext.request.contextPath}/authorization/register/verify">
-                Next
-            </button>
+            <div class="col-3"></div>
+            <div class="col-6">
+                <button class="btn btn-dark btn-block m-1" type="submit" name="btnNext"
+                        formaction="${pageContext.request.contextPath}/authorization/register/verify">
+                    Next
+                </button>
+            </div>
+            <div class="col-3"></div>
         </c:if>
-        <p class="text-center mt-5">
-            Do you have an account?
-            <a href="${pageContext.request.contextPath}/authorization/login">Login</a>
-        </p>
+        </div>
+        <div class="row">
+            <div class="col text-center">
+                <p class="mt-5">
+                    Do you have an account?
+                    <a href="${pageContext.request.contextPath}/authorization/login">Login</a>
+                </p>
+            </div>
+        </div>
     </form>
 </div>
 <%@ include file="Footer.jsp" %>

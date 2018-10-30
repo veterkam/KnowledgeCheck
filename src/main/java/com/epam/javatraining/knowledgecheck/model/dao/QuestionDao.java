@@ -94,7 +94,7 @@ public class QuestionDao {
 
     public List<Question> listForTestSingle(long testId) throws DAOException {
         List<Question> questionList = new ArrayList<>();
-        String sql = "SELECT * FROM questions WHERE test_id=?";
+        String sql = "SELECT * FROM questions WHERE test_id = ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -105,7 +105,7 @@ public class QuestionDao {
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, testId);
-            resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 long id = resultSet.getLong("id");

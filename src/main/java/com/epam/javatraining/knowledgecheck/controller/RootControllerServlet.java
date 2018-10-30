@@ -1,6 +1,8 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
+import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
 import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
+import com.epam.javatraining.knowledgecheck.model.entity.Test;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 
 import javax.servlet.RequestDispatcher;
@@ -40,7 +42,9 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         try {
             switch (action) {
                 case "/":
-                    home(request, response);
+//                    home(request, response);
+                    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/testboard");
+                    dispatcher.forward(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -49,7 +53,7 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
 
-            throw e;
+            throw new ServletException(e);
         }
     }
 

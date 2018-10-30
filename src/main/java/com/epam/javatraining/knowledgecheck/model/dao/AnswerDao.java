@@ -78,7 +78,7 @@ public class AnswerDao {
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, questionId);
-            resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 long id = resultSet.getLong("id");

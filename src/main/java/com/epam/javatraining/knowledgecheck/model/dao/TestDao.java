@@ -79,6 +79,12 @@ public class TestDao {
         }
     }
 
+    private void attachQuestions(Test test) throws DAOException {
+        QuestionDao dao = new QuestionDao(connectionPool);
+        List<Question> questionList = dao.listForTest(test.getId());
+        test.setQuestions(questionList);
+    }
+
     private void attachQuestions(List<Test> testList) throws DAOException {
         QuestionDao dao = new QuestionDao(connectionPool);
         for(Test test : testList) {
@@ -87,16 +93,66 @@ public class TestDao {
         }
     }
 
-    public List<Test> listForTutor(int tutorId) throws DAOException {
-        List<Test> testList = listForTutorSingle(tutorId);
+    public int getTestCount() throws DAOException {
+        String sql = "SELECT COUNT(*) FROM tests";
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        int result = 0;
+
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sql);
+
+            if(resultSet.next()) {
+                result = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading test data failed.", e);
+        } finally {
+
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                // do nothing
+            } finally {
+                connectionPool.releaseConnection(connection);
+            }
+        }
+        return result;
+    }
+
+    private Test scanTest(ResultSet resultSet)
+            throws SQLException, DAOException {
+
+        long id = resultSet.getLong("id");
+        int subjectId = resultSet.getInt("subject_id");
+        int tutorId = resultSet.getInt("tutor_id");
+        String title = resultSet.getString("title");
+        String description = resultSet.getString("description");
+        Timestamp updateTime = resultSet.getTimestamp("update_time");
+
+        Subject subject = new SubjectDao(connectionPool).get(subjectId);
+        Tutor tutor = new TutorDao(connectionPool).get(tutorId);
+
+        Test test = new Test(id, subject, tutor, title, description, updateTime);
+        return test;
+    }
+
+    public List<Test> getList(long offset, long count) throws DAOException {
+        List<Test> testList = getListSingle(offset, count);
         attachQuestions(testList);
         return testList;
     }
 
-
-    public List<Test> listForTutorSingle(int tutorId) throws DAOException {
+    public List<Test> getListSingle(long offset, long count)
+        throws DAOException {
         List<Test> testList = new ArrayList<>();
-        String sql = "SELECT * FROM tests WHERE tutor_id=?";
+        String sql = "SELECT * FROM tests ORDER BY update_time DESC LIMIT ?, ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -106,17 +162,11 @@ public class TestDao {
             connection = connectionPool.getConnection();
 
             statement = connection.prepareStatement(sql);
-            statement.setLong(1, tutorId);
-            resultSet = statement.executeQuery(sql);
-
+            statement.setLong(1, offset);
+            statement.setLong(2, count);
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                int subjectId = resultSet.getInt("subjectId");
-                String description = resultSet.getString("description");
-                Timestamp updateTime = resultSet.getTimestamp("update_time");
-                Subject subject = new SubjectDao(connectionPool).get(subjectId);
-                Tutor tutor = new TutorDao(connectionPool).get(tutorId);
-                Test test = new Test(id, subject, tutor, description, updateTime);
+                Test test = scanTest(resultSet);
                 testList.add(test);
             }
         } catch (SQLException e) {
@@ -137,15 +187,59 @@ public class TestDao {
         return testList;
     }
 
-    public List<Test> listForSubject(int subjectId) throws DAOException {
-        List<Test> testList = listForSubjectSingle(subjectId);
+    public List<Test> getListForTutor(int tutorId) throws DAOException {
+        List<Test> testList = getListForTutorSingle(tutorId);
+        attachQuestions(testList);
+        return testList;
+    }
+
+
+    public List<Test> getListForTutorSingle(int tutorId) throws DAOException {
+        List<Test> testList = new ArrayList<>();
+        String sql = "SELECT * FROM tests WHERE tutor_id=?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = connectionPool.getConnection();
+
+            statement = connection.prepareStatement(sql);
+            statement.setLong(1, tutorId);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Test test = scanTest(resultSet);
+                testList.add(test);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading test data failed.", e);
+        } finally {
+
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                // do nothing
+            } finally {
+                connectionPool.releaseConnection(connection);
+            }
+        }
+
+        return testList;
+    }
+
+    public List<Test> getListForSubject(int subjectId) throws DAOException {
+        List<Test> testList = getListForSubjectSingle(subjectId);
         attachQuestions(testList);
 
         return testList;
     }
 
 
-    public List<Test> listForSubjectSingle(int subjectId) throws DAOException {
+    public List<Test> getListForSubjectSingle(int subjectId) throws DAOException {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests WHERE subject_id=?";
 
@@ -158,16 +252,10 @@ public class TestDao {
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, subjectId);
-            resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                int tutorId = resultSet.getInt("tutorId");
-                String description = resultSet.getString("description");
-                Timestamp updateTime = resultSet.getTimestamp("update_time");
-                Subject subject = new SubjectDao(connectionPool).get(subjectId);
-                Tutor tutor = new TutorDao(connectionPool).get(tutorId);
-                Test test = new Test(id, subject, tutor, description, updateTime);
+                Test test = scanTest(resultSet);
                 testList.add(test);
             }
         } catch (SQLException e) {
@@ -269,9 +357,7 @@ public class TestDao {
 
         if(test != null) {
             // attach questions
-            QuestionDao dao = new QuestionDao(connectionPool);
-            List<Question> questionList = dao.listForTest(id);
-            test.setQuestions(questionList);
+            attachQuestions(test);
         }
 
         return test;
@@ -293,13 +379,7 @@ public class TestDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                int subjectId = resultSet.getInt("subjectId");
-                int tutorId = resultSet.getInt("tutorId");
-                String description = resultSet.getString("description");
-                Timestamp updateTime = resultSet.getTimestamp("update_time");
-                Subject subject = new SubjectDao(connectionPool).get(subjectId);
-                Tutor tutor = new TutorDao(connectionPool).get(tutorId);
-                test = new Test(id, subject, tutor, description, updateTime);
+                test = scanTest(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);

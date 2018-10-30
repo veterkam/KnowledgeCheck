@@ -130,6 +130,19 @@ create table `subjects` (
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
 
+insert into `subjects`(`name`)
+values('computer science'),
+      ('mathematics'),
+      ('physics'),
+      ('chemistry'),
+      ('English'),
+      ('history'),
+      ('biology'),
+      ('geography');
+
+select * from subjects;
+
+
 drop table if exists `answers`;
 drop table if exists `questions`;
 drop table if exists `tests`;
@@ -139,6 +152,7 @@ create table `tests` (
   `subject_id` int(11),
   `tutor_id` int(11),
   `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `title` varchar(100),
   `description` varchar(10000)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
@@ -162,22 +176,74 @@ create table `answers` (
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
-insert into `subjects`(`name`)
-values('computer science'),
-      ('mathematics'),
-      ('physics'),
-      ('chemistry'),
-      ('English'),
-      ('history'),
-      ('biology'),
-      ('geography');
 
-select * from subjects;
+insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `update_time`)
+values(7, 7, 'Biology Practice Test', 'Check you knowledge in biology!',  '2018-10-24 12:00:00'),
+      (2, 3, 'TEst teST', 'Check you knowledge, be smart!', '2018-10-25 14:40:00'),
+      (8,11, 'Geography test', 'Check you knowledge in World Geography!', '2018-10-26 10:15:00'),
+      (7, 7, 'English 1 Practice Test', 'Check you knowledge in English!',  '2018-10-22 12:01:00'),
+      (2, 3, 'Spanish 2 test', 'Check you knowledge, be smart!', '2018-02-02 11:43:00'),
+      (8,11, 'Economic 3 test', 'Check you knowledge in World Economic!', '2017-10-26 10:15:00'),
+      (2, 3, 'Spanish 4 test', 'Check you knowledge, be smart!', '2018-02-03 11:43:00'),
+      (8,11, 'Economic 5 test', 'Check you knowledge in World Economic!', '2016-10-26 10:15:00'),
+      (2, 3, 'Spanish 6 test', 'Check you knowledge, be smart!', '2018-02-04 11:43:00'),
+      (8,11, 'Economic 7 test', 'Check you knowledge in World Economic!', '2015-10-26 10:15:00'),
+      (2, 3, 'Spanish 8 test', 'Check you knowledge, be smart!', '2018-02-05 11:43:00'),
+      (8,11, 'Economic 9 test', 'Check you knowledge in World Economic!', '2014-10-26 10:15:00'),
+      (2, 3, 'Spanish 10 test', 'Check you knowledge, be smart!', '2018-02-06 13:43:00'),
+      (8,11, 'Economic 11 test', 'Check you knowledge in World Economic!', '2012-10-26 10:15:00'),
+      (2, 3, 'Spanish 12 test', 'Check you knowledge, be smart!', '2018-02-07 11:43:00'),
+      (8,11, 'Economic 13 test', 'Check you knowledge in World Economic!', '2011-10-26 10:15:00'),
+      (2, 3, 'Spanish 14 test', 'Check you knowledge, be smart!', '2018-02-08 11:43:00'),
+      (8,11, 'Economic 15 test', 'Check you knowledge in World Economic!', '2010-10-26 10:15:00'),
+      (2, 3, 'Spanish 16 test', 'Check you knowledge, be smart!', '2018-02-10 09:43:00'),
+      (8,11, 'Economic 17 test', 'Check you knowledge in World Economic!', '2018-08-26 10:15:00'),
+      (8,11, 'Economic 18 test', 'Check you knowledge in World Economic!', '2018-07-26 10:15:00'),
+      (2, 3, 'Spanish 19 test', 'Check you knowledge, be smart!', '2018-02-10 11:42:00'),
+      (8,11, 'Economic 20 test', 'Check you knowledge in World Economic!', '2018-06-26 10:15:00'),
+      (2, 3, 'Spanish 21 test', 'Check you knowledge, be smart!', '2018-02-11 11:40:00'),
+      (8,11, 'Economic 22 test', 'Check you knowledge in World Economic!', '2018-08-26 10:15:00'),
+      (2, 3, 'Spanish  23 test', 'Check you knowledge, be smart!', '2018-02-12 11:07:00'),
+      (8,11, 'Economic 24 test', 'Check you knowledge in World Economic!', '2018-06-26 10:15:00'),
+      (2, 3, 'Spanish 25 test', 'Check you knowledge, be smart!', '2018-02-13 11:23:00'),
+      (8,11, 'Economic 26 test', 'Check you knowledge in World Economic!', '2018-04-26 10:15:00'),
+      (2, 3, 'Spanish 27 test', 'Check you knowledge, be smart!', '2018-02-14 11:21:00'),
+      (8,11, 'Economic 28 test', 'Check you knowledge in World Economic!', '2018-03-26 10:15:00'),
+      (2, 3, 'Spanish 29 test', 'Check you knowledge, be smart!', '2018-02-15 11:21:00'),
+      (8,11, 'Economic 30 test', 'Check you knowledge in World Economic!', '2018-03-26 10:15:00'),
+      (2, 3, 'Spanish 31 test', 'Check you knowledge, be smart!', '2018-02-16 11:43:00'),
+      (8,11, 'Economic 32 test', 'Check you knowledge in World Economic!', '2018-10-25 10:15:00'),
+      (8,11, 'Economic 33 test', 'Check you knowledge in World Economic!', '2018-10-24 10:15:00'),
+      (2, 3, 'Spanish 34 test', 'Check you knowledge, be smart!', '2018-02-17 11:43:00'),
+      (8,11, 'Economic 35 test', 'Check you knowledge in World Economic!', '2018-10-23 10:15:00'),
+      (2, 3, 'Spanish 36 test', 'Check you knowledge, be smart!', '2018-02-18 11:43:00'),
+      (8,11, 'Economic 37 test', 'Check you knowledge in World Economic!', '2018-10-22 10:15:00'),
+      (2, 3, 'Spanish 38 test', 'Check you knowledge, be smart!', '2018-02-19 11:43:00'),
+      (8,11, 'Economic 39 test', 'Check you knowledge in World Economic!', '2018-10-21 10:15:00'),
+      (2, 3, 'Spanish 40 test', 'Check you knowledge, be smart!', '2018-02-20 11:43:00'),
+      (8,11, 'Economic 41 test', 'Check you knowledge in World Economic!', '2018-10-20 10:15:00'),
+      (2, 3, 'Spanish 42 test', 'Check you knowledge, be smart!', '2018-02-21 11:43:00'),
+      (8,11, 'Economic 43 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 44 test', 'Check you knowledge, be smart!', '2018-02-22 11:43:00'),
+      (8,11, 'Economic 45 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 46 test', 'Check you knowledge, be smart!', '2018-02-23 11:43:00'),
+      (8,11, 'Economic 47 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (8,11, 'Economic 48 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 49 test', 'Check you knowledge, be smart!', '2018-02-24 11:43:00'),
+      (8,11, 'Economic 50 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 51 test', 'Check you knowledge, be smart!', '2018-02-25 11:43:00'),
+      (8,11, 'Economic 52 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 53 test', 'Check you knowledge, be smart!', '2018-02-26 11:43:00'),
+      (8,11, 'Economic 54 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 55 test', 'Check you knowledge, be smart!', '2018-02-27 11:43:00'),
+      (8,11, 'Economic 56 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 57 test', 'Check you knowledge, be smart!', '2018-02-28 11:43:00'),
+      (8,11, 'Economic 58 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 59 test', 'Check you knowledge, be smart!', '2018-02-19 11:43:10'),
+      (8,11, 'Economic 60 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00'),
+      (2, 3, 'Spanish 61 test', 'Check you knowledge, be smart!', '2018-02-15 11:43:11'),
+      (8,11, 'Economic 62 test', 'Check you knowledge in World Economic!', '2018-10-26 10:15:00');
 
-insert into `tests`(`subject_id`, `tutor_id`, `description`, `update_time`)
-values(7, 7, 'Biology Practice Test', '2018-10-24 12:00:00'),
-      (2, 3, 'TEst teST', '2018-10-25 14:40:00'),
-      (8,11, 'Geography test', '2018-10-26 10:15:00');
 
 insert into `questions`(`test_id`, `description`)
 values(1, 'When the chromosomes line up in mitosis this is known as which phase?'),
@@ -191,6 +257,9 @@ values(1, 'When the chromosomes line up in mitosis this is known as which phase?
       (1, 'Breathing properly requires the presence of what compound that affects surface tension of alveoli in the lungs?'),
       (1, 'Which of the following is not considered a function of the kidneys?'),
       (1, 'The functional unit of the kidney is known as?'),
+
+
+
       (1, 'What anatomical structure connects the stomach and the mouth?'),
       (2, 'Вопрос А'),
       (2, 'Вопрос B'),
@@ -420,3 +489,5 @@ SET @dt = NOW();
 select @dt;
 
 select * from users;
+
+SELECT * FROM tests ORDER BY update_time DESC LIMIT 0, 4;

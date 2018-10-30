@@ -132,7 +132,7 @@ public class TutorDao extends UserDao {
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, id);
-            statement.setInt(1, role.ordinal());
+            statement.setInt(2, role.ordinal());
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {

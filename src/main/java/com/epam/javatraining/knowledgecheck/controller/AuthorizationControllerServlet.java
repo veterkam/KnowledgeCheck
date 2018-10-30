@@ -351,7 +351,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     " with e-mail " + email + ". Please, try again!";
             alerter.danger(errorMsg);
         } else {
-
             try {
                 String msg = "Hello. You started password recovering. ";
                 String code = sendVerificationCodeByEmail(email, msg);

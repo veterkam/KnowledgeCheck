@@ -68,6 +68,21 @@ public class UserDao {
         }
     }
 
+    private User scanUser(ResultSet resultSet) throws SQLException {
+        int id = resultSet.getInt("id");
+        String firstname = resultSet.getString("firstname");
+        String lastname = resultSet.getString("lastname");
+        String email = resultSet.getString("email");
+        int roleInt = resultSet.getInt("role");
+        String username = resultSet.getString("username");
+        String password = resultSet.getString("password");
+
+        User.Role role = User.Role.fromOrdinal(roleInt);
+        User user = new User(id, firstname, lastname,
+                email, role, username, password);
+        return user;
+    }
+
     public List<User> listAll() throws DAOException {
         List<User> listUser = new ArrayList<>();
         String sql = "SELECT * FROM users";
@@ -82,17 +97,7 @@ public class UserDao {
             resultSet = statement.executeQuery(sql);
 
             while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                int roleInt = resultSet.getInt("role");
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-
-                User.Role role = User.Role.fromOrdinal(roleInt);
-                User user = new User(id, firstname, lastname,
-                        email, role, username, password);
+                User user = scanUser(resultSet);
                 listUser.add(user);
             }
         } catch (SQLException e) {
@@ -195,16 +200,7 @@ public class UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                int roleInt = resultSet.getInt("role");
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-
-                User.Role role = User.Role.fromOrdinal(roleInt);
-                user = new User(id, firstname, lastname,
-                        email, role, username, password);
+                user = scanUser(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
@@ -239,16 +235,7 @@ public class UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                int roleInt = resultSet.getInt("role");
-                String password = resultSet.getString("password");
-
-                User.Role role = User.Role.fromOrdinal(roleInt);
-                user = new User(id, firstname, lastname,
-                        email, role, username, password);
+                user = scanUser(resultSet);
             }
 
         } catch (SQLException e) {

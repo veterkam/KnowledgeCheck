@@ -13,6 +13,7 @@ public class Test {
     private long id;
     private Subject subject;
     private Tutor tutor;
+    private String title;
     private String description;
     private Timestamp updateTime;
     private List<Question> questions = new ArrayList<>();
@@ -24,12 +25,21 @@ public class Test {
         this.id = id;
     }
 
-    public Test(long id, Subject subject, Tutor tutor, String description, Timestamp updateTime) {
+    public Test(long id, Subject subject, Tutor tutor, String title, String description, Timestamp updateTime) {
         this.id = id;
         this.subject = subject;
         this.tutor = tutor;
         this.description = description;
+        this.title = title;
         this.updateTime = updateTime;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public long getId() {

@@ -10,6 +10,7 @@ import java.util.List;
 //        preparedStatement.setObject(param);
 //
 public class Test {
+
     private long id;
     private Subject subject;
     private Tutor tutor;
@@ -98,4 +99,5 @@ public class Test {
     public int getTutorId() {
         return (tutor == null) ? 0 : tutor.getId();
     }
+
 }

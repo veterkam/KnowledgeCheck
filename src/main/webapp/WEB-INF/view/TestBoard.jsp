@@ -7,6 +7,16 @@
 <div class="container text-left">
     <h1 class="h3 mb-3 font-weight-normal">Latest tests</h1>
     <%@ include file="Alert.jsp" %>
+    <div class="row">
+        <div class="col">
+            <%@ include file="Presentation.jsp" %>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <%@ include file="Pagination.jsp" %>
+        </div>
+    </div>
     <c:forEach var="test" items="${tests}" varStatus="loop">
         <c:if test="${loop.index % 2 == 0}"><div class="row"></c:if>
         <div class="col-sm-6">
@@ -15,20 +25,20 @@
                     <div class="row">
                         <div class="col text-left">
                             <c:if test="${test.subject != null}">
-                                <strong>Subject</strong>: ${test.subject.name}
+                                <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
                             </c:if>
                         </div>
                         <div class="col text-right">
                             <c:if test="${test.tutor != null}">
-                                <strong>Author</strong>: ${test.tutor.firstname} ${test.tutor.lastname}
+                                <strong>Author</strong>: <c:out value="${test.tutor.firstname} ${test.tutor.lastname}"/>
                             </c:if>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">${test.title}</h5>
+                    <h5 class="card-title"><c:out value="${test.title}"/></h5>
                     <div id="desc${loop.index}" class="collapse">
-                        <p class="card-text">${test.description}</p>
+                        <p class="card-text"><c:out value="${test.description}"/></p>
                     </div>
                 </div>
                 <div class="card-footer text-muted">
@@ -49,25 +59,7 @@
     </c:forEach>
     <div class="row">
         <div class="col">
-            <ul class="pagination justify-content-center">
-                <li class="page-item">
-                    <a class="page-link" href="${pageContext.request.contextPath}?pageNo=${pagination.prev}">
-                        Previous
-                    </a>
-                </li>
-                <c:forEach begin="${pagination.begin}" end="${pagination.end}" varStatus="loop">
-                    <li class='page-item <c:if test="${loop.index == pagination.current}"> active </c:if> '>
-                        <a class="page-link" href="${pageContext.request.contextPath}?pageNo=${loop.index}">
-                                ${loop.index}
-                        </a>
-                    </li>
-                </c:forEach>
-                <li class="page-item">
-                    <a class="page-link" href="${pageContext.request.contextPath}?pageNo=${pagination.next}">
-                        Next
-                    </a>
-                </li>
-            </ul>
+            <%@ include file="Pagination.jsp" %>
         </div>
     </div>
 </div>

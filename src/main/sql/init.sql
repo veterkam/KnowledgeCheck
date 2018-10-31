@@ -488,6 +488,6 @@ JOIN answers a on a.question_id = q.id;
 SET @dt = NOW();
 select @dt;
 
-select * from users;
+select * from users where role = 1;
 
-SELECT * FROM tests ORDER BY update_time DESC LIMIT 0, 4;
+SELECT * FROM tests;

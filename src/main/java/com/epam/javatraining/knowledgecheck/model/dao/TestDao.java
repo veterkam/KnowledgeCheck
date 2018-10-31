@@ -14,6 +14,15 @@ public class TestDao {
     private static final Logger logger = LogManager.getLogger("DAO");
     protected ConnectionPool connectionPool;
 
+    public final static String ORDER_ASC = "ASC";
+    public final static String ORDER_DESC = "DESC";
+
+    private int filterTutorId = 0;
+    private int filterSubjectId = 0;
+    private String dateOrder;   // DESC, ASC
+    private boolean useFilter = false;
+    private boolean useOrder = false;
+
     public TestDao(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
     }
@@ -93,8 +102,33 @@ public class TestDao {
         }
     }
 
+    private String getFilter() {
+        String where = "";
+        if(isUseFilter()) {
+            where = " WHERE";
+            if(filterTutorId > 0) {
+                where += " `tutor_id` = '" + filterTutorId + "' ";
+            }
+            if(filterSubjectId > 0) {
+                where += " `subject_id` = '" + filterSubjectId + "' ";
+            }
+        }
+
+        return where;
+    }
+
+    private String getOrder() {
+        String order = "";
+        if(isUseOrder()) {
+            order += " ORDER BY `update_time` " + dateOrder;
+        }
+
+        return order;
+    }
+
     public int getTestCount() throws DAOException {
         String sql = "SELECT COUNT(*) FROM tests";
+        sql += getFilter();
 
         Connection connection = null;
         Statement statement = null;
@@ -152,7 +186,7 @@ public class TestDao {
     public List<Test> getListSingle(long offset, long count)
         throws DAOException {
         List<Test> testList = new ArrayList<>();
-        String sql = "SELECT * FROM tests ORDER BY update_time DESC LIMIT ?, ?";
+        String sql = "SELECT * FROM tests" + getFilter() + getOrder() + " LIMIT ?, ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -187,94 +221,96 @@ public class TestDao {
         return testList;
     }
 
-    public List<Test> getListForTutor(int tutorId) throws DAOException {
-        List<Test> testList = getListForTutorSingle(tutorId);
-        attachQuestions(testList);
-        return testList;
-    }
-
-
-    public List<Test> getListForTutorSingle(int tutorId) throws DAOException {
-        List<Test> testList = new ArrayList<>();
-        String sql = "SELECT * FROM tests WHERE tutor_id=?";
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = connectionPool.getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, tutorId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Test test = scanTest(resultSet);
-                testList.add(test);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
-        }
-
-        return testList;
-    }
-
-    public List<Test> getListForSubject(int subjectId) throws DAOException {
-        List<Test> testList = getListForSubjectSingle(subjectId);
-        attachQuestions(testList);
-
-        return testList;
-    }
-
-
-    public List<Test> getListForSubjectSingle(int subjectId) throws DAOException {
-        List<Test> testList = new ArrayList<>();
-        String sql = "SELECT * FROM tests WHERE subject_id=?";
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = connectionPool.getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, subjectId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Test test = scanTest(resultSet);
-                testList.add(test);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
-        }
-
-        return testList;
-    }
+//    Deprecated, use filter
+//
+//    public List<Test> getListForTutor(int tutorId) throws DAOException {
+//        List<Test> testList = getListForTutorSingle(tutorId);
+//        attachQuestions(testList);
+//        return testList;
+//    }
+//
+//
+//    public List<Test> getListForTutorSingle(int tutorId) throws DAOException {
+//        List<Test> testList = new ArrayList<>();
+//        String sql = "SELECT * FROM tests WHERE tutor_id=?";
+//
+//        Connection connection = null;
+//        PreparedStatement statement = null;
+//        ResultSet resultSet = null;
+//
+//        try {
+//            connection = connectionPool.getConnection();
+//
+//            statement = connection.prepareStatement(sql);
+//            statement.setLong(1, tutorId);
+//            resultSet = statement.executeQuery();
+//
+//            while (resultSet.next()) {
+//                Test test = scanTest(resultSet);
+//                testList.add(test);
+//            }
+//        } catch (SQLException e) {
+//            logger.error(e.getMessage(), e);
+//            throw new DAOException("Reading test data failed.", e);
+//        } finally {
+//
+//            try {
+//                resultSet.close();
+//                statement.close();
+//            } catch (SQLException e) {
+//                // do nothing
+//            } finally {
+//                connectionPool.releaseConnection(connection);
+//            }
+//        }
+//
+//        return testList;
+//    }
+//
+//    public List<Test> getListForSubject(int subjectId) throws DAOException {
+//        List<Test> testList = getListForSubjectSingle(subjectId);
+//        attachQuestions(testList);
+//
+//        return testList;
+//    }
+//
+//
+//    public List<Test> getListForSubjectSingle(int subjectId) throws DAOException {
+//        List<Test> testList = new ArrayList<>();
+//        String sql = "SELECT * FROM tests WHERE subject_id=?";
+//
+//        Connection connection = null;
+//        PreparedStatement statement = null;
+//        ResultSet resultSet = null;
+//
+//        try {
+//            connection = connectionPool.getConnection();
+//
+//            statement = connection.prepareStatement(sql);
+//            statement.setLong(1, subjectId);
+//            resultSet = statement.executeQuery();
+//
+//            while (resultSet.next()) {
+//                Test test = scanTest(resultSet);
+//                testList.add(test);
+//            }
+//        } catch (SQLException e) {
+//            logger.error(e.getMessage(), e);
+//            throw new DAOException("Reading test data failed.", e);
+//        } finally {
+//
+//            try {
+//                resultSet.close();
+//                statement.close();
+//            } catch (SQLException e) {
+//                // do nothing
+//            } finally {
+//                connectionPool.releaseConnection(connection);
+//            }
+//        }
+//
+//        return testList;
+//    }
 
     public boolean delete(Test test) throws DAOException {
         String sql = "DELETE FROM tests WHERE id = ?";
@@ -397,5 +433,60 @@ public class TestDao {
         }
 
         return test;
+    }
+
+    public int getFilterTutorId() {
+        return filterTutorId;
+    }
+
+    public void setFilterTutorId(int filterTutorId) {
+        this.filterTutorId = filterTutorId;
+    }
+
+    public int getFilterSubjectId() {
+        return filterSubjectId;
+    }
+
+    public void setFilterSubjectId(int filterSubjectId) {
+        this.filterSubjectId = filterSubjectId;
+    }
+
+    public String getDateOrder() {
+        return dateOrder;
+    }
+
+    public void setDateOrder(String dateOrder) {
+        this.dateOrder = dateOrder;
+    }
+
+    public boolean isUseFilter() {
+        return useFilter;
+    }
+
+    public void enableFilter() {
+        this.useFilter = true;
+    }
+
+    public void disableFilter() {
+        this.useFilter = false;
+    }
+
+    public boolean isUseOrder() {
+        return useOrder;
+    }
+
+    public void enableOrder() {
+        this.useOrder = true;
+    }
+
+    public void disableOrder() {
+        this.useOrder = false;
+    }
+
+    public void resetFilterAndOrder() {
+        filterSubjectId = 0;
+        filterTutorId = 0;
+        disableFilter();
+        disableOrder();
     }
 }

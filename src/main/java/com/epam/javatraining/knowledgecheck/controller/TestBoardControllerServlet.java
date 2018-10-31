@@ -1,9 +1,12 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
+import com.epam.javatraining.knowledgecheck.model.dao.SubjectDao;
 import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
+import com.epam.javatraining.knowledgecheck.model.entity.Subject;
 import com.epam.javatraining.knowledgecheck.model.entity.Test;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
+import com.epam.javatraining.knowledgecheck.service.Presentation;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -68,6 +71,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         final int COUNT_TEST_ON_PAGE = 10;
         final int PAGINATION_LIMIT = 5;
 
+        // Scan parameters
+        // Current page of test list
         String pageNoStr = request.getParameter("pageNo");
         int pageNo;
         try {
@@ -76,15 +81,39 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             pageNo = 1;
         }
 
-        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        // Read subject list for subject filter in presentation
+        SubjectDao subjectDao = new SubjectDao(getConnectionPool());
+        List<Subject> subjects = subjectDao.listAll();
+        // Init presentation
+        Presentation present = new Presentation(request, subjects);
 
-        TestDao dao = new TestDao(getConnectionPool());
-        int count = dao.getTestCount();
+        TestDao testDao = new TestDao(getConnectionPool());
+        // If need enable filter
+        if(present.getFilterBySubjectId() > 0) {
+            testDao.setFilterSubjectId(present.getFilterBySubjectId());
+            testDao.enableFilter();
+        }
+
+        // Enable order by date
+        String order = present.getOrderByDate().equals(Presentation.DATE_DESCENDING) ?
+                TestDao.ORDER_DESC : TestDao.ORDER_ASC;
+        testDao.setDateOrder(order);
+        testDao.enableOrder();
+
+        // Calc test count
+        int count = testDao.getTestCount();
+
+        // Init pagination
         int pageCount = count / COUNT_TEST_ON_PAGE + 1;
-
         Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
 
-        List<Test> tests = dao.getListSingle(offset, COUNT_TEST_ON_PAGE);
+        // Read test list (without question and answers)
+        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        List<Test> tests = testDao.getListSingle(offset, COUNT_TEST_ON_PAGE);
+
+
+        // Store data in request and session
+        present.store();
         request.setAttribute("tests", tests);
         request.setAttribute("pagination", pagination);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD);

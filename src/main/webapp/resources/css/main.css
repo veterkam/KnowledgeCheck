@@ -93,3 +93,10 @@ body {
 .text-capitalize {
     text-transform: capitalize;
 }
+
+.page-item.active .page-link {
+    z-index: 1;
+    color: #fff;
+    background-color: #343a40;
+    border-color: #343a40;
+}

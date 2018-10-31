@@ -488,6 +488,6 @@ JOIN answers a on a.question_id = q.id;
 SET @dt = NOW();
 select @dt;
 
-select * from users where role = 1;
+select * from users;
 
 SELECT * FROM tests;

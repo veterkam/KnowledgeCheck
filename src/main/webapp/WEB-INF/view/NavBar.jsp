@@ -3,26 +3,14 @@
 <nav class="navbar navbar-expand-sm fixed-top bg-dark navbar-dark">
     <a class="navbar-brand" href="${pageContext.request.contextPath}/">Home</a>
     <c:if test="${user != null}">
-        <c:if test="${user.role=='TUTOR' || user.role=='STUDENT'}">
+        <c:if test="${user.role=='TUTOR'}">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/profile">My Profile</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
+        </c:if>
+        <c:if test="${user.role=='TUTOR' || user.role=='STUDENT'}">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/rating">Student Rating</a>
         </c:if>
     </c:if>
-    <!-- Links -->
-    <%--<ul class="navbar-nav">--%>
-        <%--<!-- Dropdown -->--%>
-        <%--<li class="nav-item dropdown">--%>
-            <%--<a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">--%>
-                <%--Dropdown link--%>
-            <%--</a>--%>
-            <%--<div class="dropdown-menu">--%>
-                <%--<a class="dropdown-item" href="#">Link 1</a>--%>
-                <%--<a class="dropdown-item" href="#">Link 2</a>--%>
-                <%--<a class="dropdown-item" href="#">Link 3</a>--%>
-            <%--</div>--%>
-        <%--</li>--%>
-    <%--</ul>--%>
-
     <!-- Toggler/collapsibe Button -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>

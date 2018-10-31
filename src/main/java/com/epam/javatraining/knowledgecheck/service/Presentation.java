@@ -11,15 +11,15 @@ public class Presentation {
     public static final String DATE_DESCENDING = "Date descending";
     public static final String DATE_ASCENDING = "Date ascending";
 
-    private List<Subject> subjectFilters;
-    private String[] dateOrders = new String[] {DATE_DESCENDING, DATE_ASCENDING};
+    private List<Subject> subjects;
+    private String[] orders = new String[] {DATE_DESCENDING, DATE_ASCENDING};
     private int filterBySubjectId;
     private String orderByDate;
     private HttpServletRequest request;
 
-    public Presentation(HttpServletRequest request, List<Subject> subjectFilters) {
+    public Presentation(HttpServletRequest request, List<Subject> subjects) {
         this.request = request;
-        this.subjectFilters = subjectFilters;
+        this.subjects = subjects;
 
         HttpSession session = request.getSession();
         // Filter on subject id
@@ -41,20 +41,20 @@ public class Presentation {
         }
     }
 
-    public List<Subject> getSubjectFilters() {
-        return subjectFilters;
+    public List<Subject> getSubjects() {
+        return subjects;
     }
 
-    public void setSubjectFilters(List<Subject> subjectFilters) {
-        this.subjectFilters = subjectFilters;
+    public void setSubjects(List<Subject> subjects) {
+        this.subjects = subjects;
     }
 
-    public String[] getDateOrders() {
-        return dateOrders;
+    public String[] getOrders() {
+        return orders;
     }
 
-    public void setDateOrders(String[] dateOrders) {
-        this.dateOrders = dateOrders;
+    public void setOrders(String[] orders) {
+        this.orders = orders;
     }
 
     public int getFilterBySubjectId() {
@@ -74,8 +74,8 @@ public class Presentation {
     }
 
     public void store() {
-        request.setAttribute("subjects", subjectFilters);
-        request.setAttribute("orders", dateOrders);
+        request.setAttribute("subjects", subjects);
+        request.setAttribute("orders", orders);
         request.getSession().setAttribute("subjectFilter", String.valueOf(filterBySubjectId));
         request.getSession().setAttribute("dateOrder", orderByDate);
     }

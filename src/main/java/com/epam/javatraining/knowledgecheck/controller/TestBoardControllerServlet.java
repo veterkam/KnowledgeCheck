@@ -18,7 +18,7 @@ import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/testboard",
-        "/testboard/browse",
+        "/testboard/mytests",
         "/testboard/edit",
         "/testboard/add",
         "/testboard/remove"
@@ -43,7 +43,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                 case "/testboard":
                     showTestList(request, response);
                     break;
-                case "/testboard/browse":
+                case "/testboard/mytests":
+                    showTutorMyTests(request, response);
                     break;
                 case "/testboard/edit":
                     break;
@@ -63,6 +64,11 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             logger.error(e.getMessage(), e);
             throw e;
         }
+    }
+
+    private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        response.sendRedirect(request.getContextPath() + "/");
     }
 
     private void showTestList(HttpServletRequest request, HttpServletResponse response)

@@ -74,9 +74,11 @@ public class Presentation {
     }
 
     public void store() {
-        request.setAttribute("subjects", subjects);
-        request.setAttribute("orders", orders);
-        request.getSession().setAttribute("subjectFilter", String.valueOf(filterBySubjectId));
-        request.getSession().setAttribute("dateOrder", orderByDate);
+        // Data for short period store in request
+        request.setAttribute("presentationSubjects", subjects);
+        request.setAttribute("presentationOrders", orders);
+        // Data for long period store in session
+        request.getSession().setAttribute("presentationSubjectId", String.valueOf(filterBySubjectId));
+        request.getSession().setAttribute("presentationDateOrder", orderByDate);
     }
 }

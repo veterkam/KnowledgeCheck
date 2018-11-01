@@ -105,13 +105,18 @@ public class TestDao {
     private String getFilter() {
         String where = "";
         if(isUseFilter()) {
-            where = " WHERE";
+
             if(filterTutorId > 0) {
                 where += " `tutor_id` = '" + filterTutorId + "' ";
             }
             if(filterSubjectId > 0) {
+                if(!where.isEmpty()) {
+                    where += " AND ";
+                }
                 where += " `subject_id` = '" + filterSubjectId + "' ";
             }
+
+            where = " WHERE " + where;
         }
 
         return where;

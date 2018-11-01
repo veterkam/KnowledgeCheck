@@ -5,6 +5,7 @@ import com.epam.javatraining.knowledgecheck.model.dao.SubjectDao;
 import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
 import com.epam.javatraining.knowledgecheck.model.entity.Subject;
 import com.epam.javatraining.knowledgecheck.model.entity.Test;
+import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
 import com.epam.javatraining.knowledgecheck.service.Presentation;
 
@@ -13,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -24,6 +26,9 @@ import java.util.List;
         "/testboard/remove"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
+
+    final int COUNT_TEST_ON_PAGE = 10;
+    final int PAGINATION_LIMIT = 5;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -41,7 +46,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         try {
             switch (action) {
                 case "/testboard":
-                    showTestList(request, response);
+                    showSimpleListOfTests(request, response);
                     break;
                 case "/testboard/mytests":
                     showTutorMyTests(request, response);
@@ -66,17 +71,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
+    private void showTests(User user, String view, boolean single,
+                           HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
-        response.sendRedirect(request.getContextPath() + "/");
-    }
-
-    private void showTestList(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
-
-        final int COUNT_TEST_ON_PAGE = 10;
-        final int PAGINATION_LIMIT = 5;
-
         // Scan parameters
         // Current page of test list
         String pageNoStr = request.getParameter("pageNo");
@@ -100,6 +97,11 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             testDao.enableFilter();
         }
 
+        if(user != null) {
+            testDao.setFilterTutorId(user.getId());
+            testDao.enableFilter();
+        }
+
         // Enable order by date
         String order = present.getOrderByDate().equals(Presentation.DATE_DESCENDING) ?
                 TestDao.ORDER_DESC : TestDao.ORDER_ASC;
@@ -113,16 +115,42 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         int pageCount = count / COUNT_TEST_ON_PAGE + 1;
         Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
 
-        // Read test list (without question and answers)
+        // Read test list
         int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
-        List<Test> tests = testDao.getListSingle(offset, COUNT_TEST_ON_PAGE);
-
+        List<Test> tests;
+        if(single) {
+            // without question and answers
+            tests = testDao.getListSingle(offset, COUNT_TEST_ON_PAGE);
+        } else {
+            // with question and answers
+            tests = testDao.getList(offset, COUNT_TEST_ON_PAGE);
+        }
 
         // Store data in request and session
         present.store();
         request.setAttribute("tests", tests);
         request.setAttribute("pagination", pagination);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(view);
         dispatcher.forward(request, response);
+    }
+
+    private void showSimpleListOfTests(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        // Show all tests without question data and answer data
+        showTests(null, VIEW_TEST_BOARD, true, request, response);
+    }
+
+    private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+        // Show all current user's tests with question data and answer data
+        showTests(user, VIEW_TEST_BOARD_MY_TESTS, false, request, response);
     }
 }

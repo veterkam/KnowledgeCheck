@@ -479,7 +479,7 @@ select * from questions;
 delete FROM `subjects` where id="7";
 
 
-select u.lastname as 'Last name', s.name as 'Subject', tests.description as 'Test', q.description as 'Question', a.description as 'Answer' from tests
+select u.id, u.lastname as 'Last name', s.name as 'Subject', tests.description as 'Test', q.description as 'Question', a.description as 'Answer' from tests
 JOIN users u on u.id = tests.tutor_id
 JOIN subjects s on s.id = tests.subject_id
 JOIN questions q on tests.id = q.test_id

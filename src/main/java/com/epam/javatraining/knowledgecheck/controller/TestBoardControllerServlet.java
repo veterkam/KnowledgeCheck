@@ -8,6 +8,7 @@ import com.epam.javatraining.knowledgecheck.model.entity.Test;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
 import com.epam.javatraining.knowledgecheck.service.Presentation;
+import com.epam.javatraining.knowledgecheck.service.Validator;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -42,20 +43,34 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         request.setCharacterEncoding("UTF-8");
 
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+
         String action = request.getServletPath();
+
+        if ( !action.equals("/testboard") &&
+             (user == null || user.getRole() != User.Role.TUTOR)) {
+            pageNotFound(request, response);
+            return;
+        }
+
+
         try {
             switch (action) {
                 case "/testboard":
                     showSimpleListOfTests(request, response);
                     break;
                 case "/testboard/mytests":
-                    showTutorMyTests(request, response);
+                    showTutorMyTests(user, request, response);
                     break;
                 case "/testboard/edit":
+//                    editTest(user, request, response);
                     break;
                 case "/testboard/add":
+                    addTest(user, request, response);
                     break;
-                case "/testboard/remove":
+                case "/testboard/delete":
+                    deleteTest(user, request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -140,17 +155,37 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         showTests(null, VIEW_TEST_BOARD, true, request, response);
     }
 
-    private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
+    private void showTutorMyTests(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
-
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-
-        if (user == null || user.getRole() != User.Role.TUTOR) {
-            pageNotFound(request, response);
-            return;
-        }
         // Show all current user's tests with question data and answer data
         showTests(user, VIEW_TEST_BOARD_MY_TESTS, false, request, response);
+    }
+
+    private void deleteTest(User user, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+
+    }
+
+    private void addTest(User user, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+
+        String subject = request.getParameter("subject");
+        String title = request.getParameter("title");
+        String description = request.getParameter("description");
+
+        if (Validator.containNull(subject, title, description)) {
+            // Read subject list for subject filter in presentation
+            SubjectDao subjectDao = new SubjectDao(getConnectionPool());
+            List<Subject> subjects = subjectDao.listAll();
+            request.setAttribute("subjects", subjects);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+            dispatcher.forward(request, response);
+            return;
+        }
+
+
+
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+        dispatcher.forward(request, response);
     }
 }

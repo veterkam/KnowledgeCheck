@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>Title</title>
+</head>
+<body>
+<div class="container">
+    <form class="form-text-edit text-left" method="post">
+    <div class="card mb-2">
+        <div class="card-body">
+            <div class="form-group">
+                <label for="inputQuestion">Question:</label>
+                <textarea class="form-control" rows="5" id="inputQuestion" name="questions[]" required
+                          placeholder="Enter question" autofocus=""></textarea>
+                <div class="input-group mt-1">
+                    <input id="inputAnswer" class="form-control" name="answers[0][]"
+                           placeholder="Enter answer of the question" required autofocus="" type="text">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <input type="checkbox" name="corrects[0][]" title="Is the answer correct? Check if Yes.">
+                        </div>
+                        <button class="btn btn-success" type="button" title="Add answer" data-role="add answer">+</button>
+                        <button class="btn btn-danger" type="button" title="Remove answer" data-role="remove answer">-</button>
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group text-right">
+                <button class="btn btn-dark mr-2 mt-4" type="button" data-role="add question">Add question</button>
+                <button class="btn btn-dark mt-4" type="button" data-role="remove question">Remove question</button>
+            </div>
+        </div>
+    </div>
+        <button class="btn btn-dark mr-2 mt-4" type="button" data-role="indexing">Indexing</button>
+    </form>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+
+    $(
+        function() {
+        // Remove answer button click
+        $(document).on(
+            'click',
+            '[data-role="remove answer"]',
+            function(e) {
+                e.preventDefault();
+                var container = $(this).closest('.form-group');
+                if(container.children().filter('.input-group').length > 1) {
+                    $(this).closest('.input-group').remove();
+                }
+
+            }
+        );
+
+        // Add answer button click
+        $(document).on(
+            'click',
+            '[data-role="add answer"]',
+            function(e) {
+                e.preventDefault();
+                var container = $(this).closest('.form-group');
+                var newElementGroup = container.children().filter('.input-group:first').clone();
+
+                newElementGroup.find('input').each(function(){
+                    $(this).val('');
+                });
+                $(this).closest('.input-group').after(newElementGroup);
+            }
+        );
+
+        // Remove question button click
+        $(document).on(
+            'click',
+            '[data-role="remove question"]',
+            function(e) {
+                e.preventDefault();
+                var container = $(this).closest('form');
+                if(container.children().filter('.card').length > 1) {
+                    $(this).closest('.card').remove();
+                }
+            }
+        );
+
+        // Add question button click
+        $(document).on(
+            'click',
+            '[data-role="add question"]',
+            function(e) {
+                e.preventDefault();
+                var newElementGroup = $(this).closest('.card').clone();
+                newElementGroup.find('input, textarea').each(function(){
+                    $(this).val('');
+                });
+                $(this).closest('.card').after(newElementGroup);
+            }
+        );
+
+
+
+        function indexing() {
+            var container = $('.container:first').children().filter('form:first');
+            var index = 0;
+            container.children().filter('.card').each(function(){
+                console.log('indexing card #' + index);
+                $(this).find('input, textarea').each(function(){
+                    var name = $(this).attr('name');
+                    name = name.replace(/\[\d+\]\[\]/, '['+ index + '][]');
+                    console.log( $(this).attr('name') + ' -> ' + name);
+                });
+                index++;
+            });
+        }
+
+        $(document).on(
+            'click',
+            '[data-role="indexing"]',
+            function(e) {
+                e.preventDefault();
+                indexing();
+            }
+        );
+    });
+
+
+</script>
+
+</body>
+</html>

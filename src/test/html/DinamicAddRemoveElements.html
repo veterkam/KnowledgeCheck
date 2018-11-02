@@ -114,6 +114,7 @@
                     var name = $(this).attr('name');
                     name = name.replace(/\[\d+\]\[\]/, '['+ index + '][]');
                     console.log( $(this).attr('name') + ' -> ' + name);
+                    $(this).attr('name', name);
                 });
                 index++;
             });

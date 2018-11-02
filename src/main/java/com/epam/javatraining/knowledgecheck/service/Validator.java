@@ -1,6 +1,8 @@
 package com.epam.javatraining.knowledgecheck.service;
 
 
+import org.apache.logging.log4j.util.Strings;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,13 +14,17 @@ public class Validator {
     private final String NAME_PATTERN = "[a-zA-Zа-яА-ЯёЁ]+([\\sa-zA-Zа-яА-ЯёЁ-]*[a-zA-Zа-яА-ЯёЁ]+)*$";
     private final String EMAIL_PATTERN = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private final String USERNAME_PATTERN = "^[_A-Za-z0-9-]+$";
-    private final String NOT_BLANK_PATTERN = "^\\S+";
 
     private final int FIRST_NAME_MAX_LENGTH = 20;
     private final int LAST_NAME_MAX_LENGTH = 20;
     private final int EMAIL_MAX_LENGTH = 50;
     private final int USERNAME_MAX_LENGTH = 20;
     private final int PASSWORD_MAX_LENGTH = 30;
+
+    private final int TEST_TITLE_MAX_LENGTH = 100;
+    private final int TEST_DESCRIPTION_MAX_LENGTH = 10000;
+    private final int QUESTION_DESCRIPTION_MAX_LENGTH = 1000;
+    private final int ANSWER_DESCRIPTION_MAX_LENGTH = 1000;
 
     public Validator(AlertManager alerter) {
         this.alerter = alerter;
@@ -126,25 +132,52 @@ public class Validator {
         return error == null;
     }
 
+    public boolean validateTestTitle(String title) {
+        return isNotBlank(title, "title", TEST_TITLE_MAX_LENGTH);
+    }
+
+    public boolean validateTestDescritption(String description) {
+        return isNotBlank(description, "description", TEST_DESCRIPTION_MAX_LENGTH);
+    }
+
+    public boolean validateQuestionDescritption(String description) {
+        return isNotBlank(description, "question description", QUESTION_DESCRIPTION_MAX_LENGTH);
+    }
+
+    public boolean validateAnswerDescritption(String description) {
+        return isNotBlank(description, "answer description", ANSWER_DESCRIPTION_MAX_LENGTH);
+    }
+
     public boolean isNotBlank(String str) {
         return isNotBlank(str, "field");
     }
 
-    public boolean isNotBlank(String str, String fieldName) {
 
+    public boolean isNotBlank(String str, String fieldName) {
+        return isNotBlank(str, fieldName, 65000);
+    }
+
+    public boolean isNotBlank(String str, String fieldName, int maxlen) {
         if(fieldName == null) {
             fieldName = "field";
         }
 
-        String error = validate(str, NOT_BLANK_PATTERN, 65000);
+        String error = "";
+        if(str == null) {
+            error =  "Field " + fieldName + " is null";
+        } else if(Strings.isBlank(str)) {
+            error = "Field " + fieldName + " is blank";
+        } else if(str.length() > maxlen) {
+            error =  "Length of " + fieldName + " should not be greater " + maxlen;
+        }
 
-        if(error != null) {
-            error = String.format(error, fieldName);
+        if(!error.isEmpty()) {
             alerter.danger(error);
         }
 
-        return error == null;
+        return error.isEmpty();
     }
+
 
     private String validate(String str, String regexp, int maxlen) {
         if(str == null) {

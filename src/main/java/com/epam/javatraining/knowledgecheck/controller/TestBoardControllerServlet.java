@@ -3,12 +3,12 @@ package com.epam.javatraining.knowledgecheck.controller;
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
 import com.epam.javatraining.knowledgecheck.model.dao.SubjectDao;
 import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
-import com.epam.javatraining.knowledgecheck.model.entity.Subject;
-import com.epam.javatraining.knowledgecheck.model.entity.Test;
-import com.epam.javatraining.knowledgecheck.model.entity.User;
+import com.epam.javatraining.knowledgecheck.model.entity.*;
+import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
 import com.epam.javatraining.knowledgecheck.service.Presentation;
 import com.epam.javatraining.knowledgecheck.service.Validator;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(urlPatterns = {
@@ -169,23 +170,85 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     private void addTest(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
 
-        String subject = request.getParameter("subject");
-        String title = request.getParameter("title");
-        String description = request.getParameter("description");
+        String paramSubject = request.getParameter("subject");
+        String paramTitle = request.getParameter("title");
+        String paramDescription = request.getParameter("description");
 
-        if (Validator.containNull(subject, title, description)) {
+        SubjectDao subjectDao = new SubjectDao(getConnectionPool());
+
+        if (Validator.containNull(paramSubject, paramTitle, paramDescription)) {
             // Read subject list for subject filter in presentation
-            SubjectDao subjectDao = new SubjectDao(getConnectionPool());
-            List<Subject> subjects = subjectDao.listAll();
-            request.setAttribute("subjects", subjects);
+            request.setAttribute("subjects", subjectDao.listAll() );
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
             dispatcher.forward(request, response);
             return;
         }
 
+        AlertManager alerter = new AlertManager();
+        Subject subject = null;
 
 
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
-        dispatcher.forward(request, response);
+        if(Strings.isBlank(paramSubject)) {
+            alerter.danger("Subject is wrong.");
+        } else {
+            try {
+                int subjectId = Integer.parseInt(paramSubject);
+                subject = subjectDao.get(subjectId);
+            } catch (NumberFormatException e) {
+                alerter.danger("Subject is wrong.");
+            }
+        }
+
+        Validator validator = new Validator(alerter);
+        validator.validateTestTitle(paramTitle);
+        validator.validateTestDescritption(paramDescription);
+
+        Test test = new Test();
+        test.setSubject(subject);
+        test.setTitle(paramTitle);
+        test.setDescription(paramDescription);
+
+        String[] paramQuestions = request.getParameterValues("questions");
+        List<Question> questionList = new ArrayList<>();
+
+        for(int i = 0; i < paramQuestions.length; i++) {
+            validator.validateQuestionDescritption(paramQuestions[i]);
+            Question question = new Question();
+            question.setDescription(paramQuestions[i]);
+            List<Answer> answerList = new ArrayList<>();
+
+            String[] paramAnswers = request.getParameterValues("answers["+i+"]");
+            for(int j = 0; j < paramAnswers.length; j++) {
+                validator.validateAnswerDescritption(paramAnswers[j]);
+                Answer answer = new Answer();
+                answer.setDescription(paramAnswers[j]);
+
+                String paramCorrect = request.getParameter("corrects["+i+"]["+j+"]");
+                boolean correct = (paramCorrect != null);
+                answer.setCorrect(correct);
+                answerList.add(answer);
+            }
+
+            question.setAnswers(answerList);
+            questionList.add(question);
+        }
+        test.setQuestions(questionList);
+
+
+        if (true || !alerter.isEmpty()) {
+            // We have errors
+            // Read subject list for subject filter in presentation
+            request.setAttribute("subjects",  subjectDao.listAll() );
+            request.setAttribute("test", test);
+            request.setAttribute("alerts", alerter.getAlerts());
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+            dispatcher.forward(request, response);
+            return;
+        }
+
+        test.setTutor(new Tutor(user));
+
+        alerter.success("Test was saved successfully.");
+        response.sendRedirect("/testboard/mytests");
     }
 }

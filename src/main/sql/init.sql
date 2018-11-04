@@ -490,4 +490,6 @@ select @dt;
 
 select * from users;
 
-SELECT * FROM tests;
+SELECT * FROM questions;
+
+SELECT * FROM answers;

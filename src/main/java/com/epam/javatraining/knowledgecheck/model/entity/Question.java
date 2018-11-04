@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Question {
-    private long id;
+    private long id = -1;
     private long testId;
     private String description;
     private List<Answer> answers = new ArrayList<>();

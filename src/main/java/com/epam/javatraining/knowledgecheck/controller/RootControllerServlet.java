@@ -36,13 +36,10 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
-
         String action = request.getServletPath();
         try {
             switch (action) {
                 case "/":
-//                    home(request, response);
                     RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/testboard");
                     dispatcher.forward(request, response);
                     break;
@@ -55,11 +52,5 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
 
             throw new ServletException(e);
         }
-    }
-
-    private void home(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_HOME);
-        dispatcher.forward(request, response);
     }
 }

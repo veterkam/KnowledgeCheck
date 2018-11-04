@@ -11,7 +11,7 @@ import java.util.List;
 //
 public class Test {
 
-    private long id;
+    private long id = -1;
     private Subject subject;
     private Tutor tutor;
     private String title;

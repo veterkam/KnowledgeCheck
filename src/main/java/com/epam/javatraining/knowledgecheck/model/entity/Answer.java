@@ -1,7 +1,7 @@
 package com.epam.javatraining.knowledgecheck.model.entity;
 
 public class Answer {
-    private long id;
+    private long id = -1;
     private long questionId;
     private String description;
     private boolean correct;

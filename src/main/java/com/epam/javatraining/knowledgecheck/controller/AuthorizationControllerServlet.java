@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/authorization/login",
@@ -42,8 +41,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
 
         String action = request.getServletPath();
         try {
@@ -98,6 +95,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
     private void login(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
@@ -113,11 +111,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (user != null && user.getPassword().equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
-            dispatcher.forward(request, response);
+            alertManager.success("Registration success! Welcome " + user.getFullName());
+            response.sendRedirect(request.getContextPath() + "/");
         } else {
-            request.setAttribute("errorMessage",
-                    "Username or password is wrong. Please, try again!");
+            alertManager.danger("Username or password is wrong. Please, try again!");
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
             dispatcher.forward(request, response);
         }
@@ -130,15 +127,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_REGISTER_FORM);
         dispatcher.forward(request, response);
-    }
-
-    private void forwardToRegisterForm(HttpServletRequest request, HttpServletResponse response, AlertManager alerter)
-            throws ServletException, IOException {
-        if (!alerter.isEmpty()) {
-            request.setAttribute("alerts", alerter.getAlerts());
-        }
-
-        forwardToRegisterForm(request, response);
     }
 
     private String sendVerificationCodeByEmail(String email, String msg)
@@ -160,6 +148,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
     private void registerVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException{
+
         // Process parameters
         String firstname = request.getParameter("firstname");
         String lastname = request.getParameter("lastname");
@@ -175,8 +164,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alerter = new AlertManager();
-        Validator validator = new Validator(alerter);
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+
+        boolean isFailed = false;
+        Validator validator = new Validator();
         validator.validateFirstName(firstname);
         validator.validateLastName(lastname);
         validator.validateEmail(email);
@@ -185,9 +176,15 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         validator.validatePassword(repeatPassword, "repeat password");
         validator.isNotBlank(role, "role");
 
+        if(validator.isFailed()) {
+            alertManager.danger(validator.getErrors());
+            isFailed = true;
+        }
+
 
         if (!password.equals(repeatPassword)) {
-            alerter.danger("Passwords are different.");
+            alertManager.danger("Passwords are different.");
+            isFailed = true;
         }
 
         User anonym = new User();
@@ -202,8 +199,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         HttpSession session = request.getSession();
         session.setAttribute("anonym", anonym);
 
-        if (!alerter.isEmpty()) {
-            forwardToRegisterForm(request, response, alerter);
+        if (isFailed) {
+            forwardToRegisterForm(request, response);
             return;
         }
 
@@ -219,18 +216,18 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
-                request.setAttribute("attentionMessage", "We sent you a verification code. Please check your mailbox.");
+                alertManager.info("We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
-                alerter.danger("Can't send message. Verify your e-mail address and try again!");
+                alertManager.danger("Can't send message. Verify your e-mail address and try again!");
             }
 
         } else {
             // The username is not unique.
-            alerter.danger("Registration failed. A user with this username already exists. Please, try again!");
+            alertManager.danger("Registration failed. A user with this username already exists. Please, try again!");
         }
 
-        forwardToRegisterForm(request, response, alerter);
+        forwardToRegisterForm(request, response);
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -245,7 +242,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alerter = new AlertManager();
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
 
         if (expectedCode.equals(code)) {
 
@@ -259,33 +256,31 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 if(childException instanceof SQLException) {
                     SQLException sqlException = (SQLException) childException;
                     if (sqlException.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
-                        alerter.danger("Sorry, it's too late, username is already busy.\n");
+                        alertManager.danger("Sorry, it's too late, username is already busy.");
                     } else {
                         logger.error(e.getMessage(), e);
                     }
                 }
 
                 // Failed! Come back to edit user info
-                alerter.danger("Registration failed. Please, try again!");
-                forwardToRegisterForm(request, response, alerter);
+                alertManager.danger("Registration failed. Please, try again!");
+                forwardToRegisterForm(request, response);
                 return;
             }
 
             // Success!
             // Store user data in session
-            alerter.success("Registration success!");
-            request.setAttribute("alerts", alerter.getAlerts());
             session.setAttribute("anonym", null);
             session.setAttribute("user", user);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
-            dispatcher.forward(request, response);
+            alertManager.success("Registration success! Welcome " + user.getFullName());
+            response.sendRedirect(request.getContextPath() + "/");
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            alerter.danger("Verification code is wrong. Please, try again!");
+            alertManager.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            forwardToRegisterForm(request, response, alerter);
+            forwardToRegisterForm(request, response);
         }
     }
 
@@ -294,15 +289,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             throws ServletException, IOException {
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_PASSWORD_RECOVERY_FORM);
         dispatcher.forward(request, response);
-    }
-
-    private void forwardToRecoveryForm(HttpServletRequest request, HttpServletResponse response, AlertManager alerter)
-            throws ServletException, IOException {
-        if (!alerter.isEmpty()) {
-            request.setAttribute("alerts", alerter.getAlerts());
-        }
-
-        forwardToRecoveryForm(request, response);
     }
 
     private void recoveryVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
@@ -318,15 +304,23 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alerter = new AlertManager();
-        Validator validator = new Validator(alerter);
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+
+        boolean isFailed = false;
+        Validator validator = new Validator();
         validator.validateEmail(email);
         validator.validateUsername(username);
         validator.validatePassword(password);
         validator.validatePassword(repeatPassword);
 
+        if(validator.isFailed()) {
+            alertManager.danger(validator.getErrors());
+            isFailed = true;
+        }
+
         if (!password.equals(repeatPassword)) {
-            alerter.danger("Passwords are different.");
+            alertManager.danger("Passwords are different.");
+            isFailed = true;
         }
 
         User anonym = new User();
@@ -338,8 +332,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         HttpSession session = request.getSession();
         session.setAttribute("anonym", anonym);
 
-        if (!alerter.isEmpty()) {
-            forwardToRecoveryForm(request, response, alerter);
+        if (isFailed) {
+            forwardToRecoveryForm(request, response);
             return;
         }
 
@@ -349,7 +343,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (user == null || !user.getEmail().equals(email)) {
             String errorMsg = "Can't find username " + anonym.getUsername() +
                     " with e-mail " + email + ". Please, try again!";
-            alerter.danger(errorMsg);
+            alertManager.danger(errorMsg);
         } else {
             try {
                 String msg = "Hello. You started password recovering. ";
@@ -357,14 +351,14 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 session.setAttribute("verificationCode", code);
                 // Put flag of e-mail verification into attributes
                 request.setAttribute("verifyEmail", "true");
-                alerter.success("We sent you a verification code. Please check your mailbox.");
+                alertManager.success("We sent you a verification code. Please check your mailbox.");
             } catch (MessagingException e) {
                 logger.error(e.getMessage(), e);
-                alerter.danger("Can't send message. Verify your e-mail address and try again!");
+                alertManager.danger("Can't send message. Verify your e-mail address and try again!");
             }
         }
 
-        forwardToRecoveryForm(request, response, alerter);
+        forwardToRecoveryForm(request, response);
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -379,7 +373,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alerter = new AlertManager();
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
 
         if (expectedCode.equals(code)) {
             UserDao userDao = new UserDao(getConnectionPool());
@@ -390,26 +384,28 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 userDao.update(user);
                 session.setAttribute("user", user);
                 session.setAttribute("anonym", null);
-                RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_WELCOME);
-                dispatcher.forward(request, response);
+                alertManager.success("Recovery password success! Welcome " + user.getFullName());
+                response.sendRedirect(request.getContextPath() + "/");
                 return;
             } else {
-                alerter.danger("Sorry, can't find " + anonym.getUsername() + ". Please, try again!");
+                alertManager.danger("Sorry, can't find " + anonym.getUsername() + ". Please, try again!");
             }
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            alerter.danger("Verification code is wrong. Please, try again!");
+            alertManager.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
         }
-        forwardToRecoveryForm(request, response, alerter);
+        forwardToRecoveryForm(request, response);
     }
 
     private void logout(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         //session destroy
         request.getSession().invalidate();
+        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        alertManager.success("Logout success!");
         response.sendRedirect(request.getContextPath() + "/");
     }
 }

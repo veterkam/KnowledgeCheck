@@ -49,6 +49,10 @@ public class QuestionDao {
                 try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         question.setId(generatedKeys.getInt(1));
+
+                        for(Answer answer : question.getAnswers()) {
+                            answer.setQuestionId(question.getId());
+                        }
                     } else {
                         DAOException e = new DAOException("Creating question data failed, no ID obtained.");
                         logger.error(e.getMessage(), e);
@@ -175,8 +179,8 @@ public class QuestionDao {
 
     public boolean updateSingle(Question question) throws DAOException {
 
-        String sql = "UPDATE questions SET test_id = ?, description = ? " +
-                " WHERE id = ?";
+        String sql = "UPDATE questions SET description = ? " +
+                " WHERE id = ? AND test_id = ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -185,9 +189,9 @@ public class QuestionDao {
             connection = connectionPool.getConnection();
 
             statement = connection.prepareStatement(sql);
-            statement.setLong(1, question.getTestId());
-            statement.setString(2, question.getDescription());
-            statement.setLong(3, question.getId());
+            statement.setString(1, question.getDescription());
+            statement.setLong(2, question.getId());
+            statement.setLong(3, question.getTestId());
 
             isRowUpdated = statement.executeUpdate() > 0;
         } catch (SQLException e) {

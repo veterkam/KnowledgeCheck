@@ -134,8 +134,8 @@ public class AnswerDao {
 
     public boolean update(Answer answer) throws DAOException {
 
-        String sql = "UPDATE answers SET question_id = ?, description = ?, correct= ? " +
-                " WHERE id = ?";
+        String sql = "UPDATE answers SET description = ?, correct= ? " +
+                " WHERE id = ? AND question_id = ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -144,10 +144,10 @@ public class AnswerDao {
             connection = connectionPool.getConnection();
 
             statement = connection.prepareStatement(sql);
-            statement.setLong(1, answer.getQuestionId());
-            statement.setString(2, answer.getDescription());
-            statement.setBoolean(3, answer.isCorrect());
-            statement.setLong(4, answer.getId());
+            statement.setString(1, answer.getDescription());
+            statement.setBoolean(2, answer.isCorrect());
+            statement.setLong(3, answer.getId());
+            statement.setLong(4, answer.getQuestionId());
 
             isRowUpdated = statement.executeUpdate() > 0;
         } catch (SQLException e) {

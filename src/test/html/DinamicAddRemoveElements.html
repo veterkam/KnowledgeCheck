@@ -11,10 +11,16 @@
     <div class="card mb-2">
         <div class="card-body">
             <div class="form-group">
+                <input hidden data-role="store-question-id" name="questionIds" value="1">
+                <input hidden data-role="store-question-removing-flag" name="questionRemovingFlags" value="0">
                 <label for="inputQuestion">Question:</label>
                 <textarea class="form-control" rows="5" id="inputQuestion" name="questions[]" required
                           placeholder="Enter question" autofocus=""></textarea>
+
+
                 <div class="input-group mt-1">
+                    <input hidden data-role="store-answer-id" name="answerIds[]" value="1">
+                    <input hidden data-role="store-answer-removing-flag" name="answerRemovingFlags" value="0">
                     <input id="inputAnswer" class="form-control" name="answers[0][]"
                            placeholder="Enter answer of the question" required autofocus="" type="text">
                     <div class="input-group-append">
@@ -24,8 +30,9 @@
                         <button class="btn btn-success" type="button" title="Add answer" data-role="add answer">+</button>
                         <button class="btn btn-danger" type="button" title="Remove answer" data-role="remove answer">-</button>
                     </div>
-
                 </div>
+
+
             </div>
             <div class="form-group text-right">
                 <button class="btn btn-dark mr-2 mt-4" type="button" data-role="add question">Add question</button>
@@ -53,8 +60,26 @@
             function(e) {
                 e.preventDefault();
                 var container = $(this).closest('.form-group');
-                if(container.children().filter('.input-group').length > 1) {
-                    $(this).closest('.input-group').remove();
+                var countVisibleElements = 0;
+                container.children().filter('.input-group').each(function() {
+                    if($(this).is(':visible')) {
+                        countVisibleElements++;
+                    }
+                });
+
+                console.log("count visible elements " + countVisibleElements);
+                if(countVisibleElements > 1) {
+
+                    var group = $(this).closest('.input-group');
+                    var id = group.find('[data-role="store-answer-id"]:first').attr("value");
+                    console.log(id);
+
+                    if (id != undefined && id != "") {
+                       group.find('[data-role="store-answer-removing-flag"]:first').attr("value", 1);
+                       group.hide();
+                    } else {
+                        group.remove();
+                    }
                 }
 
             }
@@ -68,9 +93,12 @@
                 e.preventDefault();
                 var container = $(this).closest('.form-group');
                 var newElementGroup = container.children().filter('.input-group:first').clone();
-
+                newElementGroup.show();
                 newElementGroup.find('input').each(function(){
                     $(this).val('');
+                });
+                newElementGroup.find(':checkbox').each(function(){
+                    $(this).prop( "checked", false );
                 });
                 $(this).closest('.input-group').after(newElementGroup);
             }
@@ -83,8 +111,28 @@
             function(e) {
                 e.preventDefault();
                 var container = $(this).closest('form');
-                if(container.children().filter('.card').length > 1) {
-                    $(this).closest('.card').remove();
+                var countVisibleQuestions = 0;
+                container.children().filter('.card').each(function() {
+                    if($(this).is(':visible')) {
+                        countVisibleQuestions++;
+                    }
+                });
+
+                console.log("count visible elements " + countVisibleQuestions);
+                if(countVisibleQuestions > 1) {
+                    // Find id of the question, if question has it
+                    var card = $(this).closest('.card');
+                    var id = card.find('[data-role="store-question-id"]:first').attr("value");
+                    console.log(id);
+
+                    if (id != undefined && id != "") {
+                        // If question has id, then only hide it
+                        // We will use id for removing record from DB
+                        card.find('[data-role="store-question-removing-flag"]:first').attr("value", 1);
+                        card.hide();
+                    } else {
+                        card.remove();
+                    }
                 }
             }
         );
@@ -98,6 +146,9 @@
                 var newElementGroup = $(this).closest('.card').clone();
                 newElementGroup.find('input, textarea').each(function(){
                     $(this).val('');
+                });
+                newElementGroup.find(':checkbox').each(function(){
+                    $(this).prop( "checked", false );
                 });
                 $(this).closest('.card').after(newElementGroup);
             }
@@ -125,7 +176,30 @@
             '[data-role="indexing"]',
             function(e) {
                 e.preventDefault();
-                indexing();
+                //indexing();
+                var id = "";
+                console.log('"id" = ' + id);
+                if(id > -1) {
+                    console.log('"id" > -1');
+                } else {
+                    console.log('"id" < -1');
+                }
+
+                id = "-1";
+                console.log('"id" = ' + id);
+                if(id > -1) {
+                    console.log('"id" > -1');
+                } else {
+                    console.log('"id" < -1');
+                }
+
+                id = "0";
+                console.log('"id" = ' + id);
+                if(id > -1) {
+                    console.log('"id" > -1');
+                } else {
+                    console.log('"id" < -1');
+                }
             }
         );
     });

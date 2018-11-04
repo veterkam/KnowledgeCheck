@@ -39,8 +39,8 @@ public class TestDao {
     public void insertSingle(Test test) throws DAOException {
 
         // Insert update_time as default TIMESTAMP
-        String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `description`) " +
-                "VALUES(?, ?, ?)";
+        String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
+                "VALUES(?, ?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -51,7 +51,8 @@ public class TestDao {
 
             statement.setInt(1, test.getSubjectId());
             statement.setInt(2, test.getTutorId());
-            statement.setString(3, test.getDescription());
+            statement.setString(3, test.getTitle());
+            statement.setString(4, test.getDescription());
 
             boolean isRowInserted = statement.executeUpdate() > 0;
 
@@ -59,6 +60,10 @@ public class TestDao {
                 try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         test.setId(generatedKeys.getInt(1));
+
+                        for(Question question : test.getQuestions()) {
+                            question.setTestId(test.getId());
+                        }
                     } else {
                         DAOException e = new DAOException("Creating test data failed, no ID obtained.");
                         logger.error(e.getMessage(), e);
@@ -318,7 +323,7 @@ public class TestDao {
 //    }
 
     public boolean delete(Test test) throws DAOException {
-        String sql = "DELETE FROM tests WHERE id = ?";
+        String sql = "DELETE FROM tests WHERE id = ? AND tutor_id = ?";
         Connection connection = null;
         PreparedStatement statement = null;
         boolean isRowDeleted = false;
@@ -326,6 +331,7 @@ public class TestDao {
             connection = connectionPool.getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, test.getId());
+            statement.setLong(2, test.getTutorId());
 
             isRowDeleted = statement.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -361,8 +367,8 @@ public class TestDao {
 
     public boolean updateSingle(Test test) throws DAOException {
 
-        String sql = "UPDATE tests SET subject_id = ?, tutor_id = ?, description = ?, update_time = NOW() " +
-                " WHERE id = ?";
+        String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, update_time = NOW() " +
+                " WHERE id = ? AND tutor_id = ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -372,9 +378,10 @@ public class TestDao {
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, test.getSubjectId());
-            statement.setInt(2, test.getTutorId());
+            statement.setString(2, test.getTitle());
             statement.setString(3, test.getDescription());
             statement.setLong(4, test.getId());
+            statement.setInt(5, test.getTutorId());
 
             isRowUpdated = statement.executeUpdate() > 0;
         } catch (SQLException e) {

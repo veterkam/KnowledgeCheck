@@ -1,6 +1,7 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
 import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -52,6 +54,16 @@ public class AbstractBaseControllerServlet extends HttpServlet {
             initConnectionPool();
         }
         return connectionPool;
+    }
+
+    protected AlertManager getAlertManagerFromSession(HttpSession session) {
+        AlertManager manager = (AlertManager)session.getAttribute("alertManager");
+        if( manager == null ) {
+            manager = new AlertManager();
+            session.setAttribute("alertManager", manager);
+        }
+
+        return manager;
     }
 
     @Override

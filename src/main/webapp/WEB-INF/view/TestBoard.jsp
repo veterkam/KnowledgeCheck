@@ -30,16 +30,14 @@
                         </div>
                         <div class="col text-right">
                             <c:if test="${test.tutor != null}">
-                                <strong>Author</strong>: <c:out value="${test.tutor.firstname} ${test.tutor.lastname}"/>
+                                <strong>Author</strong>: <c:out value="${test.tutor.fullname}"/>
                             </c:if>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <h5 class="card-title"><c:out value="${test.title}"/></h5>
-                    <div id="desc${loop.index}" class="collapse">
-                        <p class="card-text"><c:out value="${test.description}"/></p>
-                    </div>
+                    <p class="card-text"><c:out value="${test.description}"/></p>
                 </div>
                 <div class="card-footer text-muted">
                     <div class="row">
@@ -47,9 +45,12 @@
                             <fmt:formatDate type = "both" timeStyle = "short" value = "${test.updateTime}" />
                         </div>
                         <div class="col text-right">
-                            <button type="button" class="btn btn-dark btn-sm" data-toggle="collapse" data-target="#desc${loop.index}">
-                                Description
-                            </button>
+                            <c:if test="${user != null && user.role=='STUDENT'}">
+                                <a href="${pageContext.request.contextPath}/testboard/run?testId=${test.id}"
+                                   class="btn btn-sm btn-dark m-1" role="button">
+                                    Run test
+                                </a>
+                            </c:if>
                         </div>
                     </div>
                 </div>

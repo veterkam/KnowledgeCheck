@@ -25,7 +25,8 @@ import java.util.List;
         "/testboard",
         "/testboard/mytests",
         "/testboard/edit",
-        "/testboard/remove"
+        "/testboard/remove",
+        "/testboard/run"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
@@ -49,12 +50,10 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         String action = request.getServletPath();
 
-        if ( !action.equals("/testboard") &&
-             (user == null || user.getRole() != User.Role.TUTOR)) {
+        if ( !action.equals("/testboard") && user == null) {
             pageNotFound(request, response);
             return;
         }
-
 
         try {
             switch (action) {
@@ -62,13 +61,32 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     showSimpleListOfTests(request, response);
                     break;
                 case "/testboard/mytests":
-                    showTutorMyTests(user, request, response);
+                    if ( user.getRole() != User.Role.TUTOR) {
+                        pageNotFound(request, response);
+                    } else {
+                        showTutorMyTests(user, request, response);
+                    }
                     break;
                 case "/testboard/edit":
-                    editTest(user, request, response);
+                    if ( user.getRole() != User.Role.TUTOR) {
+                        pageNotFound(request, response);
+                    } else {
+                        editTest(user, request, response);
+                    }
                     break;
                 case "/testboard/remove":
-                    removeTest(user, request, response);
+                    if ( user.getRole() != User.Role.TUTOR) {
+                        pageNotFound(request, response);
+                    } else {
+                        removeTest(user, request, response);
+                    }
+                    break;
+                case "/testboard/run":
+                    if ( user.getRole() != User.Role.STUDENT) {
+                        pageNotFound(request, response);
+                    } else {
+                        runTest(request, response);
+                    }
                     break;
                 default:
                     pageNotFound(request, response);
@@ -349,5 +367,30 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         alertManager.success("Test was saved successfully.");
         response.sendRedirect(request.getContextPath() + "/testboard/mytests");
+    }
+
+    public void runTest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException, DAOException {
+        String testId = request.getParameter("testId");
+        long id;
+        try {
+            id = Long.parseLong(testId);
+        } catch (NumberFormatException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        TestDao testDao = new TestDao(getConnectionPool());
+        Test test = testDao.get(id);
+
+        if(test == null) {
+            getAlertManagerFromSession(request.getSession()).danger("Can't find the test. Please, try again!");
+            response.sendRedirect(request.getContextPath() + "/" );
+        } else {
+            request.setAttribute("test", test);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_RUN_TEST);
+            dispatcher.forward(request, response);
+        }
+
     }
 }

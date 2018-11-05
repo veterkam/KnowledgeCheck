@@ -52,7 +52,7 @@ public class User {
         this.id = id;
     }
 
-    public String getFullName() {
+    public String getFullname() {
         return firstname + " " + lastname;
     }
 

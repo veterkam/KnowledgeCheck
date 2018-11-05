@@ -88,15 +88,15 @@
                                 </div>
                                 <div class="col text-right">
                                     <a href="${pageContext.request.contextPath}/testboard/edit?testId=${test.id}"
-                                       class="btn btn-sm btn-dark" role="button">
+                                       class="btn btn-sm btn-dark m-1" role="button">
                                         Edit test
                                     </a>
                                     <a href="${pageContext.request.contextPath}/testboard/remove?testId=${test.id}"
-                                       class="btn btn-sm btn-dark" role="button"
+                                       class="btn btn-sm btn-dark m-1" role="button"
                                        onclick="return confirm('Are you sure you want to remove the test?')">
                                         Remove test
                                     </a>
-                                    <button type="button" class="btn btn-dark btn-sm" data-toggle="collapse"
+                                    <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                             data-target="#desc${testLoop.index}"
                                             <c:if test="${fn:length(test.questions) == 0}">disabled</c:if>>
                                         Description

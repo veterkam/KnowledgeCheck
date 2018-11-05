@@ -111,7 +111,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (user != null && user.getPassword().equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            alertManager.success("Registration success! Welcome " + user.getFullName());
+            alertManager.success("Registration success! Welcome " + user.getFullname());
             response.sendRedirect(request.getContextPath() + "/");
         } else {
             alertManager.danger("Username or password is wrong. Please, try again!");
@@ -272,7 +272,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // Store user data in session
             session.setAttribute("anonym", null);
             session.setAttribute("user", user);
-            alertManager.success("Registration success! Welcome " + user.getFullName());
+            alertManager.success("Registration success! Welcome " + user.getFullname());
             response.sendRedirect(request.getContextPath() + "/");
 
         } else {
@@ -384,7 +384,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 userDao.update(user);
                 session.setAttribute("user", user);
                 session.setAttribute("anonym", null);
-                alertManager.success("Recovery password success! Welcome " + user.getFullName());
+                alertManager.success("Recovery password success! Welcome " + user.getFullname());
                 response.sendRedirect(request.getContextPath() + "/");
                 return;
             } else {

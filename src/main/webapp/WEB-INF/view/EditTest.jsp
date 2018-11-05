@@ -56,4 +56,6 @@
 
     </form>
 </div>
+<%@ include file="JSlibs.jsp" %>
+<script src="${pageContext.request.contextPath}/resources/js/EditTest.js"></script>
 <%@ include file="Footer.jsp" %>

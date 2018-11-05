@@ -11,4 +11,5 @@
         <a href="${pageContext.request.contextPath}/">Go Home</a>
     </p>
 </div>
+<%@ include file="JSlibs.jsp" %>
 <%@ include file="Footer.jsp" %>

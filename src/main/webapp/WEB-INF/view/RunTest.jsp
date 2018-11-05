@@ -16,7 +16,7 @@
     <%@ include file="Alert.jsp" %>
     <div class="row">
         <div class="col">
-            <form class="form-text-edit text-left" data-role="test-container" id="test-carousel-container" method="post">
+            <form class="form-text-edit text-left" data-role="test-container" id="test-carousel-container" method="get">
                 <input type="text" name="testId" value="${test.id}" hidden>
                 <div class="card mb-4">
                     <div class="card-header">
@@ -53,14 +53,16 @@
                                             </div>
                                             <div class="card-body">
                                                 <c:forEach var="answer" items="${question.answers}" varStatus="answerLoop">
-                                                    <input hidden type="text" data-role="answer-id" name="answerIds[]"
-                                                           value="${answer.id}">
+                                                    <div data-role="answer-container">
+                                                        <input hidden type="text" data-role="answer-id" name="answerIds[]"
+                                                               value="${answer.id}">
 
-                                                    <div class="form-check">
-                                                        <label class="form-check-label">
-                                                            <input type="checkbox" class="form-check-input" name="checkedAnswers[][]"
-                                                                   value=""><c:out value="${answer.description}"/>
-                                                        </label>
+                                                        <div class="form-check">
+                                                            <label class="form-check-label">
+                                                                <input type="checkbox" class="form-check-input" name="checkedAnswers[][]"
+                                                                       value=""><c:out value="${answer.description}"/>
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </c:forEach>
                                             </div>
@@ -79,7 +81,8 @@
                                 </button>
                             </div>
                             <div class="col text-center">
-                                <button type="button" class="btn btn-dark btn-sm m-1">
+                                <button class="btn btn-dark m-1" type="submit" name="btnResult" data-role="indexing"
+                                        formaction="${pageContext.request.contextPath}/testboard/result">
                                     Result
                                 </button>
                             </div>
@@ -96,4 +99,6 @@
         </div>
     </div>
 </div>
+<%@ include file="JSlibs.jsp" %>
+<script src="${pageContext.request.contextPath}/resources/js/RunTest.js"></script>
 <%@ include file="Footer.jsp" %>

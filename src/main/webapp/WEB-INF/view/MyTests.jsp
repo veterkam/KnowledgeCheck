@@ -115,4 +115,5 @@
         </div>
     </c:if>
 </div>
+<%@ include file="JSlibs.jsp" %>
 <%@ include file="Footer.jsp" %>

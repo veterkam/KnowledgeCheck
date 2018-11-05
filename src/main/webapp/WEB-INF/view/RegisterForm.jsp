@@ -111,4 +111,5 @@
         </div>
     </form>
 </div>
+<%@ include file="JSlibs.jsp" %>
 <%@ include file="Footer.jsp" %>

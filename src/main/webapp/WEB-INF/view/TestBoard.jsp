@@ -64,4 +64,5 @@
         </div>
     </div>
 </div>
+<%@ include file="JSlibs.jsp" %>
 <%@ include file="Footer.jsp" %>

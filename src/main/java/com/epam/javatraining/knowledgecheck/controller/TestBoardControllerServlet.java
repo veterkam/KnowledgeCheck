@@ -19,7 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(urlPatterns = {
         "/testboard",
@@ -43,8 +45,6 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
-
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
@@ -61,25 +61,13 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     showSimpleListOfTests(request, response);
                     break;
                 case "/testboard/mytests":
-                    if ( user.getRole() != User.Role.TUTOR) {
-                        pageNotFound(request, response);
-                    } else {
-                        showTutorMyTests(user, request, response);
-                    }
+                    showTutorMyTests(user, request, response);
                     break;
                 case "/testboard/edit":
-                    if ( user.getRole() != User.Role.TUTOR) {
-                        pageNotFound(request, response);
-                    } else {
-                        editTest(user, request, response);
-                    }
+                    editTest(user, request, response);
                     break;
                 case "/testboard/remove":
-                    if ( user.getRole() != User.Role.TUTOR) {
-                        pageNotFound(request, response);
-                    } else {
-                        removeTest(user, request, response);
-                    }
+                    removeTest(user, request, response);
                     break;
                 case "/testboard/run":
                     if ( user.getRole() != User.Role.STUDENT) {
@@ -87,6 +75,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     } else {
                         runTest(request, response);
                     }
+                    break;
+                case "/testboard/result":
+                    processTestResult(user, request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -173,12 +164,21 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
     private void showTutorMyTests(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
-        // Show all current user's tests with question data and answer data
-        showTests(user, VIEW_TEST_BOARD_MY_TESTS, false, request, response);
+        if ( user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+        } else {
+            // Show all current user's tests with question data and answer data
+            showTests(user, VIEW_TEST_BOARD_MY_TESTS, false, request, response);
+        }
     }
 
     private void removeTest(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
+
+        if ( user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+        }
+
         String testId = request.getParameter("testId");
         long id;
         try {
@@ -205,6 +205,11 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
     private void editTest(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
+
+        if ( user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
 
         AlertManager alertManager = getAlertManagerFromSession(request.getSession());
         Test test = new Test();
@@ -391,6 +396,87 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_RUN_TEST);
             dispatcher.forward(request, response);
         }
+    }
 
+    public void processTestResult(User user, HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException, DAOException {
+
+        if ( user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String strTestId = request.getParameter("testId");
+        Long testId;
+        try {
+            testId = Long.parseLong(strTestId);
+        } catch (NumberFormatException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        // Read from BD Lists correct answers for each question
+        TestDao testDao = new TestDao(getConnectionPool());
+        Map<Long, List<Long>> dbMap = testDao.getCorrectAnswerIds(testId);
+
+        Map<Long, List<Long>> paramMap = new HashMap<Long, List<Long>>();
+
+        // Build from request lists of checked answers for each question
+        String[] paramQuestions = request.getParameterValues("questionIds");
+        for(int i = 0; i < paramQuestions.length; i++) {
+            try {
+                Long questionId = Long.parseLong(paramQuestions[i]);
+                String[] paramAnswers = request.getParameterValues("answerIds[" + i + "]");
+                for(int j = 0; j < paramAnswers.length; j++) {
+                    Long answerId = Long.parseLong(paramAnswers[j]);
+
+                    // is checked?
+                    String paramCorrect = request.getParameter("corrects["+i+"]["+j+"]");
+                    if(paramCorrect != null) {
+                        // add checked answer to map
+                        if(!paramMap.containsKey(questionId)) {
+                            // create list of answers for each new question
+                            paramMap.put(questionId, new ArrayList<>());
+                        }
+
+                        paramMap.get(questionId).add(answerId);
+                    }
+
+                }
+            } catch (NumberFormatException e) {
+                pageNotFound(request, response);
+                return;
+            }
+        }
+
+        Map<Long, Boolean> markMap = new HashMap<>();
+        int correctAnswerCount = 0;
+
+        for(Long questionId : dbMap.keySet()) {
+            markMap.put(questionId, false);
+
+            if(paramMap.containsKey(questionId)) {
+                List<Long> paramList = paramMap.get(questionId);
+                List<Long> dbList = dbMap.get(questionId);
+
+                if(paramList.size() == dbList.size()) {
+
+                    boolean isListEq = true;
+                    for(Long val : dbList) {
+                        if(!paramList.contains(val)) {
+                            isListEq = false;
+                            break;
+                        }
+                    }
+
+                    if(isListEq) {
+                        markMap.put(questionId, true);
+                        correctAnswerCount++;
+                    }
+                }
+            }
+        }
+
+        int percentMark = 100 * correctAnswerCount / dbMap.size();
     }
 }

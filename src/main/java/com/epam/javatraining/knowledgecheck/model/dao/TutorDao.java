@@ -1,6 +1,7 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
+import com.epam.javatraining.knowledgecheck.model.entity.Subject;
 import com.epam.javatraining.knowledgecheck.model.entity.Tutor;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
@@ -8,6 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TutorDao extends UserDao {
     private static final Logger logger = LogManager.getLogger("DAO");

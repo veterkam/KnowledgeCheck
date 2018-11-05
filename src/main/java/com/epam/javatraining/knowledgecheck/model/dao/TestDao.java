@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestDao {
     private static final Logger logger = LogManager.getLogger("DAO");
@@ -445,6 +447,53 @@ public class TestDao {
         }
 
         return test;
+    }
+
+    public Map<Long, List<Long>> getCorrectAnswerIds(Long testId)
+        throws DAOException {
+        Map<Long, List<Long>> result = new HashMap<>();
+
+        String sql = "SELECT answers.question_id as question_id, answers.id as answer_id FROM tests " +
+                "INNER JOIN questions ON tests.id = questions.test_id " +
+                "INNER JOIN answers ON questions.id = answers.question_id " +
+                "WHERE answers.correct = TRUE " +
+                "ORDER BY question_id";
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = connectionPool.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                Long questionId = resultSet.getLong("question_id");
+                Long answerId = resultSet.getLong("answer_id");
+
+                if(!result.containsKey(questionId)) {
+                    result.put(questionId, new ArrayList<>());
+                }
+
+                result.get(questionId).add(answerId);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading test data failed.", e);
+        } finally {
+
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                // do nothing
+            } finally {
+                connectionPool.releaseConnection(connection);
+            }
+        }
+
+        return result;
     }
 
     public int getFilterTutorId() {

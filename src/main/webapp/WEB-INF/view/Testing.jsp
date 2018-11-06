@@ -82,7 +82,7 @@
                             </div>
                             <div class="col text-center">
                                 <button class="btn btn-dark m-1" type="submit" name="btnResult" data-role="indexing"
-                                        formaction="${pageContext.request.contextPath}/testboard/result">
+                                        formaction="${pageContext.request.contextPath}/testboard/testing/result">
                                     Result
                                 </button>
                             </div>

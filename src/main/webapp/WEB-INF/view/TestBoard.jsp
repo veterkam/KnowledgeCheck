@@ -46,9 +46,9 @@
                         </div>
                         <div class="col text-right">
                             <c:if test="${user != null && user.role=='STUDENT'}">
-                                <a href="${pageContext.request.contextPath}/testboard/run?testId=${test.id}"
+                                <a href="${pageContext.request.contextPath}/testboard/testing?testId=${test.id}"
                                    class="btn btn-sm btn-dark m-1" role="button">
-                                    Run test
+                                    Run testing
                                 </a>
                             </c:if>
                         </div>

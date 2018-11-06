@@ -451,22 +451,26 @@ public class TestDao {
 
     public Map<Long, List<Long>> getCorrectAnswerIds(Long testId)
         throws DAOException {
+        // Method returns map of lists of correct answer ids,
+        // for each question of test with id = testId
         Map<Long, List<Long>> result = new HashMap<>();
 
         String sql = "SELECT answers.question_id as question_id, answers.id as answer_id FROM tests " +
                 "INNER JOIN questions ON tests.id = questions.test_id " +
                 "INNER JOIN answers ON questions.id = answers.question_id " +
-                "WHERE answers.correct = TRUE " +
+                "WHERE answers.correct = TRUE AND tests.id = ? " +
                 "ORDER BY question_id";
 
         Connection connection = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
             connection = connectionPool.getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
+
+            statement = connection.prepareStatement(sql);
+            statement.setLong(1, testId);
+            resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 Long questionId = resultSet.getLong("question_id");

@@ -1,10 +1,7 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.dao.AnswerDao;
-import com.epam.javatraining.knowledgecheck.model.dao.QuestionDao;
-import com.epam.javatraining.knowledgecheck.model.dao.SubjectDao;
-import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
+import com.epam.javatraining.knowledgecheck.model.dao.*;
 import com.epam.javatraining.knowledgecheck.model.entity.*;
 import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
@@ -28,7 +25,8 @@ import java.util.Map;
         "/testboard/mytests",
         "/testboard/edit",
         "/testboard/remove",
-        "/testboard/run"
+        "/testboard/testing",
+        "/testboard/testing/result"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
@@ -69,14 +67,14 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                 case "/testboard/remove":
                     removeTest(user, request, response);
                     break;
-                case "/testboard/run":
+                case "/testboard/testing":
                     if ( user.getRole() != User.Role.STUDENT) {
                         pageNotFound(request, response);
                     } else {
                         runTest(request, response);
                     }
                     break;
-                case "/testboard/result":
+                case "/testboard/testing/result":
                     processTestResult(user, request, response);
                     break;
                 default:
@@ -393,7 +391,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             response.sendRedirect(request.getContextPath() + "/" );
         } else {
             request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_RUN_TEST);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_TESTING);
             dispatcher.forward(request, response);
         }
     }
@@ -401,7 +399,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     public void processTestResult(User user, HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException, DAOException {
 
-        if ( user.getRole() != User.Role.TUTOR) {
+        if (user.getRole() != User.Role.STUDENT) {
             pageNotFound(request, response);
             return;
         }
@@ -417,29 +415,29 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         // Read from BD Lists correct answers for each question
         TestDao testDao = new TestDao(getConnectionPool());
-        Map<Long, List<Long>> dbMap = testDao.getCorrectAnswerIds(testId);
+        Map<Long, List<Long>> correctAnswerMap = testDao.getCorrectAnswerIds(testId);
 
-        Map<Long, List<Long>> paramMap = new HashMap<Long, List<Long>>();
+        Map<Long, List<Long>> selectedAnswerMap = new HashMap<>();
 
         // Build from request lists of checked answers for each question
         String[] paramQuestions = request.getParameterValues("questionIds");
-        for(int i = 0; i < paramQuestions.length; i++) {
+        for (int i = 0; i < paramQuestions.length; i++) {
             try {
                 Long questionId = Long.parseLong(paramQuestions[i]);
                 String[] paramAnswers = request.getParameterValues("answerIds[" + i + "]");
-                for(int j = 0; j < paramAnswers.length; j++) {
+                for (int j = 0; j < paramAnswers.length; j++) {
                     Long answerId = Long.parseLong(paramAnswers[j]);
 
-                    // is checked?
-                    String paramCorrect = request.getParameter("corrects["+i+"]["+j+"]");
-                    if(paramCorrect != null) {
+                    // is selected?
+                    String paramCheckedAnswers = request.getParameter("checkedAnswers[" + i + "][" + j + "]");
+                    if (paramCheckedAnswers != null) {
                         // add checked answer to map
-                        if(!paramMap.containsKey(questionId)) {
+                        if (!selectedAnswerMap.containsKey(questionId)) {
                             // create list of answers for each new question
-                            paramMap.put(questionId, new ArrayList<>());
+                            selectedAnswerMap.put(questionId, new ArrayList<>());
                         }
 
-                        paramMap.get(questionId).add(answerId);
+                        selectedAnswerMap.get(questionId).add(answerId);
                     }
 
                 }
@@ -449,34 +447,49 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
         }
 
-        Map<Long, Boolean> markMap = new HashMap<>();
-        int correctAnswerCount = 0;
 
-        for(Long questionId : dbMap.keySet()) {
-            markMap.put(questionId, false);
+        Map<Long, Boolean> answerResults = new HashMap<>();
+        int correctlySelAnswerCount = 0;
 
-            if(paramMap.containsKey(questionId)) {
-                List<Long> paramList = paramMap.get(questionId);
-                List<Long> dbList = dbMap.get(questionId);
+        for (Long questionId : correctAnswerMap.keySet()) {
+            answerResults.put(questionId, false);
 
-                if(paramList.size() == dbList.size()) {
+            if (selectedAnswerMap.containsKey(questionId)) {
+                List<Long> selectedAnswers = selectedAnswerMap.get(questionId);
+                List<Long> correctAnswers = correctAnswerMap.get(questionId);
+
+                if (selectedAnswers.size() == correctAnswers.size()) {
 
                     boolean isListEq = true;
-                    for(Long val : dbList) {
-                        if(!paramList.contains(val)) {
+                    for (Long val : correctAnswers) {
+                        if (!selectedAnswers.contains(val)) {
                             isListEq = false;
                             break;
                         }
                     }
 
-                    if(isListEq) {
-                        markMap.put(questionId, true);
-                        correctAnswerCount++;
+                    if (isListEq) {
+                        answerResults.put(questionId, true);
+                        correctlySelAnswerCount++;
                     }
                 }
             }
         }
 
-        int percentMark = 100 * correctAnswerCount / dbMap.size();
+        // Save results in DB
+        TestingResults testingResults = new TestingResults(user.getId(), testId, answerResults);
+        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        testingResultsDao.update(testingResults);
+
+        // Show results
+        int percentMark = 100 * correctlySelAnswerCount / correctAnswerMap.size();
+        String message = "Your result is " + percentMark + "% right answers!";
+        if (percentMark > 50) {
+            getAlertManagerFromSession(request.getSession()).success(message);
+        } else {
+            getAlertManagerFromSession(request.getSession()).danger(message);
+        }
+
+        response.sendRedirect(request.getContextPath() + "/");
     }
 }

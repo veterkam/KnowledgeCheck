@@ -488,8 +488,29 @@ JOIN answers a on a.question_id = q.id;
 SET @dt = NOW();
 select @dt;
 
-select * from users;
+select * from tests;
 
 SELECT * FROM questions;
 
 SELECT * FROM answers;
+
+SELECT answers.question_id as question_id, answers.id as answer_id FROM tests
+INNER JOIN questions ON tests.id = questions.test_id
+INNER JOIN answers ON questions.id = answers.question_id
+WHERE tests.id = 71 AND answers.correct = TRUE
+ORDER BY question_id;
+
+create table `testing_results` (
+  `student_id` int(11) not null,
+  `question_id` bigint(11) not null,
+  `correct` boolean,
+  UNIQUE (`student_id`, `question_id`),
+  FOREIGN KEY (`student_id`)
+    REFERENCES `users` (`id`)
+      ON DELETE CASCADE,
+  FOREIGN KEY (`question_id`)
+    REFERENCES `questions` (`id`)
+      ON DELETE CASCADE
+) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
+
+select * from testing_results;

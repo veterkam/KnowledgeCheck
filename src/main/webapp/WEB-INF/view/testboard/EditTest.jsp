@@ -2,11 +2,11 @@
          pageEncoding="UTF-8" isELIgnored="false" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ include file="Header.jsp" %>
-<%@ include file = "NavBar.jsp" %>
+<%@ include file="../common/Header.jsp" %>
+<%@ include file = "../common/NavBar.jsp" %>
 <div class="container">
     <h1 class="h3 mb-3 font-weight-normal">Edit test</h1>
-    <%@ include file = "Alert.jsp" %>
+    <%@ include file = "../common/Alert.jsp" %>
     <form class="form-text-edit text-left" data-role="test-container" method="get">
         <input type="text" name="testId" value="${test.id}" hidden>
 
@@ -48,6 +48,10 @@
 
 
         <div class="form-group text-right">
+            <a href="${pageContext.request.contextPath}/testboard/mytests"
+               class="btn btn-dark m-1" role="button">
+                Cancel
+            </a>
             <button class="btn btn-dark m-1" type="submit" name="btnSave" data-role="indexing"
                     formaction="${pageContext.request.contextPath}/testboard/edit">
                 Save test
@@ -56,6 +60,6 @@
 
     </form>
 </div>
-<%@ include file="JSlibs.jsp" %>
+<%@ include file="../common/JSlibs.jsp" %>
 <script src="${pageContext.request.contextPath}/resources/js/EditTest.js"></script>
-<%@ include file="Footer.jsp" %>
+<%@ include file="../common/Footer.jsp" %>

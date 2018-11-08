@@ -13,8 +13,8 @@ public class Presentation {
 
     private List<Subject> subjects;
     private String[] orders = new String[] {DATE_DESCENDING, DATE_ASCENDING};
-    private int filterBySubjectId;
-    private String orderByDate;
+    private int subjectId;
+    private String dateOrder;
     private HttpServletRequest request;
 
     public Presentation(HttpServletRequest request, List<Subject> subjects) {
@@ -23,20 +23,20 @@ public class Presentation {
 
         HttpSession session = request.getSession();
         // Filter on subject id
-        String subjectFilterStr = request.getParameter("subjectFilter");
+        String strSubjectId = request.getParameter("presentationSubjectId");
         try {
-            filterBySubjectId = Integer.parseInt(subjectFilterStr);
+            subjectId = Integer.parseInt(strSubjectId);
         } catch (NumberFormatException e) {
-            subjectFilterStr = (String) session.getAttribute("subjectFilter");
-            filterBySubjectId = (Strings.isBlank(subjectFilterStr)) ? 0 : Integer.parseInt(subjectFilterStr);
+            strSubjectId = (String) session.getAttribute("presentationSubjectId");
+            subjectId = (Strings.isBlank(strSubjectId)) ? 0 : Integer.parseInt(strSubjectId);
         }
 
         // Order by date
-        orderByDate = request.getParameter("dateOrder");
-        if(Strings.isBlank(orderByDate)) {
-            orderByDate = (String) session.getAttribute("dateOrder");
-            if(Strings.isBlank(orderByDate)) {
-                orderByDate = DATE_DESCENDING;
+        dateOrder = request.getParameter("presentationDateOrder");
+        if(Strings.isBlank(dateOrder)) {
+            dateOrder = (String) session.getAttribute("presentationDateOrder");
+            if(Strings.isBlank(dateOrder)) {
+                dateOrder = DATE_DESCENDING;
             }
         }
     }
@@ -57,20 +57,20 @@ public class Presentation {
         this.orders = orders;
     }
 
-    public int getFilterBySubjectId() {
-        return filterBySubjectId;
+    public int getSubjectId() {
+        return subjectId;
     }
 
-    public void setFilterBySubjectId(int filterBySubjectId) {
-        this.filterBySubjectId = filterBySubjectId;
+    public void setSubjectId(int subjectId) {
+        this.subjectId = subjectId;
     }
 
-    public String getOrderByDate() {
-        return orderByDate;
+    public String getDateOrder() {
+        return dateOrder;
     }
 
-    public void setOrderByDate(String orderByDate) {
-        this.orderByDate = orderByDate;
+    public void setDateOrder(String dateOrder) {
+        this.dateOrder = dateOrder;
     }
 
     public void store() {
@@ -78,7 +78,7 @@ public class Presentation {
         request.setAttribute("presentationSubjects", subjects);
         request.setAttribute("presentationOrders", orders);
         // Data for long period store in session
-        request.getSession().setAttribute("presentationSubjectId", String.valueOf(filterBySubjectId));
-        request.getSession().setAttribute("presentationDateOrder", orderByDate);
+        request.getSession().setAttribute("presentationSubjectId", String.valueOf(subjectId));
+        request.getSession().setAttribute("presentationDateOrder", dateOrder);
     }
 }

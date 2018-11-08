@@ -17,14 +17,14 @@ import java.sql.SQLException;
 
 public class AbstractBaseControllerServlet extends HttpServlet {
 
-    protected final String VIEW_LOGIN_FORM = "/WEB-INF/view/LoginForm.jsp";
-    protected final String VIEW_REGISTER_FORM = "/WEB-INF/view/RegisterForm.jsp";
-    protected final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/PasswordRecoveryForm.jsp";
-    protected final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/PageNotFound.jsp";
-    protected final String VIEW_TEST_BOARD = "/WEB-INF/view/TestBoard.jsp";
-    protected final String VIEW_TEST_BOARD_MY_TESTS = "/WEB-INF/view/MyTests.jsp";
-    protected final String VIEW_TEST_BOARD_EDIT_TEST = "/WEB-INF/view/EditTest.jsp";
-    protected final String VIEW_TEST_BOARD_TESTING = "/WEB-INF/view/Testing.jsp";
+    protected final String VIEW_LOGIN_FORM = "/WEB-INF/view/authorization/LoginForm.jsp";
+    protected final String VIEW_REGISTER_FORM = "/WEB-INF/view/authorization/RegisterForm.jsp";
+    protected final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/authorization/PasswordRecoveryForm.jsp";
+    protected final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/common/PageNotFound.jsp";
+    protected final String VIEW_TEST_BOARD = "/WEB-INF/view/testboard/TestBoard.jsp";
+    protected final String VIEW_TEST_BOARD_MY_TESTS = "/WEB-INF/view/testboard/MyTests.jsp";
+    protected final String VIEW_TEST_BOARD_EDIT_TEST = "/WEB-INF/view/testboard/EditTest.jsp";
+    protected final String VIEW_TEST_BOARD_TESTING = "/WEB-INF/view/testboard/Testing.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
     private static ConnectionPool connectionPool = null;

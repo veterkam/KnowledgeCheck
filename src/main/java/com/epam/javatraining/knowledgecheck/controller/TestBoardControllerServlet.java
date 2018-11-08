@@ -43,15 +43,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-
         String action = request.getServletPath();
-
-        if ( !action.equals("/testboard") && user == null) {
-            pageNotFound(request, response);
-            return;
-        }
 
         try {
             switch (action) {
@@ -59,23 +51,19 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     showSimpleListOfTests(request, response);
                     break;
                 case "/testboard/mytests":
-                    showTutorMyTests(user, request, response);
+                    showTutorMyTests(request, response);
                     break;
                 case "/testboard/edit":
-                    editTest(user, request, response);
+                    editTest(request, response);
                     break;
                 case "/testboard/remove":
-                    removeTest(user, request, response);
+                    removeTest(request, response);
                     break;
                 case "/testboard/testing":
-                    if ( user.getRole() != User.Role.STUDENT) {
-                        pageNotFound(request, response);
-                    } else {
-                        runTest(request, response);
-                    }
+                    runTest(request, response);
                     break;
                 case "/testboard/testing/result":
-                    processTestResult(user, request, response);
+                    processTestResult(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -91,9 +79,16 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private void showTests(User user, String view, boolean single,
-                           HttpServletRequest request, HttpServletResponse response)
+    private void showTests(HttpServletRequest request, HttpServletResponse response,
+                           String view, boolean onlyTest, boolean filterByTutor)
             throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(filterByTutor && (user == null || user.getRole() != User.Role.TUTOR)) {
+            pageNotFound(request, response);
+            return;
+        }
+
         // Scan parameters
         // Current page of test list
         String pageNoStr = request.getParameter("pageNo");
@@ -112,18 +107,18 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         TestDao testDao = new TestDao(getConnectionPool());
         // If need enable filter
-        if(present.getFilterBySubjectId() > 0) {
-            testDao.setFilterSubjectId(present.getFilterBySubjectId());
+        if(present.getSubjectId() > 0) {
+            testDao.setFilterSubjectId(present.getSubjectId());
             testDao.enableFilter();
         }
 
-        if(user != null) {
+        if(filterByTutor) {
             testDao.setFilterTutorId(user.getId());
             testDao.enableFilter();
         }
 
         // Enable order by date
-        String order = present.getOrderByDate().equals(Presentation.DATE_DESCENDING) ?
+        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
                 TestDao.ORDER_DESC : TestDao.ORDER_ASC;
         testDao.setDateOrder(order);
         testDao.enableOrder();
@@ -132,18 +127,28 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         int count = testDao.getTestCount();
 
         // Init pagination
-        int pageCount = count / COUNT_TEST_ON_PAGE + 1;
+        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
         Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
 
         // Read test list
         int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
         List<Test> tests;
-        if(single) {
+        if(onlyTest) {
             // without question and answers
             tests = testDao.getListSingle(offset, COUNT_TEST_ON_PAGE);
         } else {
             // with question and answers
             tests = testDao.getList(offset, COUNT_TEST_ON_PAGE);
+        }
+
+        if(user != null && user.getRole() == User.Role.STUDENT) {
+            List<Integer> scores = new ArrayList<>();
+            TestingResultsDao trDao = new TestingResultsDao(getConnectionPool());
+            for (Test test : tests) {
+                TestingResults tr = trDao.get(user.getId(), test.getId());
+                scores.add(tr.score());
+            }
+            request.setAttribute("scores", scores);
         }
 
         // Store data in request and session
@@ -157,24 +162,23 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     private void showSimpleListOfTests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
         // Show all tests without question data and answer data
-        showTests(null, VIEW_TEST_BOARD, true, request, response);
+        showTests(request, response, VIEW_TEST_BOARD, true, false);
     }
 
-    private void showTutorMyTests(User user, HttpServletRequest request, HttpServletResponse response)
+    private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
-        if ( user.getRole() != User.Role.TUTOR) {
-            pageNotFound(request, response);
-        } else {
-            // Show all current user's tests with question data and answer data
-            showTests(user, VIEW_TEST_BOARD_MY_TESTS, false, request, response);
-        }
+        // Show all current user's tests with question data and answer data
+        showTests(request, response, VIEW_TEST_BOARD_MY_TESTS, false, true);
     }
 
-    private void removeTest(User user, HttpServletRequest request, HttpServletResponse response)
+    private void removeTest(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
 
-        if ( user.getRole() != User.Role.TUTOR) {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.TUTOR) {
             pageNotFound(request, response);
+            return;
         }
 
         String testId = request.getParameter("testId");
@@ -201,10 +205,12 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
     }
 
-    private void editTest(User user, HttpServletRequest request, HttpServletResponse response)
+    private void editTest(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
 
-        if ( user.getRole() != User.Role.TUTOR) {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.TUTOR) {
             pageNotFound(request, response);
             return;
         }
@@ -315,6 +321,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                         if(isRemoved == 1) {
                             // Add answer to list for removing
                             remAnswerList.add(answer);
+                            continue;
                         }
                     } catch (NumberFormatException e) {
                         // it's not removed, do nothing
@@ -338,6 +345,18 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
         test.setQuestions(questionList);
 
+        if (validator.isFailed()) {
+            // We have errors
+            alertManager.danger(validator.getErrors());
+            // Read subject list for subject filter in presentation
+            request.setAttribute("subjects",  subjectDao.listAll() );
+            // Send test data for auto filing
+            request.setAttribute("test", test);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+            dispatcher.forward(request, response);
+            return;
+        }
+
         if(!remAnswerList.isEmpty()) {
             AnswerDao dao = new AnswerDao(getConnectionPool());
             for(Answer answer : remAnswerList) {
@@ -352,18 +371,6 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
         }
 
-        if (validator.isFailed()) {
-            // We have errors
-            alertManager.danger(validator.getErrors());
-            // Read subject list for subject filter in presentation
-            request.setAttribute("subjects",  subjectDao.listAll() );
-            // Send test data for auto filing
-            request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
-            dispatcher.forward(request, response);
-            return;
-        }
-
         if( !testDao.update(test) ) {
             testDao.insert(test);
         }
@@ -374,17 +381,25 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
     public void runTest(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException, DAOException {
-        String testId = request.getParameter("testId");
-        long id;
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.STUDENT) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String strTestId = request.getParameter("testId");
+        long testId;
         try {
-            id = Long.parseLong(testId);
+            testId = Long.parseLong(strTestId);
         } catch (NumberFormatException e) {
             pageNotFound(request, response);
             return;
         }
 
         TestDao testDao = new TestDao(getConnectionPool());
-        Test test = testDao.get(id);
+        Test test = testDao.get(testId);
 
         if(test == null) {
             getAlertManagerFromSession(request.getSession()).danger("Can't find the test. Please, try again!");
@@ -396,10 +411,12 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    public void processTestResult(User user, HttpServletRequest request, HttpServletResponse response)
+    public void processTestResult(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException, DAOException {
 
-        if (user.getRole() != User.Role.STUDENT) {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.STUDENT) {
             pageNotFound(request, response);
             return;
         }
@@ -447,7 +464,6 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
         }
 
-
         Map<Long, Boolean> answerResults = new HashMap<>();
         int correctlySelAnswerCount = 0;
 
@@ -482,9 +498,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         testingResultsDao.update(testingResults);
 
         // Show results
-        int percentMark = 100 * correctlySelAnswerCount / correctAnswerMap.size();
-        String message = "Your result is " + percentMark + "% right answers!";
-        if (percentMark > 50) {
+        int rating = Math.round(100.0f * ((float)correctlySelAnswerCount) / ((float) correctAnswerMap.size()));
+        String message = "Your result is " + rating + "% right answers!";
+        if (rating > 50) {
             getAlertManagerFromSession(request.getSession()).success(message);
         } else {
             getAlertManagerFromSession(request.getSession()).danger(message);

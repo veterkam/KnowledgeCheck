@@ -3,8 +3,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ include file = "Header.jsp" %>
-<%@ include file = "NavBar.jsp" %>
+<%@ include file = "../common/Header.jsp" %>
+<%@ include file = "../common/NavBar.jsp" %>
 <div class="container text-left">
 
     <div class="row">
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <%@ include file="Alert.jsp" %>
+    <%@ include file="../common/Alert.jsp" %>
     <div class="row">
         <div class="col">
             <form class="form-text-edit text-left" data-role="test-container" id="test-carousel-container" method="get">
@@ -99,6 +99,6 @@
         </div>
     </div>
 </div>
-<%@ include file="JSlibs.jsp" %>
+<%@ include file="../common/JSlibs.jsp" %>
 <script src="${pageContext.request.contextPath}/resources/js/RunTest.js"></script>
-<%@ include file="Footer.jsp" %>
+<%@ include file="../common/Footer.jsp" %>

@@ -5,6 +5,7 @@ import java.util.Map;
 public class TestingResults {
     private int studentId;
     private long testId;
+    // key = question id, value = correct/incorrect answer
     Map<Long, Boolean> answerResults;
 
     public TestingResults(int studentId, long testId, Map<Long, Boolean> answerResults) {
@@ -12,6 +13,24 @@ public class TestingResults {
         this.testId = testId;
         this.answerResults = answerResults;
     }
+
+    public int score() {
+
+        if( answerResults.isEmpty() ) {
+            return -1;
+        }
+
+        int correctCount = 0;
+        for(Long id : answerResults.keySet()) {
+            if(answerResults.get(id)) {
+                correctCount++;
+            }
+        }
+
+        return Math.round(100.0f * ((float) correctCount) / ((float) answerResults.size()) );
+    }
+
+
 
     public int getStudentId() {
         return studentId;

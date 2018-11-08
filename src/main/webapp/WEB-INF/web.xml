@@ -34,6 +34,6 @@
 
   <error-page>
     <exception-type>java.lang.Exception</exception-type>
-    <location>/WEB-INF/view/Error.jsp</location>
+    <location>/WEB-INF/view/common/Error.jsp</location>
   </error-page>
 </web-app>

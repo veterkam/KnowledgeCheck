@@ -2,11 +2,11 @@
          pageEncoding="UTF-8" isELIgnored="false" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ include file = "Header.jsp" %>
-<%@ include file = "NavBar.jsp" %>
+<%@ include file = "../common/Header.jsp" %>
+<%@ include file = "../common/NavBar.jsp" %>
 <div class="container text-left">
-    <h1 class="h3 mb-3 font-weight-normal">Latest tests</h1>
-    <%@ include file="Alert.jsp" %>
+    <h1 class="h3 mb-3 font-weight-normal">Test list</h1>
+    <%@ include file="../common/Alert.jsp" %>
     <div class="row">
         <div class="col">
             <%@ include file="Presentation.jsp" %>
@@ -14,7 +14,7 @@
     </div>
     <div class="row">
         <div class="col">
-            <%@ include file="Pagination.jsp" %>
+            <%@ include file="../common/Pagination.jsp" %>
         </div>
     </div>
     <c:forEach var="test" items="${tests}" varStatus="loop">
@@ -42,16 +42,21 @@
                 <div class="card-footer text-muted">
                     <div class="row">
                         <div class="col text-left">
-                            <fmt:formatDate type = "both" timeStyle = "short" value = "${test.updateTime}" />
+                            <p class="card-text small">Update: <fmt:formatDate type = "date" value = "${test.updateTime}" /></p>
                         </div>
-                        <div class="col text-right">
-                            <c:if test="${user != null && user.role=='STUDENT'}">
-                                <a href="${pageContext.request.contextPath}/testboard/testing?testId=${test.id}"
-                                   class="btn btn-sm btn-dark m-1" role="button">
-                                    Run testing
-                                </a>
+                        <c:if test="${user != null && user.role=='STUDENT'}">
+                            <c:if test="${scores[loop.index] >= 0}">
+                                <div class="col text-left">
+                                    <p class="card-text small">My result: ${scores[loop.index]}%</p>
+                                </div>
                             </c:if>
-                        </div>
+                            <div class="col text-right">
+                                    <a href="${pageContext.request.contextPath}/testboard/testing?testId=${test.id}"
+                                       class="btn btn-sm btn-dark m-1" role="button">
+                                        Run testing
+                                    </a>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -60,9 +65,9 @@
     </c:forEach>
     <div class="row">
         <div class="col">
-            <%@ include file="Pagination.jsp" %>
+            <%@ include file="../common/Pagination.jsp" %>
         </div>
     </div>
 </div>
-<%@ include file="JSlibs.jsp" %>
-<%@ include file="Footer.jsp" %>
+<%@ include file="../common/JSlibs.jsp" %>
+<%@ include file="../common/Footer.jsp" %>

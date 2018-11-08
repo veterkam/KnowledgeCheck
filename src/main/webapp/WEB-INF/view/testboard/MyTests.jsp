@@ -3,8 +3,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ include file = "Header.jsp" %>
-<%@ include file = "NavBar.jsp" %>
+<%@ include file = "../common/Header.jsp" %>
+<%@ include file = "../common/NavBar.jsp" %>
 <div class="container text-left">
 
     <div class="row">
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <%@ include file="Alert.jsp" %>
+    <%@ include file="../common/Alert.jsp" %>
 
     <c:if test="${fn:length(tests) == 0}">
         <div class="row">
@@ -37,7 +37,7 @@
         </div>
         <div class="row">
             <div class="col">
-                <%@ include file="Pagination.jsp" %>
+                <%@ include file="../common/Pagination.jsp" %>
             </div>
         </div>
         <c:forEach var="test" items="${tests}" varStatus="testLoop">
@@ -110,10 +110,10 @@
         </c:forEach>
         <div class="row">
             <div class="col">
-                <%@ include file="Pagination.jsp" %>
+                <%@ include file="../common/Pagination.jsp" %>
             </div>
         </div>
     </c:if>
 </div>
-<%@ include file="JSlibs.jsp" %>
-<%@ include file="Footer.jsp" %>
+<%@ include file="../common/JSlibs.jsp" %>
+<%@ include file="../common/Footer.jsp" %>

@@ -130,7 +130,7 @@ public class TestingResultsDao {
             resultSet = statement.executeQuery();
 
             Map<Long, Boolean> answerResults = new HashMap<>();
-            if(resultSet.next()) {
+            while(resultSet.next()) {
                 long questionId = resultSet.getLong("question_id");
                 boolean correct = resultSet.getBoolean("correct");
                 answerResults.put(questionId, correct);

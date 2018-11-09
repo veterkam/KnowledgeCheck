@@ -2,12 +2,15 @@ package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
 import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.entity.Student;
 import com.epam.javatraining.knowledgecheck.model.entity.TestingResults;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TestingResultsDao {
@@ -150,6 +153,20 @@ public class TestingResultsDao {
                 connectionPool.releaseConnection(connection);
             }
         }
+        return testingResults;
+    }
+
+    public List<TestingResults> get(long testId) throws DAOException {
+        List<TestingResults> testingResults = new ArrayList<>();
+
+        StudentDao studentDao = new StudentDao(connectionPool);
+        List<Student> students = studentDao.getStudentsTookTest(testId);
+
+        for(Student student : students) {
+            TestingResults results = get(student.getId(), testId);
+            results.setStudent(student);
+        }
+
         return testingResults;
     }
 

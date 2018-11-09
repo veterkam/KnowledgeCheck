@@ -4,11 +4,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-//java.util.Date updateTime = new Date();
-//        Object param = new java.sql.Timestamp(updateTime.getTime());
-//// The JDBC driver knows what to do with a java.sql type:
-//        preparedStatement.setObject(param);
-//
 public class Test {
 
     private long id = -1;

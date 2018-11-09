@@ -29,16 +29,16 @@ public class TestDao {
         this.connectionPool = connectionPool;
     }
 
-    public void insert(Test test) throws DAOException {
-        insertSingle(test);
+    public void insertComplex(Test test) throws DAOException {
+        insertPlain(test);
 
         QuestionDao dao = new QuestionDao(connectionPool);
         for(Question question : test.getQuestions()) {
-            dao.insert(question);
+            dao.insertComplex(question);
         }
     }
 
-    public void insertSingle(Test test) throws DAOException {
+    public void insertPlain(Test test) throws DAOException {
 
         // Insert update_time as default TIMESTAMP
         String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
@@ -97,14 +97,14 @@ public class TestDao {
 
     private void attachQuestions(Test test) throws DAOException {
         QuestionDao dao = new QuestionDao(connectionPool);
-        List<Question> questionList = dao.listForTest(test.getId());
+        List<Question> questionList = dao.getComplexList(test.getId());
         test.setQuestions(questionList);
     }
 
     private void attachQuestions(List<Test> testList) throws DAOException {
         QuestionDao dao = new QuestionDao(connectionPool);
         for(Test test : testList) {
-            List<Question> questionList = dao.listForTest(test.getId());
+            List<Question> questionList = dao.getComplexList(test.getId());
             test.setQuestions(questionList);
         }
     }
@@ -189,13 +189,13 @@ public class TestDao {
         return test;
     }
 
-    public List<Test> getList(long offset, long count) throws DAOException {
-        List<Test> testList = getListSingle(offset, count);
+    public List<Test> getComplexList(long offset, long count) throws DAOException {
+        List<Test> testList = getPlainList(offset, count);
         attachQuestions(testList);
         return testList;
     }
 
-    public List<Test> getListSingle(long offset, long count)
+    public List<Test> getPlainList(long offset, long count)
         throws DAOException {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests" + getFilter() + getOrder() + " LIMIT ?, ?";
@@ -233,97 +233,6 @@ public class TestDao {
         return testList;
     }
 
-//    Deprecated, use filter
-//
-//    public List<Test> getListForTutor(int tutorId) throws DAOException {
-//        List<Test> testList = getListForTutorSingle(tutorId);
-//        attachQuestions(testList);
-//        return testList;
-//    }
-//
-//
-//    public List<Test> getListForTutorSingle(int tutorId) throws DAOException {
-//        List<Test> testList = new ArrayList<>();
-//        String sql = "SELECT * FROM tests WHERE tutor_id=?";
-//
-//        Connection connection = null;
-//        PreparedStatement statement = null;
-//        ResultSet resultSet = null;
-//
-//        try {
-//            connection = connectionPool.getConnection();
-//
-//            statement = connection.prepareStatement(sql);
-//            statement.setLong(1, tutorId);
-//            resultSet = statement.executeQuery();
-//
-//            while (resultSet.next()) {
-//                Test test = scanTest(resultSet);
-//                testList.add(test);
-//            }
-//        } catch (SQLException e) {
-//            logger.error(e.getMessage(), e);
-//            throw new DAOException("Reading test data failed.", e);
-//        } finally {
-//
-//            try {
-//                resultSet.close();
-//                statement.close();
-//            } catch (SQLException e) {
-//                // do nothing
-//            } finally {
-//                connectionPool.releaseConnection(connection);
-//            }
-//        }
-//
-//        return testList;
-//    }
-//
-//    public List<Test> getListForSubject(int subjectId) throws DAOException {
-//        List<Test> testList = getListForSubjectSingle(subjectId);
-//        attachQuestions(testList);
-//
-//        return testList;
-//    }
-//
-//
-//    public List<Test> getListForSubjectSingle(int subjectId) throws DAOException {
-//        List<Test> testList = new ArrayList<>();
-//        String sql = "SELECT * FROM tests WHERE subject_id=?";
-//
-//        Connection connection = null;
-//        PreparedStatement statement = null;
-//        ResultSet resultSet = null;
-//
-//        try {
-//            connection = connectionPool.getConnection();
-//
-//            statement = connection.prepareStatement(sql);
-//            statement.setLong(1, subjectId);
-//            resultSet = statement.executeQuery();
-//
-//            while (resultSet.next()) {
-//                Test test = scanTest(resultSet);
-//                testList.add(test);
-//            }
-//        } catch (SQLException e) {
-//            logger.error(e.getMessage(), e);
-//            throw new DAOException("Reading test data failed.", e);
-//        } finally {
-//
-//            try {
-//                resultSet.close();
-//                statement.close();
-//            } catch (SQLException e) {
-//                // do nothing
-//            } finally {
-//                connectionPool.releaseConnection(connection);
-//            }
-//        }
-//
-//        return testList;
-//    }
-
     public boolean delete(Test test) throws DAOException {
         String sql = "DELETE FROM tests WHERE id = ? AND tutor_id = ?";
         Connection connection = null;
@@ -352,22 +261,22 @@ public class TestDao {
         return isRowDeleted;
     }
 
-    public boolean update(Test test) throws DAOException {
-        if(!updateSingle(test)) {
+    public boolean updateComplex(Test test) throws DAOException {
+        if(!updatePlain(test)) {
             return false;
         }
 
         QuestionDao dao = new QuestionDao(connectionPool);
         for(Question question : test.getQuestions()) {
-            if(!dao.update(question)) {
-                dao.insert(question);
+            if(!dao.updateComplex(question)) {
+                dao.insertComplex(question);
             }
         }
 
         return true;
     }
 
-    public boolean updateSingle(Test test) throws DAOException {
+    public boolean updatePlain(Test test) throws DAOException {
 
         String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, update_time = NOW() " +
                 " WHERE id = ? AND tutor_id = ?";
@@ -402,8 +311,8 @@ public class TestDao {
         return isRowUpdated;
     }
 
-    public Test get(long id) throws DAOException {
-        Test test = getSingle(id);
+    public Test getComplex(long id) throws DAOException {
+        Test test = getPlain(id);
 
         if(test != null) {
             // attach questions
@@ -413,7 +322,7 @@ public class TestDao {
         return test;
     }
 
-    public Test getSingle(long id) throws DAOException {
+    public Test getPlain(long id) throws DAOException {
         Test test = null;
         String sql = "SELECT * FROM tests WHERE id = ?";
 

@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +25,8 @@ import java.util.Map;
         "/testboard/edit",
         "/testboard/remove",
         "/testboard/testing",
-        "/testboard/testing/result"
+        "/testboard/testing/result",
+        "/testboard/studentsresults"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
@@ -65,6 +65,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                 case "/testboard/testing/result":
                     processTestResult(request, response);
                     break;
+                case "/testboard/studentsresults":
+                    studentsResults(request, response);
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;
@@ -99,11 +102,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             pageNo = 1;
         }
 
-        // Read subject list for subject filter in presentation
-        SubjectDao subjectDao = new SubjectDao(getConnectionPool());
-        List<Subject> subjects = subjectDao.listAll();
         // Init presentation
-        Presentation present = new Presentation(request, subjects);
+        Presentation present = new Presentation(request, getConnectionPool());
 
         TestDao testDao = new TestDao(getConnectionPool());
         // If need enable filter
@@ -135,10 +135,10 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         List<Test> tests;
         if(onlyTest) {
             // without question and answers
-            tests = testDao.getListSingle(offset, COUNT_TEST_ON_PAGE);
+            tests = testDao.getPlainList(offset, COUNT_TEST_ON_PAGE);
         } else {
             // with question and answers
-            tests = testDao.getList(offset, COUNT_TEST_ON_PAGE);
+            tests = testDao.getComplexList(offset, COUNT_TEST_ON_PAGE);
         }
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
@@ -236,7 +236,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         if (Validator.containNull(paramSubject, paramTitle, paramDescription)) {
             // Parameters do not have test data
             if(test.getId() > -1) {
-                test = testDao.get(test.getId());
+                test = testDao.getComplex(test.getId());
                 if(test.getTutorId() == user.getId()) {
                     request.setAttribute("test", test );
                 } else {
@@ -247,7 +247,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
             // only show empty form
             // Read subject list for subject filter in presentation
-            request.setAttribute("subjects", subjectDao.listAll() );
+            request.setAttribute("subjects", subjectDao.getList() );
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
             dispatcher.forward(request, response);
             return;
@@ -349,7 +349,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             // We have errors
             alertManager.danger(validator.getErrors());
             // Read subject list for subject filter in presentation
-            request.setAttribute("subjects",  subjectDao.listAll() );
+            request.setAttribute("subjects",  subjectDao.getList() );
             // Send test data for auto filing
             request.setAttribute("test", test);
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
@@ -371,8 +371,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
         }
 
-        if( !testDao.update(test) ) {
-            testDao.insert(test);
+        if( !testDao.updateComplex(test) ) {
+            testDao.insertComplex(test);
         }
 
         alertManager.success("Test was saved successfully.");
@@ -399,7 +399,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         TestDao testDao = new TestDao(getConnectionPool());
-        Test test = testDao.get(testId);
+        Test test = testDao.getComplex(testId);
 
         if(test == null) {
             getAlertManagerFromSession(request.getSession()).danger("Can't find the test. Please, try again!");
@@ -507,5 +507,77 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/");
+    }
+
+    public void studentsResults(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        // Scan parameters
+        // Current page of test list
+        String pageNoStr = request.getParameter("pageNo");
+        int pageNo;
+        try {
+            pageNo = Integer.parseInt(pageNoStr);
+        } catch (NumberFormatException e) {
+            pageNo = 1;
+        }
+
+        // Init presentation
+        Presentation present = new Presentation(request, getConnectionPool());
+
+        TestDao testDao = new TestDao(getConnectionPool());
+        // If need enable filter
+        if(present.getSubjectId() > 0) {
+            testDao.setFilterSubjectId(present.getSubjectId());
+            testDao.enableFilter();
+        }
+
+        testDao.setFilterTutorId(user.getId());
+        testDao.enableFilter();
+
+        // Enable order by date
+        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
+                TestDao.ORDER_DESC : TestDao.ORDER_ASC;
+        testDao.setDateOrder(order);
+        testDao.enableOrder();
+
+        // Calc test count
+        int count = testDao.getTestCount();
+
+        // Init pagination
+        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
+        Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
+
+        // Read test list
+        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        List<Test> tests;
+
+        // single test list, without question and answers
+        tests = testDao.getPlainList(offset, COUNT_TEST_ON_PAGE);
+        QuestionDao questionDao = new QuestionDao(getConnectionPool());
+        // Results of testing for each test and student
+        List< List<TestingResults> > testingResultsList = new ArrayList<>();
+        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        for(Test test : tests) {
+            // attach simple question list without answers
+            List<Question> questions =  questionDao.getPlainList(test.getId());
+            test.setQuestions(questions);
+            // read students's results of testing
+            List<TestingResults> testingResults = testingResultsDao.get(test.getId());
+            testingResultsList.add(testingResults);
+        }
+
+        // Store data in request and session
+        present.store();
+        request.setAttribute("tests", tests);
+        request.setAttribute("pagination", pagination);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_STUDENTS_RESULTS);
+        dispatcher.forward(request, response);
     }
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 public class TestingResults {
     private int studentId;
     private long testId;
+    private Student student = null;
     // key = question id, value = correct/incorrect answer
     Map<Long, Boolean> answerResults;
 
@@ -54,5 +55,14 @@ public class TestingResults {
 
     public void setAnswerResults(Map<Long, Boolean> answerResults) {
         this.answerResults = answerResults;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+        this.studentId = student.getId();
     }
 }

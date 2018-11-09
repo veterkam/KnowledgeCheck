@@ -38,6 +38,7 @@ create table `student_profiles` (
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
+
 insert into `users`(`firstname`, `lastname`, `email`, `role`, `username`, `password`)
 VALUES('Bob', 'Smith', 'bob@gmail.com', 1, 'bob', '123'),
       ('Alex', 'McDonald', 'alex@gmail.com', 2, 'alex', '123'),

@@ -8,6 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentDao extends UserDao {
     private static final Logger logger = LogManager.getLogger("DAO");
@@ -62,7 +64,7 @@ public class StudentDao extends UserDao {
 
     private boolean updateProfile(Student student) throws DAOException {
         String sql = "UPDATE student_profiles SET "
-                +"specialty = ?, group = ?, year = ?"
+                +"`specialty` = ?, `group` = ?, `year` = ?"
                 + "WHERE id = ?";
 
         Connection connection = null;
@@ -107,10 +109,38 @@ public class StudentDao extends UserDao {
         return true;
     }
 
+    private Student readResultSet(ResultSet resultSet) throws SQLException {
+        int id = resultSet.getInt("id");
+        String firstname = resultSet.getString("firstname");
+        String lastname = resultSet.getString("lastname");
+        String email = resultSet.getString("email");
+        String username = resultSet.getString("username");
+        String password = resultSet.getString("password");
+        int role = resultSet.getInt("role");
+        String specialty = resultSet.getString("specialty");
+        String group = resultSet.getString("group");
+        int year = resultSet.getInt("year");
+
+
+        Student student = new Student();
+        student.setId(id);
+        student.setFirstname(firstname);
+        student.setLastname(lastname);
+        student.setEmail(email);
+        student.setRole(User.Role.fromOrdinal(role));
+        student.setUsername(username);
+        student.setPassword(password);
+        student.setSpecialty(specialty);
+        student.setGroup(group);
+        student.setYear(year);
+
+        return student;
+    }
+
     public Student get(int id) throws DAOException {
         Student student = null;
         final User.Role role = User.Role.STUDENT;
-        String sql = "select `users`.`id`," +
+        String sql = "SELECT users.`id`," +
                 " `firstname`," +
                 " `lastname`," +
                 " `email`," +
@@ -137,26 +167,7 @@ public class StudentDao extends UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-                String specialty = resultSet.getString("specialty");
-                String group = resultSet.getString("group");
-                int year = resultSet.getInt("year");
-
-                student = new Student();
-                student.setId(id);
-                student.setFirstname(firstname);
-                student.setLastname(lastname);
-                student.setEmail(email);
-                student.setRole(role);
-                student.setUsername(username);
-                student.setPassword(password);
-                student.setSpecialty(specialty);
-                student.setGroup(group);
-                student.setYear(year);
+                student = readResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
@@ -174,5 +185,61 @@ public class StudentDao extends UserDao {
         }
 
         return student;
+    }
+
+    public List<Student> getStudentsTookTest(long testId)
+        throws DAOException {
+        final User.Role role = User.Role.STUDENT;
+        List<Student> students = new ArrayList<>();
+
+        String sql = "SELECT users.`id`," +
+                " `firstname`," +
+                " `lastname`," +
+                " `email`," +
+                " `role`," +
+                " `username`," +
+                " `password`," +
+                " `specialty`," +
+                " `group`," +
+                " `year`" +
+                "FROM users " +
+                "LEFT JOIN student_profiles on users.id = student_profiles.id " +
+                "INNER JOIN testing_results ON users.id = testing_results.student_id " +
+                "INNER JOIN questions ON questions.id = testing_results.question_id " +
+                "WHERE questions.test_id = ? AND users.role = ? " +
+                "ORDER BY firstname, lastname ";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = connectionPool.getConnection();
+
+            statement = connection.prepareStatement(sql);
+            statement.setLong(1, testId);
+            statement.setInt(2, role.ordinal());
+            resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                Student student = readResultSet(resultSet);
+                students.add(student);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading student data failed.", e);
+        } finally {
+
+            try {
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                // do nothing
+            } finally {
+                connectionPool.releaseConnection(connection);
+            }
+        }
+
+        return students;
     }
 }

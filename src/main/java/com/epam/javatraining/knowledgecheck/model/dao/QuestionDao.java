@@ -19,8 +19,8 @@ public class QuestionDao {
         this.connectionPool = connectionPool;
     }
 
-    public void insert(Question question) throws DAOException {
-        insertSingle(question);
+    public void insertComplex(Question question) throws DAOException {
+        insertPlain(question);
 
         AnswerDao dao = new AnswerDao(connectionPool);
         for(Answer answer : question.getAnswers()) {
@@ -28,7 +28,7 @@ public class QuestionDao {
         }
     }
 
-    public void insertSingle(Question question) throws DAOException {
+    public void insertPlain(Question question) throws DAOException {
 
         String sql = "INSERT INTO questions (`test_id`, `description`) " +
                 "VALUES(?, ?)";
@@ -82,8 +82,8 @@ public class QuestionDao {
         }
     }
 
-    public List<Question> listForTest(long testId) throws DAOException {
-        List<Question> questionList = listForTestSingle(testId);
+    public List<Question> getComplexList(long testId) throws DAOException {
+        List<Question> questionList = getPlainList(testId);
 
         // attach answers
         AnswerDao dao = new AnswerDao(connectionPool);
@@ -96,7 +96,7 @@ public class QuestionDao {
     }
 
 
-    public List<Question> listForTestSingle(long testId) throws DAOException {
+    public List<Question> getPlainList(long testId) throws DAOException {
         List<Question> questionList = new ArrayList<>();
         String sql = "SELECT * FROM questions WHERE test_id = ?";
 
@@ -162,8 +162,8 @@ public class QuestionDao {
         return isRowDeleted;
     }
 
-    public boolean update(Question question) throws DAOException {
-        if(!updateSingle(question)) {
+    public boolean updateComplex(Question question) throws DAOException {
+        if(!updatePlain(question)) {
             return false;
         }
 
@@ -177,7 +177,7 @@ public class QuestionDao {
         return true;
     }
 
-    public boolean updateSingle(Question question) throws DAOException {
+    public boolean updatePlain(Question question) throws DAOException {
 
         String sql = "UPDATE questions SET description = ? " +
                 " WHERE id = ? AND test_id = ?";
@@ -210,8 +210,8 @@ public class QuestionDao {
         return isRowUpdated;
     }
 
-    public Question get(long id) throws DAOException {
-        Question question = getSingle(id);
+    public Question getComplex(long id) throws DAOException {
+        Question question = getPlain(id);
 
         AnswerDao dao = new AnswerDao(connectionPool);
         if(question != null) {
@@ -222,7 +222,7 @@ public class QuestionDao {
         return question;
     }
 
-    public Question getSingle(long id) throws DAOException {
+    public Question getPlain(long id) throws DAOException {
         Question question = null;
         String sql = "SELECT * FROM questions WHERE id = ?";
 

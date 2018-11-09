@@ -1,5 +1,8 @@
 package com.epam.javatraining.knowledgecheck.service;
 
+import com.epam.javatraining.knowledgecheck.exception.DAOException;
+import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.dao.SubjectDao;
 import com.epam.javatraining.knowledgecheck.model.entity.Subject;
 import org.apache.logging.log4j.util.Strings;
 
@@ -17,9 +20,13 @@ public class Presentation {
     private String dateOrder;
     private HttpServletRequest request;
 
-    public Presentation(HttpServletRequest request, List<Subject> subjects) {
+    public Presentation(HttpServletRequest request, ConnectionPool pool)
+        throws DAOException {
         this.request = request;
-        this.subjects = subjects;
+
+        // Read subject list for subject filter
+        SubjectDao subjectDao = new SubjectDao(pool);
+        this.subjects = subjects = subjectDao.getList();
 
         HttpSession session = request.getSession();
         // Filter on subject id

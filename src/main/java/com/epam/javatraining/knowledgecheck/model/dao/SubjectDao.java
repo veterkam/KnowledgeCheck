@@ -63,7 +63,7 @@ public class SubjectDao {
         }
     }
 
-    public List<Subject> listAll() throws DAOException {
+    public List<Subject> getList() throws DAOException {
         List<Subject> subjectList = new ArrayList<>();
         String sql = "SELECT * FROM subjects";
 

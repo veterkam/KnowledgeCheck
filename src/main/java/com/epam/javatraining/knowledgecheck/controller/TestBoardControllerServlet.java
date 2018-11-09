@@ -146,7 +146,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             TestingResultsDao trDao = new TestingResultsDao(getConnectionPool());
             for (Test test : tests) {
                 TestingResults tr = trDao.get(user.getId(), test.getId());
-                scores.add(tr.score());
+                scores.add(tr.getScore());
             }
             request.setAttribute("scores", scores);
         }
@@ -576,6 +576,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         // Store data in request and session
         present.store();
         request.setAttribute("tests", tests);
+        request.setAttribute("testingResultsList", testingResultsList);
         request.setAttribute("pagination", pagination);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_STUDENTS_RESULTS);
         dispatcher.forward(request, response);

@@ -192,7 +192,7 @@ public class StudentDao extends UserDao {
         final User.Role role = User.Role.STUDENT;
         List<Student> students = new ArrayList<>();
 
-        String sql = "SELECT users.`id`," +
+        String sql = "SELECT DISTINCT users.`id`," +
                 " `firstname`," +
                 " `lastname`," +
                 " `email`," +

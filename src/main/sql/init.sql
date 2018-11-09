@@ -16,9 +16,9 @@ create table `users` (
 
 create table `tutor_profiles` (
   `id` int(11) not null,
-  `position` varchar(123),
-  `scientific_degree` varchar(123),
-  `academicTitle` varchar(123),
+  `position` varchar(100),
+  `scientific_degree` varchar(100),
+  `academicTitle` varchar(100),
   primary key (`id`),
   unique key `id_unique` (`id`),
   FOREIGN KEY (`id`)
@@ -28,7 +28,7 @@ create table `tutor_profiles` (
 
 create table `student_profiles` (
   `id` int(11) not null,
-  `specialty` varchar(123),
+  `specialty` varchar(100),
   `group` varchar(10),
   `year` int(1),
   primary key (`id`),
@@ -493,7 +493,7 @@ select * from tests;
 
 SELECT * FROM questions;
 
-SELECT * FROM answers;
+SELECT * FROM users;
 
 SELECT answers.question_id as question_id, answers.id as answer_id FROM tests
 INNER JOIN questions ON tests.id = questions.test_id

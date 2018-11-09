@@ -7,9 +7,7 @@
             <a class="navbar-brand" href="${pageContext.request.contextPath}/profile">My Profile</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>
-        </c:if>
-        <c:if test="${user.role=='TUTOR' || user.role=='STUDENT'}">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/rating">Student Rating</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/teststatistics">Test Statistics</a>
         </c:if>
     </c:if>
     <!-- Toggler/collapsibe Button -->

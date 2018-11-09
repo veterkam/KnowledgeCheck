@@ -15,7 +15,7 @@ public class TestingResults {
         this.answerResults = answerResults;
     }
 
-    public int score() {
+    public int getScore() {
 
         if( answerResults.isEmpty() ) {
             return -1;

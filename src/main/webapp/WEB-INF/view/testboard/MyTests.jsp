@@ -69,7 +69,6 @@
                                         </div>
                                         <div class="card-body">
                                             <c:forEach var="answer" items="${question.answers}" varStatus="answerLoop">
-                                                <%--&#x2714;&#x2718;--%>
                                                 <p class="card-text">
                                                     ${answerLoop.count}.&nbsp;
                                                     <c:out value="${answer.description}"/>

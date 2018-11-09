@@ -157,7 +157,7 @@ public class TestingResultsDao {
     }
 
     public List<TestingResults> get(long testId) throws DAOException {
-        List<TestingResults> testingResults = new ArrayList<>();
+        List<TestingResults> testingResultsList = new ArrayList<>();
 
         StudentDao studentDao = new StudentDao(connectionPool);
         List<Student> students = studentDao.getStudentsTookTest(testId);
@@ -165,9 +165,10 @@ public class TestingResultsDao {
         for(Student student : students) {
             TestingResults results = get(student.getId(), testId);
             results.setStudent(student);
+            testingResultsList.add(results);
         }
 
-        return testingResults;
+        return testingResultsList;
     }
 
 

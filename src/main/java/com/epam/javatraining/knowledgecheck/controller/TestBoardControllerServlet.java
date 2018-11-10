@@ -26,7 +26,8 @@ import java.util.Map;
         "/testboard/remove",
         "/testboard/testing",
         "/testboard/testing/result",
-        "/testboard/studentsresults"
+        "/testboard/studentsresults",
+        "/testboard/teststatistics"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
@@ -67,6 +68,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     break;
                 case "/testboard/studentsresults":
                     studentsResults(request, response);
+                    break;
+                case "/testboard/teststatistics":
+                    testStatistics(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -498,9 +502,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         testingResultsDao.update(testingResults);
 
         // Show results
-        int rating = Math.round(100.0f * ((float)correctlySelAnswerCount) / ((float) correctAnswerMap.size()));
-        String message = "Your result is " + rating + "% right answers!";
-        if (rating > 50) {
+        int score = Math.round(100.0f * ((float)correctlySelAnswerCount) / ((float) correctAnswerMap.size()));
+        String message = "Your result is " + score + "% correct answers!";
+        if (score > 50) {
             getAlertManagerFromSession(request.getSession()).success(message);
         } else {
             getAlertManagerFromSession(request.getSession()).danger(message);
@@ -581,4 +585,112 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_STUDENTS_RESULTS);
         dispatcher.forward(request, response);
     }
+
+    public void testStatistics(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        // Scan parameters
+        // Current page of test list
+        String pageNoStr = request.getParameter("pageNo");
+        int pageNo;
+        try {
+            pageNo = Integer.parseInt(pageNoStr);
+        } catch (NumberFormatException e) {
+            pageNo = 1;
+        }
+
+        // Init presentation
+        Presentation present = new Presentation(request, getConnectionPool());
+
+        TestDao testDao = new TestDao(getConnectionPool());
+        // If need enable filter
+        if(present.getSubjectId() > 0) {
+            testDao.setFilterSubjectId(present.getSubjectId());
+            testDao.enableFilter();
+        }
+
+        testDao.setFilterTutorId(user.getId());
+        testDao.enableFilter();
+
+        // Enable order by date
+        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
+                TestDao.ORDER_DESC : TestDao.ORDER_ASC;
+        testDao.setDateOrder(order);
+        testDao.enableOrder();
+
+        // Calc test count
+        int count = testDao.getTestCount();
+
+        // Init pagination
+        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
+        Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
+
+        // Read test list
+        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        List<Test> tests;
+
+        // single test list, without question and answers
+        tests = testDao.getPlainList(offset, COUNT_TEST_ON_PAGE);
+        QuestionDao questionDao = new QuestionDao(getConnectionPool());
+        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        List<TestStatistics> statisticsList = new ArrayList<>();
+        for(Test test : tests) {
+            // attach simple question list without answers
+            List<Question> questions =  questionDao.getPlainList(test.getId());
+            test.setQuestions(questions);
+            // read students's results of testing
+            List<TestingResults> testingResultsList = testingResultsDao.get(test.getId());
+
+            // Calculate statistics
+            TestStatistics statistics = new TestStatistics();
+            int studentCount = testingResultsList.size();
+            statistics.setStudentCount(studentCount);
+            // Calculate scores. First calc how many students
+            // answered correct for each question
+            Map<Long, Integer> scores = new HashMap<>();
+            // results for each student for current test
+            for(TestingResults results : testingResultsList) {
+
+                for (long questionId : results.getAnswerResults().keySet()) {
+
+                    if (!scores.containsKey(questionId)) {
+                        scores.put(questionId, 0);
+                    }
+
+                    // answer is(not) correct for each question?
+                    boolean correct = results.getAnswerResults().get(questionId);
+                    if (correct) {
+                        int correctAnswerCount = scores.get(questionId) + 1;
+                        scores.put(questionId, correctAnswerCount);
+                    }
+                }
+            }
+
+            // Second calc scores: divided count of correct student's answers
+            // by count of students
+            for (long questionId : scores.keySet()) {
+                int correctAnswerCount = scores.get(questionId);
+                int score = Math.round(100.0f * ((float)correctAnswerCount) / ((float) statistics.getStudentCount()));
+                scores.put(questionId, score);
+            }
+
+            statistics.setScores(scores);
+            statisticsList.add(statistics);
+        }
+
+        // Store data in request and session
+        present.store();
+        request.setAttribute("tests", tests);
+        request.setAttribute("statisticsList", statisticsList);
+        request.setAttribute("pagination", pagination);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_TEST_STATISTICS);
+        dispatcher.forward(request, response);
+    }
+
 }

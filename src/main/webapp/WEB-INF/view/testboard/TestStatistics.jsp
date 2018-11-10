@@ -9,7 +9,7 @@
 
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Students results</h1>
+            <h1 class="h3 mb-3 font-weight-normal">Test statistics</h1>
         </div>
     </div>
 
@@ -57,47 +57,28 @@
                         <div class="card-body">
                             <h5 class="card-title"><c:out value="${test.title}"/></h5>
                             <p class="card-text"><c:out value="${test.description}"/></p>
+                            <p class="card-text">${statisticsList[testLoop.index].studentCount} students passed the test</p>
                             <div id="desc${testLoop.index}" class="collapse">
-                                <c:forEach var="studentTestingResults"  items="${testingResultsList[testLoop.index]}" varStatus="studentTestingResultsLoop">
-                                    <div class="card mt-1">
-                                        <div class="card-header">
-                                            <div class="row">
-                                                <div class="col text-left">
-                                                    <p class="card-text">
-                                                        <strong>${studentTestingResultsLoop.count}. <c:out value="${studentTestingResults.student.fullname}"/> </strong>
-                                                        ${studentTestingResults.score}% correct answers
-                                                    </p>
-                                                </div>
-                                                <div class="col text-right">
-                                                    <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
-                                                            data-target="#testingResults${testLoop.index}_${studentTestingResultsLoop.index}">
-                                                        Results
-                                                    </button>
+                                <c:forEach var="question" items="${test.questions}" varStatus="questionLoop">
+                                    <div class="row">
+                                        <div class="col">
+                                            ${questionLoop.count}. <c:out value="${question.description}"/>
+                                        </div>
+                                    </div>
+                                    <c:if test="${statisticsList[testLoop.index].studentCount > 0}">
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="progress mb-4">
+                                                    <div id="test-progress-bar"
+                                                         class="progress-bar bg-dark progress-bar-striped text-center"
+                                                         style="width:${statisticsList[testLoop.index].scores[question.id]}%">
+                                                        ${statisticsList[testLoop.index].scores[question.id]}% correct answers
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="card-body collapse" id="testingResults${testLoop.index}_${studentTestingResultsLoop.index}">
-                                            <c:forEach var="question" items="${test.questions}" varStatus="questionLoop">
-                                                <div class="row">
-                                                    <div class="col-sm-1">
-                                                        ${questionLoop.count}.
-                                                    </div>
-                                                    <div class="col-sm-10">
-                                                        <c:out value="${question.description}"/>
-                                                    </div>
-                                                    <div class="col-sm-1">
-                                                        <c:if test="${studentTestingResults.answerResults[question.id] == true}">
-                                                            &#x2714;
-                                                        </c:if>
-                                                        <c:if test="${studentTestingResults.answerResults[question.id] == false}">
-                                                            &#x2718;
-                                                        </c:if>
-                                                    </div>
-                                                </div>
-                                             </c:forEach>
-                                        </div>
-                                    </div>
-                                </c:forEach>
+                                    </c:if>
+                                 </c:forEach>
                             </div>
                         </div>
                         <div class="card-footer text-muted">
@@ -107,8 +88,7 @@
                                 </div>
                                 <div class="col text-right">
                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
-                                            data-target="#desc${testLoop.index}"
-                                            <c:if test="${fn:length(testingResultsList[testLoop.index]) == 0}">disabled</c:if>>
+                                            data-target="#desc${testLoop.index}">
                                         Details
                                     </button>
                                 </div>

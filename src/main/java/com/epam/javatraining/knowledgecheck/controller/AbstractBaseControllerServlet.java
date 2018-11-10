@@ -26,6 +26,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_TEST_BOARD_EDIT_TEST = "/WEB-INF/view/testboard/EditTest.jsp";
     protected final String VIEW_TEST_BOARD_TESTING = "/WEB-INF/view/testboard/Testing.jsp";
     protected final String VIEW_TEST_BOARD_STUDENTS_RESULTS = "/WEB-INF/view/testboard/StudentsResults.jsp";
+    protected final String VIEW_TEST_BOARD_TEST_STATISTICS = "/WEB-INF/view/testboard/TestStatistics.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
     private static ConnectionPool connectionPool = null;

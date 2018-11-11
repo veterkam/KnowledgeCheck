@@ -105,7 +105,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        UserDao UserDao = new UserDao(getConnectionPool());
+        UserDao UserDao = new UserDao();
         User user = UserDao.get(username);
 
         if (user != null && user.getPassword().equals(password)) {
@@ -204,7 +204,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        UserDao userDao = new UserDao(getConnectionPool());
+        UserDao userDao = new UserDao();
         // Is the username unique?
         User user = userDao.get(username);
 
@@ -249,7 +249,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // Insert user to data base.
             String errorMsg = "";
             try {
-                new UserDao(getConnectionPool()).insert(user);
+                new UserDao().insert(user);
             } catch (DAOException e) {
 
                 Throwable childException = e.getCause();
@@ -337,7 +337,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        UserDao userDao = new UserDao(getConnectionPool());
+        UserDao userDao = new UserDao();
         User user = userDao.get(anonym.getUsername());
 
         if (user == null || !user.getEmail().equals(email)) {
@@ -376,7 +376,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         AlertManager alertManager = getAlertManagerFromSession(request.getSession());
 
         if (expectedCode.equals(code)) {
-            UserDao userDao = new UserDao(getConnectionPool());
+            UserDao userDao = new UserDao();
             User user = userDao.get(anonym.getUsername());
 
             if (user != null) {

@@ -1,21 +1,15 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.entity.Subject;
 import com.epam.javatraining.knowledgecheck.model.entity.Tutor;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TutorDao extends UserDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    public TutorDao(ConnectionPool connectionPool) {
-        super(connectionPool);
+
+    public TutorDao() {
+        super();
     }
 
     private void insertProfile(Tutor tutor) throws DAOException {
@@ -26,7 +20,7 @@ public class TutorDao extends UserDao {
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setInt(1, tutor.getId());
             statement.setString(2, tutor.getPosition());
@@ -42,19 +36,15 @@ public class TutorDao extends UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting tutor profile data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
     }
     
-    public void insert(Tutor tutor) throws DAOException {
-        super.insert(tutor);
+    public int insert(Tutor tutor) throws DAOException {
+        int resultId = super.insert(tutor);
         insertProfile(tutor);
+
+        return resultId;
     }
 
     public boolean delete(Tutor tutor) throws DAOException {
@@ -72,7 +62,7 @@ public class TutorDao extends UserDao {
         boolean isRowUpdated = false;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, tutor.getPosition());
@@ -85,13 +75,7 @@ public class TutorDao extends UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating tutor data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -107,6 +91,32 @@ public class TutorDao extends UserDao {
         }
 
         return true;
+    }
+
+    private Tutor extractTutorFromResultSet(ResultSet resultSet) throws SQLException{
+        int id = resultSet.getInt("id");
+        String firstname = resultSet.getString("firstname");
+        String lastname = resultSet.getString("lastname");
+        String email = resultSet.getString("email");
+        String username = resultSet.getString("username");
+        String password = resultSet.getString("password");
+        int role = resultSet.getInt("role");
+        String position = resultSet.getString("position");
+        String scientificDegree = resultSet.getString("scientific_degree");
+        String academicTitle = resultSet.getString("academicTitle");
+
+        Tutor tutor = new Tutor();
+        tutor.setId(id);
+        tutor.setFirstname(firstname);
+        tutor.setLastname(lastname);
+        tutor.setEmail(email);
+        tutor.setRole(User.Role.fromOrdinal(role));
+        tutor.setUsername(username);
+        tutor.setPassword(password);
+        tutor.setPosition(position);
+        tutor.setScientificDegree(scientificDegree);
+        tutor.setAcademicTitle(academicTitle);
+        return tutor;
     }
 
     public Tutor get(int id) throws DAOException {
@@ -131,7 +141,7 @@ public class TutorDao extends UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, id);
@@ -139,41 +149,14 @@ public class TutorDao extends UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                String firstname = resultSet.getString("firstname");
-                String lastname = resultSet.getString("lastname");
-                String email = resultSet.getString("email");
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-                String position = resultSet.getString("position");
-                String scientificDegree = resultSet.getString("scientific_degree");
-                String academicTitle = resultSet.getString("academicTitle");
-
-                tutor = new Tutor();
-                tutor.setId(id);
-                tutor.setFirstname(firstname);
-                tutor.setLastname(lastname);
-                tutor.setEmail(email);
-                tutor.setRole(role);
-                tutor.setUsername(username);
-                tutor.setPassword(password);
-                tutor.setPosition(position);
-                tutor.setScientificDegree(scientificDegree);
-                tutor.setAcademicTitle(academicTitle);
+                tutor = extractTutorFromResultSet(resultSet);
             }
 
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading tutor data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return tutor;

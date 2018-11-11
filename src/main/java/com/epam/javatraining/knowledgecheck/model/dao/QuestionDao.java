@@ -1,42 +1,39 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 import com.epam.javatraining.knowledgecheck.model.entity.Answer;
 import com.epam.javatraining.knowledgecheck.model.entity.Question;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuestionDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+public class QuestionDao extends AbstractDao{
 
-    public QuestionDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public QuestionDao() {
+        super();
     }
 
-    public void insertComplex(Question question) throws DAOException {
-        insertPlain(question);
+    public long insertComplex(Question question) throws DAOException {
+        long resultId = insertPlain(question);
 
-        AnswerDao dao = new AnswerDao(connectionPool);
+        AnswerDao dao = new AnswerDao();
         for(Answer answer : question.getAnswers()) {
             dao.insert(answer);
         }
+
+        return resultId;
     }
 
-    public void insertPlain(Question question) throws DAOException {
-
+    public long insertPlain(Question question) throws DAOException {
+        long resultId;
         String sql = "INSERT INTO questions (`test_id`, `description`) " +
                 "VALUES(?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(
                     sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -46,18 +43,11 @@ public class QuestionDao {
             boolean isRowInserted = statement.executeUpdate() > 0;
 
             if (isRowInserted) {
-                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        question.setId(generatedKeys.getInt(1));
+                resultId = getGenKey(statement).longValue();
+                question.setId(resultId);
 
-                        for(Answer answer : question.getAnswers()) {
-                            answer.setQuestionId(question.getId());
-                        }
-                    } else {
-                        DAOException e = new DAOException("Creating question data failed, no ID obtained.");
-                        logger.error(e.getMessage(), e);
-                        throw e;
-                    }
+                for(Answer answer : question.getAnswers()) {
+                    answer.setQuestionId(question.getId());
                 }
             } else {
                 DAOException e = new DAOException("Inserting question data failed, no rows affected.");
@@ -68,31 +58,30 @@ public class QuestionDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting question data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
-        for(Answer answer : question.getAnswers()) {
-            answer.setQuestionId(question.getId());
-        }
+        return resultId;
     }
 
     public List<Question> getComplexList(long testId) throws DAOException {
         List<Question> questionList = getPlainList(testId);
 
         // attach answers
-        AnswerDao dao = new AnswerDao(connectionPool);
+        AnswerDao dao = new AnswerDao();
         for(Question question : questionList) {
-            List<Answer> answerList = dao.listForQuestion(question.getId());
+            List<Answer> answerList = dao.getList(question.getId());
             question.setAnswers(answerList);
         }
 
         return questionList;
+    }
+
+    private Question extractQuestionFromResultSet(ResultSet resultSet) throws SQLException {
+        long id = resultSet.getLong("id");
+        long testId = resultSet.getLong("test_id");
+        String description = resultSet.getString("description");
+        return new Question(id, testId, description);
     }
 
 
@@ -105,31 +94,21 @@ public class QuestionDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, testId);
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                String description = resultSet.getString("description");
-                Question question = new Question(id, testId, description);
+                Question question = extractQuestionFromResultSet(resultSet);
                 questionList.add(question);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading question data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return questionList;
@@ -141,7 +120,7 @@ public class QuestionDao {
         PreparedStatement statement = null;
         boolean isRowDeleted = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, question.getId());
 
@@ -150,13 +129,7 @@ public class QuestionDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Deleting question data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowDeleted;
@@ -167,7 +140,7 @@ public class QuestionDao {
             return false;
         }
 
-        AnswerDao dao = new AnswerDao(connectionPool);
+        AnswerDao dao = new AnswerDao();
         for(Answer answer : question.getAnswers()) {
             if(!dao.update(answer)) {
                 dao.insert(answer);
@@ -186,7 +159,7 @@ public class QuestionDao {
         PreparedStatement statement = null;
         boolean isRowUpdated = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, question.getDescription());
@@ -198,13 +171,7 @@ public class QuestionDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating question data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -213,9 +180,9 @@ public class QuestionDao {
     public Question getComplex(long id) throws DAOException {
         Question question = getPlain(id);
 
-        AnswerDao dao = new AnswerDao(connectionPool);
+        AnswerDao dao = new AnswerDao();
         if(question != null) {
-            List<Answer> answerList = dao.listForQuestion(id);
+            List<Answer> answerList = dao.getList(id);
             question.setAnswers(answerList);
         }
 
@@ -231,30 +198,20 @@ public class QuestionDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, id);
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                Long testId = resultSet.getLong("testId");
-                String description = resultSet.getString("description");
-                question = new Question(id, testId, description);
+                question = extractQuestionFromResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading question data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return question;

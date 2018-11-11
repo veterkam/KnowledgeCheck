@@ -107,9 +107,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Init presentation
-        Presentation present = new Presentation(request, getConnectionPool());
+        Presentation present = new Presentation(request);
 
-        TestDao testDao = new TestDao(getConnectionPool());
+        TestDao testDao = new TestDao();
         // If need enable filter
         if(present.getSubjectId() > 0) {
             testDao.setFilterSubjectId(present.getSubjectId());
@@ -147,7 +147,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
             List<Integer> scores = new ArrayList<>();
-            TestingResultsDao trDao = new TestingResultsDao(getConnectionPool());
+            TestingResultsDao trDao = new TestingResultsDao();
             for (Test test : tests) {
                 TestingResults tr = trDao.get(user.getId(), test.getId());
                 scores.add(tr.getScore());
@@ -198,7 +198,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         Test test = new Test();
         test.setId(id);
         test.setTutor(new Tutor(user));
-        TestDao testDao = new TestDao(getConnectionPool());
+        TestDao testDao = new TestDao();
         if(testDao.delete(test)) {
             alertManager.success("The test was successfully removed.");
         } else {
@@ -234,8 +234,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             // it is new test, do nothing
         }
 
-        TestDao testDao = new TestDao(getConnectionPool());
-        SubjectDao subjectDao = new SubjectDao(getConnectionPool());
+        TestDao testDao = new TestDao();
+        SubjectDao subjectDao = new SubjectDao();
 
         if (Validator.containNull(paramSubject, paramTitle, paramDescription)) {
             // Parameters do not have test data
@@ -362,14 +362,14 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         if(!remAnswerList.isEmpty()) {
-            AnswerDao dao = new AnswerDao(getConnectionPool());
+            AnswerDao dao = new AnswerDao();
             for(Answer answer : remAnswerList) {
                 dao.delete(answer);
             }
         }
 
         if(!remQuestionList.isEmpty()) {
-            QuestionDao dao = new QuestionDao(getConnectionPool());
+            QuestionDao dao = new QuestionDao();
             for(Question question : remQuestionList) {
                 dao.delete(question);
             }
@@ -402,7 +402,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        TestDao testDao = new TestDao(getConnectionPool());
+        TestDao testDao = new TestDao();
         Test test = testDao.getComplex(testId);
 
         if(test == null) {
@@ -434,8 +434,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        // Read from BD Lists correct answers for each question
-        TestDao testDao = new TestDao(getConnectionPool());
+        // Read from DB Lists correct answers for each question
+        TestDao testDao = new TestDao();
         Map<Long, List<Long>> correctAnswerMap = testDao.getCorrectAnswerIds(testId);
 
         Map<Long, List<Long>> selectedAnswerMap = new HashMap<>();
@@ -498,7 +498,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         // Save results in DB
         TestingResults testingResults = new TestingResults(user.getId(), testId, answerResults);
-        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        TestingResultsDao testingResultsDao = new TestingResultsDao();
         testingResultsDao.update(testingResults);
 
         // Show results
@@ -533,9 +533,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Init presentation
-        Presentation present = new Presentation(request, getConnectionPool());
+        Presentation present = new Presentation(request);
 
-        TestDao testDao = new TestDao(getConnectionPool());
+        TestDao testDao = new TestDao();
         // If need enable filter
         if(present.getSubjectId() > 0) {
             testDao.setFilterSubjectId(present.getSubjectId());
@@ -564,10 +564,10 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         // single test list, without question and answers
         tests = testDao.getPlainList(offset, COUNT_TEST_ON_PAGE);
-        QuestionDao questionDao = new QuestionDao(getConnectionPool());
+        QuestionDao questionDao = new QuestionDao();
         // Results of testing for each test and student
         List< List<TestingResults> > testingResultsList = new ArrayList<>();
-        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        TestingResultsDao testingResultsDao = new TestingResultsDao();
         for(Test test : tests) {
             // attach simple question list without answers
             List<Question> questions =  questionDao.getPlainList(test.getId());
@@ -606,9 +606,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Init presentation
-        Presentation present = new Presentation(request, getConnectionPool());
+        Presentation present = new Presentation(request);
 
-        TestDao testDao = new TestDao(getConnectionPool());
+        TestDao testDao = new TestDao();
         // If need enable filter
         if(present.getSubjectId() > 0) {
             testDao.setFilterSubjectId(present.getSubjectId());
@@ -637,8 +637,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
         // single test list, without question and answers
         tests = testDao.getPlainList(offset, COUNT_TEST_ON_PAGE);
-        QuestionDao questionDao = new QuestionDao(getConnectionPool());
-        TestingResultsDao testingResultsDao = new TestingResultsDao(getConnectionPool());
+        QuestionDao questionDao = new QuestionDao();
+        TestingResultsDao testingResultsDao = new TestingResultsDao();
         List<TestStatistics> statisticsList = new ArrayList<>();
         for(Test test : tests) {
             // attach simple question list without answers

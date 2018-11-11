@@ -1,32 +1,27 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 import com.epam.javatraining.knowledgecheck.model.entity.Answer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnswerDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+public class AnswerDao extends AbstractDao{
 
-    public AnswerDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public AnswerDao() {
+        super();
     }
 
-    public void insert(Answer answer) throws DAOException {
-
+    public long insert(Answer answer) throws DAOException {
+        long resultId;
         String sql = "INSERT INTO answers (`question_id`, `description`, `correct`) " +
                 "VALUES(?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(
                     sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -37,15 +32,8 @@ public class AnswerDao {
             boolean isRowInserted = statement.executeUpdate() > 0;
 
             if (isRowInserted) {
-                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        answer.setId(generatedKeys.getInt(1));
-                    } else {
-                        DAOException e = new DAOException("Creating answer data failed, no ID obtained.");
-                        logger.error(e.getMessage(), e);
-                        throw e;
-                    }
-                }
+                resultId = getGenKey(statement).longValue();
+                answer.setId(resultId);
             } else {
                 DAOException e = new DAOException("Inserting answer data failed, no rows affected.");
                 logger.error(e.getMessage(), e);
@@ -55,17 +43,22 @@ public class AnswerDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting answer data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
+
+        return resultId;
     }
 
-    public List<Answer> listForQuestion(long questionId) throws DAOException {
+    protected Answer extractAnswerFromResultSet(ResultSet resultSet) throws SQLException {
+        long id = resultSet.getLong("id");
+        long questionId = resultSet.getLong("question_id");
+        String description = resultSet.getString("description");
+        Boolean correct = resultSet.getBoolean("correct");
+
+        return new Answer(id, questionId, description, correct);
+    }
+
+    public List<Answer> getList(long questionId) throws DAOException {
         List<Answer> answerList = new ArrayList<>();
         String sql = "SELECT * FROM answers WHERE question_id=?";
 
@@ -74,32 +67,21 @@ public class AnswerDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, questionId);
             resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                String description = resultSet.getString("description");
-                Boolean correct = resultSet.getBoolean("correct");
-                Answer answer = new Answer(id, questionId, description, correct);
+                Answer answer = extractAnswerFromResultSet(resultSet);
                 answerList.add(answer);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading answer data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return answerList;
@@ -111,7 +93,7 @@ public class AnswerDao {
         PreparedStatement statement = null;
         boolean isRowDeleted = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, answer.getId());
 
@@ -120,13 +102,7 @@ public class AnswerDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Deleting answer data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowDeleted;
@@ -141,7 +117,7 @@ public class AnswerDao {
         PreparedStatement statement = null;
         boolean isRowUpdated = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, answer.getDescription());
@@ -154,13 +130,7 @@ public class AnswerDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating answer data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -175,31 +145,20 @@ public class AnswerDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, id);
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                Long questionId = resultSet.getLong("questionId");
-                String description = resultSet.getString("description");
-                Boolean correct = resultSet.getBoolean("correct");
-                answer = new Answer(id, questionId, description, correct);
+                answer = extractAnswerFromResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading answer data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return answer;

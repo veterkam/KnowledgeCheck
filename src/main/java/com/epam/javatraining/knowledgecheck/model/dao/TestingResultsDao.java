@@ -1,11 +1,8 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 import com.epam.javatraining.knowledgecheck.model.entity.Student;
 import com.epam.javatraining.knowledgecheck.model.entity.TestingResults;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,12 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestingResultsDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+public class TestingResultsDao extends AbstractDao{
 
-    public TestingResultsDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public TestingResultsDao() {
+        super();
     }
 
     private void insertResultOfAnswer(int studentId, Long questionId, boolean correct)
@@ -30,7 +25,7 @@ public class TestingResultsDao {
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
 
             statement.setInt(1, studentId);
@@ -48,13 +43,7 @@ public class TestingResultsDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting testing result data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
     }
 
@@ -66,9 +55,9 @@ public class TestingResultsDao {
 
         Connection connection = null;
         PreparedStatement statement = null;
-        boolean isRowUpdated = false;
+        boolean isRowUpdated;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setBoolean(1, correct);
@@ -80,13 +69,7 @@ public class TestingResultsDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating testing result data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -125,7 +108,7 @@ public class TestingResultsDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, studenId);
@@ -143,15 +126,7 @@ public class TestingResultsDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading testing results data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
         return testingResults;
     }
@@ -159,7 +134,7 @@ public class TestingResultsDao {
     public List<TestingResults> get(long testId) throws DAOException {
         List<TestingResults> testingResultsList = new ArrayList<>();
 
-        StudentDao studentDao = new StudentDao(connectionPool);
+        StudentDao studentDao = new StudentDao();
         List<Student> students = studentDao.getStudentsTookTest(testId);
 
         for(Student student : students) {
@@ -170,7 +145,4 @@ public class TestingResultsDao {
 
         return testingResultsList;
     }
-
-
-
 }

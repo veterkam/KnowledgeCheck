@@ -1,32 +1,27 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+public class UserDao extends AbstractDao{
 
-    public UserDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public UserDao() {
+        super();
     }
 
-    public void insert(User user) throws DAOException {
-
+    public int insert(User user) throws DAOException {
+        int resultId;
         String sql = "INSERT INTO users (firstname, lastname, email, role, username, password) " +
                 "VALUES(?, ?, ?, ?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(
                     sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -40,15 +35,8 @@ public class UserDao {
             boolean isRowInserted = statement.executeUpdate() > 0;
 
             if (isRowInserted) {
-                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        user.setId(generatedKeys.getInt(1));
-                    } else {
-                        DAOException e = new DAOException("Creating user data failed, no ID obtained.");
-                        logger.error(e.getMessage(), e);
-                        throw e;
-                    }
-                }
+                resultId = getGenKey(statement).intValue();
+                user.setId(resultId);
             } else {
                 DAOException e = new DAOException("Inserting user data failed, no rows affected.");
                 logger.error(e.getMessage(), e);
@@ -58,17 +46,13 @@ public class UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting user data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
+
+        return resultId;
     }
 
-    private User scanUser(ResultSet resultSet) throws SQLException {
+    private User extractUserFromResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String firstname = resultSet.getString("firstname");
         String lastname = resultSet.getString("lastname");
@@ -92,27 +76,19 @@ public class UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
 
             while (resultSet.next()) {
-                User user = scanUser(resultSet);
+                User user = extractUserFromResultSet(resultSet);
                 listUser.add(user);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading user data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return listUser;
@@ -124,7 +100,7 @@ public class UserDao {
         PreparedStatement statement = null;
         boolean isRowDeleted = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, user.getId());
@@ -134,13 +110,7 @@ public class UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Deleting user data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowDeleted;
@@ -156,7 +126,7 @@ public class UserDao {
         PreparedStatement statement = null;
         boolean isRowUpdated = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, user.getFirstname());
@@ -172,13 +142,7 @@ public class UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating user data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -193,28 +157,20 @@ public class UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                user = scanUser(resultSet);
+                user = extractUserFromResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading user data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return user;
@@ -229,28 +185,20 @@ public class UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setString(1, username);
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                user = scanUser(resultSet);
+                user = extractUserFromResultSet(resultSet);
             }
 
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading user data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return user;

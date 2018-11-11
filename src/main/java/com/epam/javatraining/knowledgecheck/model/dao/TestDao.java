@@ -1,10 +1,7 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
 import com.epam.javatraining.knowledgecheck.model.entity.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,9 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+public class TestDao extends AbstractDao{
 
     public final static String ORDER_ASC = "ASC";
     public final static String ORDER_DESC = "DESC";
@@ -25,21 +20,23 @@ public class TestDao {
     private boolean useFilter = false;
     private boolean useOrder = false;
 
-    public TestDao(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public TestDao() {
+        super();
     }
 
-    public void insertComplex(Test test) throws DAOException {
-        insertPlain(test);
+    public long insertComplex(Test test) throws DAOException {
+        long resultId = insertPlain(test);
 
-        QuestionDao dao = new QuestionDao(connectionPool);
+        QuestionDao dao = new QuestionDao();
         for(Question question : test.getQuestions()) {
             dao.insertComplex(question);
         }
+
+        return resultId;
     }
 
-    public void insertPlain(Test test) throws DAOException {
-
+    public long insertPlain(Test test) throws DAOException {
+        long resultId;
         // Insert update_time as default TIMESTAMP
         String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
                 "VALUES(?, ?, ?, ?)";
@@ -47,7 +44,7 @@ public class TestDao {
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(
                     sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -59,18 +56,11 @@ public class TestDao {
             boolean isRowInserted = statement.executeUpdate() > 0;
 
             if (isRowInserted) {
-                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        test.setId(generatedKeys.getInt(1));
+                resultId = getGenKey(statement).longValue();
+                test.setId(resultId);
 
-                        for(Question question : test.getQuestions()) {
-                            question.setTestId(test.getId());
-                        }
-                    } else {
-                        DAOException e = new DAOException("Creating test data failed, no ID obtained.");
-                        logger.error(e.getMessage(), e);
-                        throw e;
-                    }
+                for(Question question : test.getQuestions()) {
+                    question.setTestId(test.getId());
                 }
             } else {
                 DAOException e = new DAOException("Inserting test data failed, no rows affected.");
@@ -81,28 +71,20 @@ public class TestDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting test data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
-        for(Question question : test.getQuestions()) {
-            question.setTestId(test.getId());
-        }
+        return resultId;
     }
 
     private void attachQuestions(Test test) throws DAOException {
-        QuestionDao dao = new QuestionDao(connectionPool);
+        QuestionDao dao = new QuestionDao();
         List<Question> questionList = dao.getComplexList(test.getId());
         test.setQuestions(questionList);
     }
 
     private void attachQuestions(List<Test> testList) throws DAOException {
-        QuestionDao dao = new QuestionDao(connectionPool);
+        QuestionDao dao = new QuestionDao();
         for(Test test : testList) {
             List<Question> questionList = dao.getComplexList(test.getId());
             test.setQuestions(questionList);
@@ -148,7 +130,7 @@ public class TestDao {
         int result = 0;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
 
@@ -159,20 +141,12 @@ public class TestDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading test data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
         return result;
     }
 
-    private Test scanTest(ResultSet resultSet)
+    private Test extractTestFromResultSet(ResultSet resultSet)
             throws SQLException, DAOException {
 
         long id = resultSet.getLong("id");
@@ -182,8 +156,8 @@ public class TestDao {
         String description = resultSet.getString("description");
         Timestamp updateTime = resultSet.getTimestamp("update_time");
 
-        Subject subject = new SubjectDao(connectionPool).get(subjectId);
-        Tutor tutor = new TutorDao(connectionPool).get(tutorId);
+        Subject subject = new SubjectDao().get(subjectId);
+        Tutor tutor = new TutorDao().get(tutorId);
 
         Test test = new Test(id, subject, tutor, title, description, updateTime);
         return test;
@@ -205,29 +179,21 @@ public class TestDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, offset);
             statement.setLong(2, count);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                Test test = scanTest(resultSet);
+                Test test = extractTestFromResultSet(resultSet);
                 testList.add(test);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading test data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return testList;
@@ -239,7 +205,7 @@ public class TestDao {
         PreparedStatement statement = null;
         boolean isRowDeleted = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setLong(1, test.getId());
             statement.setLong(2, test.getTutorId());
@@ -249,13 +215,7 @@ public class TestDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Deleting test data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowDeleted;
@@ -266,7 +226,7 @@ public class TestDao {
             return false;
         }
 
-        QuestionDao dao = new QuestionDao(connectionPool);
+        QuestionDao dao = new QuestionDao();
         for(Question question : test.getQuestions()) {
             if(!dao.updateComplex(question)) {
                 dao.insertComplex(question);
@@ -285,7 +245,7 @@ public class TestDao {
         PreparedStatement statement = null;
         boolean isRowUpdated = false;
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, test.getSubjectId());
@@ -299,13 +259,7 @@ public class TestDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating test data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -331,28 +285,20 @@ public class TestDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, id);
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                test = scanTest(resultSet);
+                test = extractTestFromResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading test data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return test;
@@ -375,7 +321,7 @@ public class TestDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, testId);
@@ -395,15 +341,7 @@ public class TestDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading test data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return result;

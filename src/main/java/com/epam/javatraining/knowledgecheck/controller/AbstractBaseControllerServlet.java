@@ -1,6 +1,6 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
+import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPoolManager;
 import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +29,6 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_TEST_BOARD_TEST_STATISTICS = "/WEB-INF/view/testboard/TestStatistics.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
-    private static ConnectionPool connectionPool = null;
 
     private void initConnectionPool() throws ServletException {
         // Init connectionPoll
@@ -42,19 +41,12 @@ public class AbstractBaseControllerServlet extends HttpServlet {
         }
 
         try {
-            connectionPool = new ConnectionPool(url, username, password);
+            ConnectionPoolManager.init(url, username, password);
         } catch (SQLException | ClassNotFoundException e) {
             logger.error(e.getMessage(), e);
 
             throw new ServletException(e);
         }
-    }
-
-    protected ConnectionPool getConnectionPool() throws ServletException {
-        if(connectionPool == null) {
-            initConnectionPool();
-        }
-        return connectionPool;
     }
 
     protected AlertManager getAlertManagerFromSession(HttpSession session) {
@@ -69,9 +61,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        if(connectionPool == null) {
-            initConnectionPool();
-        }
+        initConnectionPool();
     }
 
     protected void pageNotFound(HttpServletRequest request, HttpServletResponse response)

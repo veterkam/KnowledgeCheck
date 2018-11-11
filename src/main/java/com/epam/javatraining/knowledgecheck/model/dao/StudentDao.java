@@ -3,18 +3,15 @@ package com.epam.javatraining.knowledgecheck.model.dao;
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
 import com.epam.javatraining.knowledgecheck.model.entity.Student;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StudentDao extends UserDao {
-    private static final Logger logger = LogManager.getLogger("DAO");
-    public StudentDao(ConnectionPool connectionPool) {
-        super(connectionPool);
+    
+    public StudentDao() {
+        super();
     }
 
     private void insertProfile(Student student) throws DAOException{
@@ -25,7 +22,7 @@ public class StudentDao extends UserDao {
         PreparedStatement statement = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             statement.setInt(1, student.getId());
             statement.setString(2, student.getSpecialty());
@@ -42,19 +39,15 @@ public class StudentDao extends UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Inserting student profile data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
     }
 
-    public void insert(Student student) throws DAOException {
-        super.insert(student);
+    public int insert(Student student) throws DAOException {
+        int resultId = super.insert(student);
         insertProfile(student);
+
+        return resultId;
     }
 
     public boolean delete(Student student) throws DAOException {
@@ -72,7 +65,7 @@ public class StudentDao extends UserDao {
         boolean isRowUpdated = false;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setString(1, student.getSpecialty());
@@ -85,13 +78,7 @@ public class StudentDao extends UserDao {
             logger.error(e.getMessage(), e);
             throw new DAOException("Updating student data failed.", e);
         } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement);
         }
 
         return isRowUpdated;
@@ -109,7 +96,7 @@ public class StudentDao extends UserDao {
         return true;
     }
 
-    private Student readResultSet(ResultSet resultSet) throws SQLException {
+    private Student extractStudentFromResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String firstname = resultSet.getString("firstname");
         String lastname = resultSet.getString("lastname");
@@ -159,7 +146,7 @@ public class StudentDao extends UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setInt(1, id);
@@ -167,21 +154,13 @@ public class StudentDao extends UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                student = readResultSet(resultSet);
+                student = extractStudentFromResultSet(resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading student data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return student;
@@ -214,7 +193,7 @@ public class StudentDao extends UserDao {
         ResultSet resultSet = null;
 
         try {
-            connection = connectionPool.getConnection();
+            connection = getConnection();
 
             statement = connection.prepareStatement(sql);
             statement.setLong(1, testId);
@@ -222,22 +201,14 @@ public class StudentDao extends UserDao {
             resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                Student student = readResultSet(resultSet);
+                Student student = extractStudentFromResultSet(resultSet);
                 students.add(student);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
             throw new DAOException("Reading student data failed.", e);
         } finally {
-
-            try {
-                resultSet.close();
-                statement.close();
-            } catch (SQLException e) {
-                // do nothing
-            } finally {
-                connectionPool.releaseConnection(connection);
-            }
+            closeCommunication(connection, statement, resultSet);
         }
 
         return students;

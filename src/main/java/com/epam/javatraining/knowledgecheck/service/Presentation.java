@@ -20,12 +20,12 @@ public class Presentation {
     private String dateOrder;
     private HttpServletRequest request;
 
-    public Presentation(HttpServletRequest request, ConnectionPool pool)
+    public Presentation(HttpServletRequest request)
         throws DAOException {
         this.request = request;
 
         // Read subject list for subject filter
-        SubjectDao subjectDao = new SubjectDao(pool);
+        SubjectDao subjectDao = new SubjectDao();
         this.subjects = subjects = subjectDao.getList();
 
         HttpSession session = request.getSession();

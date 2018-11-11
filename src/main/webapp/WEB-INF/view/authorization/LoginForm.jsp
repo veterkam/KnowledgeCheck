@@ -6,7 +6,7 @@
 <div class="container">
     <h1 class="h3 mb-3 font-weight-normal">Please login</h1>
     <%@ include file="../common/Alert.jsp" %>
-    <form class="form-login" method="post" action="${pageContext.request.contextPath}/authorization/login" name="loginForm">
+    <form class="form-login" method="post" action="${pageContext.request.contextPath}/authorization/login/do" name="loginForm">
         <div class="form-group">
             <label for="inputUsername" class="sr-only">Username</label>
             <input id="inputUsername" class="form-control" name="username" placeholder="Your Username" required="" autofocus="" type="username">

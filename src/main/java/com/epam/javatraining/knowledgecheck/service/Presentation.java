@@ -20,32 +20,8 @@ public class Presentation {
     private String dateOrder;
     private HttpServletRequest request;
 
-    public Presentation(HttpServletRequest request)
-        throws DAOException {
-        this.request = request;
+    public Presentation() {
 
-        // Read subject list for subject filter
-        SubjectDao subjectDao = new SubjectDao();
-        this.subjects = subjects = subjectDao.getList();
-
-        HttpSession session = request.getSession();
-        // Filter on subject id
-        String strSubjectId = request.getParameter("presentationSubjectId");
-        try {
-            subjectId = Integer.parseInt(strSubjectId);
-        } catch (NumberFormatException e) {
-            strSubjectId = (String) session.getAttribute("presentationSubjectId");
-            subjectId = (Strings.isBlank(strSubjectId)) ? 0 : Integer.parseInt(strSubjectId);
-        }
-
-        // Order by date
-        dateOrder = request.getParameter("presentationDateOrder");
-        if(Strings.isBlank(dateOrder)) {
-            dateOrder = (String) session.getAttribute("presentationDateOrder");
-            if(Strings.isBlank(dateOrder)) {
-                dateOrder = DATE_DESCENDING;
-            }
-        }
     }
 
     public List<Subject> getSubjects() {
@@ -62,6 +38,7 @@ public class Presentation {
 
     public void setOrders(String[] orders) {
         this.orders = orders;
+
     }
 
     public int getSubjectId() {
@@ -77,15 +54,10 @@ public class Presentation {
     }
 
     public void setDateOrder(String dateOrder) {
-        this.dateOrder = dateOrder;
-    }
-
-    public void store() {
-        // Data for short period store in request
-        request.setAttribute("presentationSubjects", subjects);
-        request.setAttribute("presentationOrders", orders);
-        // Data for long period store in session
-        request.getSession().setAttribute("presentationSubjectId", String.valueOf(subjectId));
-        request.getSession().setAttribute("presentationDateOrder", dateOrder);
+        if(Strings.isBlank(dateOrder)) {
+            this.dateOrder = DATE_DESCENDING;
+        } else {
+            this.dateOrder = dateOrder;
+        }
     }
 }

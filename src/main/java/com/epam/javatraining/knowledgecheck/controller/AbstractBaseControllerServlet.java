@@ -30,7 +30,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected static final Logger logger = LogManager.getLogger("controller");
 
-    private void initConnectionPool() throws ServletException {
+    private void initConnectionPoolManager() throws ServletException {
         // Init connectionPoll
         String url = getServletContext().getInitParameter("dbUrl");
         String username = getServletContext().getInitParameter("dbUsername");
@@ -61,7 +61,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        initConnectionPool();
+        initConnectionPoolManager();
     }
 
     protected void pageNotFound(HttpServletRequest request, HttpServletResponse response)

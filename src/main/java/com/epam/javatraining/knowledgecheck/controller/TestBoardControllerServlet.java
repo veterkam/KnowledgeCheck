@@ -7,12 +7,14 @@ import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import com.epam.javatraining.knowledgecheck.service.Pagination;
 import com.epam.javatraining.knowledgecheck.service.Presentation;
 import com.epam.javatraining.knowledgecheck.service.Validator;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,15 +88,19 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private void showTests(HttpServletRequest request, HttpServletResponse response,
-                           String view, boolean onlyTest, boolean filterByTutor)
-            throws IOException, ServletException, DAOException {
-        User user = (User) request.getSession().getAttribute("user");
+    private ViewOptions initViewOptions(HttpServletRequest request, TestDao testDao, boolean filterByUser)
+        throws DAOException {
 
-        if(filterByTutor && (user == null || user.getRole() != User.Role.TUTOR)) {
-            pageNotFound(request, response);
-            return;
-        }
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        // Init presentation
+        Presentation presentation = new Presentation();
+
+        String dateOrder;
+
+        // Read subject list for subject filter
+        SubjectDao subjectDao = new SubjectDao();
+        presentation.setSubjects( subjectDao.getList() );
 
         // Scan parameters
         // Current page of test list
@@ -106,23 +112,37 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             pageNo = 1;
         }
 
-        // Init presentation
-        Presentation present = new Presentation(request);
+        // Filter on subject id
+        int subjectId;
+        String strSubjectId = request.getParameter("presentationSubjectId");
+        try {
+            subjectId = Integer.parseInt(strSubjectId);
+        } catch (NumberFormatException e) {
+            strSubjectId = (String) session.getAttribute("presentationSubjectId");
+            subjectId = (Strings.isBlank(strSubjectId)) ? 0 : Integer.parseInt(strSubjectId);
+        }
+        presentation.setSubjectId(subjectId);
 
-        TestDao testDao = new TestDao();
+        // Order by date
+        dateOrder = request.getParameter("presentationDateOrder");
+        if(Strings.isBlank(dateOrder)) {
+            dateOrder = (String) session.getAttribute("presentationDateOrder");
+        }
+        presentation.setDateOrder(dateOrder);
+
         // If need enable filter
-        if(present.getSubjectId() > 0) {
-            testDao.setFilterSubjectId(present.getSubjectId());
+        if(subjectId > 0) {
+            testDao.setFilterSubjectId(presentation.getSubjectId());
             testDao.enableFilter();
         }
 
-        if(filterByTutor) {
+        if (filterByUser) {
             testDao.setFilterTutorId(user.getId());
             testDao.enableFilter();
         }
 
         // Enable order by date
-        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
+        String order = presentation.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
                 TestDao.ORDER_DESC : TestDao.ORDER_ASC;
         testDao.setDateOrder(order);
         testDao.enableOrder();
@@ -134,8 +154,37 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
         Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
 
+        return new ViewOptions(presentation, pagination);
+    }
+
+    private void storeViewOptions(ViewOptions vo, HttpServletRequest request) {
+        // Data for short period store in request
+        request.setAttribute("presentationSubjects", vo.presentation.getSubjects());
+        request.setAttribute("presentationOrders", vo.presentation.getOrders());
+        // Data for long period store in session
+        request.getSession().setAttribute(
+                "presentationSubjectId", String.valueOf( vo.presentation.getSubjectId() ) );
+        request.getSession().setAttribute(
+                "presentationDateOrder", vo.presentation.getDateOrder());
+
+        request.setAttribute("pagination", vo.pagination);
+    }
+
+    private void showTests(HttpServletRequest request, HttpServletResponse response,
+                           String view, boolean onlyTest, boolean filterByTutor)
+            throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(filterByTutor && (user == null || user.getRole() != User.Role.TUTOR)) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        TestDao testDao = new TestDao();
+        ViewOptions vo = initViewOptions(request, testDao, filterByTutor);
+
         // Read test list
-        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        int offset = (vo.pagination.getCurrent() - 1) * COUNT_TEST_ON_PAGE;
         List<Test> tests;
         if(onlyTest) {
             // without question and answers
@@ -156,9 +205,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Store data in request and session
-        present.store();
+        storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
-        request.setAttribute("pagination", pagination);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(view);
         dispatcher.forward(request, response);
     }
@@ -522,44 +570,11 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        // Scan parameters
-        // Current page of test list
-        String pageNoStr = request.getParameter("pageNo");
-        int pageNo;
-        try {
-            pageNo = Integer.parseInt(pageNoStr);
-        } catch (NumberFormatException e) {
-            pageNo = 1;
-        }
-
-        // Init presentation
-        Presentation present = new Presentation(request);
-
         TestDao testDao = new TestDao();
-        // If need enable filter
-        if(present.getSubjectId() > 0) {
-            testDao.setFilterSubjectId(present.getSubjectId());
-            testDao.enableFilter();
-        }
-
-        testDao.setFilterTutorId(user.getId());
-        testDao.enableFilter();
-
-        // Enable order by date
-        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
-                TestDao.ORDER_DESC : TestDao.ORDER_ASC;
-        testDao.setDateOrder(order);
-        testDao.enableOrder();
-
-        // Calc test count
-        int count = testDao.getTestCount();
-
-        // Init pagination
-        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
-        Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
+        ViewOptions vo = initViewOptions(request, testDao, true);
 
         // Read test list
-        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        int offset = (vo.pagination.getCurrent() - 1) * COUNT_TEST_ON_PAGE;
         List<Test> tests;
 
         // single test list, without question and answers
@@ -578,10 +593,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Store data in request and session
-        present.store();
+        storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("testingResultsList", testingResultsList);
-        request.setAttribute("pagination", pagination);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_STUDENTS_RESULTS);
         dispatcher.forward(request, response);
     }
@@ -595,44 +609,11 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        // Scan parameters
-        // Current page of test list
-        String pageNoStr = request.getParameter("pageNo");
-        int pageNo;
-        try {
-            pageNo = Integer.parseInt(pageNoStr);
-        } catch (NumberFormatException e) {
-            pageNo = 1;
-        }
-
-        // Init presentation
-        Presentation present = new Presentation(request);
-
         TestDao testDao = new TestDao();
-        // If need enable filter
-        if(present.getSubjectId() > 0) {
-            testDao.setFilterSubjectId(present.getSubjectId());
-            testDao.enableFilter();
-        }
-
-        testDao.setFilterTutorId(user.getId());
-        testDao.enableFilter();
-
-        // Enable order by date
-        String order = present.getDateOrder().equals(Presentation.DATE_DESCENDING) ?
-                TestDao.ORDER_DESC : TestDao.ORDER_ASC;
-        testDao.setDateOrder(order);
-        testDao.enableOrder();
-
-        // Calc test count
-        int count = testDao.getTestCount();
-
-        // Init pagination
-        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
-        Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
+        ViewOptions vo = initViewOptions(request, testDao, true);
 
         // Read test list
-        int offset = (pageNo - 1) * COUNT_TEST_ON_PAGE;
+        int offset = (vo.pagination.getCurrent() - 1) * COUNT_TEST_ON_PAGE;
         List<Test> tests;
 
         // single test list, without question and answers
@@ -685,12 +666,21 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Store data in request and session
-        present.store();
+        storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("statisticsList", statisticsList);
-        request.setAttribute("pagination", pagination);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_TEST_STATISTICS);
         dispatcher.forward(request, response);
+    }
+
+    private class ViewOptions {
+        private Presentation presentation;
+        private Pagination pagination;
+
+        public ViewOptions(Presentation presentation, Pagination pagination) {
+            this.presentation = presentation;
+            this.pagination = pagination;
+        }
     }
 
 }

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 
 @WebServlet(urlPatterns = {
         "/authorization/login",
+        "/authorization/login/do",
         "/authorization/logout",
         "/authorization/register",
         "/authorization/register/back",
@@ -47,10 +48,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             switch (action) {
                 case "/authorization/register":
                     request.getSession().setAttribute("anonym", null);
-                    forwardToRegisterForm(request, response);
+                    registerForm(request, response);
                     break;
                 case "/authorization/register/back":
-                    forwardToRegisterForm(request, response);
+                    registerForm(request, response);
                     break;
                 case "/authorization/register/verify":
                     // User click button Next, verify the fields
@@ -61,10 +62,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     break;
                 case "/authorization/recovery":
                     request.getSession().setAttribute("anonym", null);
-                    forwardToRecoveryForm(request, response);
+                    recoveryForm(request, response);
                     break;
                 case "/authorization/recovery/back":
-                    forwardToRecoveryForm(request, response);
+                    recoveryForm(request, response);
                     break;
                 case "/authorization/recovery/verify":
                     // User click button Next, verify the fields
@@ -74,7 +75,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     recoveryConfirmEmail(request, response);
                     break;
                 case "/authorization/login":
-                    login(request, response);
+                    loginForm(request, response);
+                    break;
+                case "/authorization/login/do":
+                    loginDo(request, response);
                     break;
                 case "/authorization/logout":
                     logout(request, response);
@@ -93,17 +97,18 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         }
     }
 
-    private void login(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+    private void loginForm(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
+        dispatcher.forward(request, response);
+    }
+
+    private void loginDo(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, DAOException {
+
         AlertManager alertManager = getAlertManagerFromSession(request.getSession());
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-
-        if (username == null || password == null) {
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
-            dispatcher.forward(request, response);
-            return;
-        }
 
         UserDao UserDao = new UserDao();
         User user = UserDao.get(username);
@@ -115,12 +120,11 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             response.sendRedirect(request.getContextPath() + "/");
         } else {
             alertManager.danger("Username or password is wrong. Please, try again!");
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_LOGIN_FORM);
-            dispatcher.forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/authorization/login");
         }
     }
 
-    private void forwardToRegisterForm(HttpServletRequest request, HttpServletResponse response)
+    private void registerForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Add list of User.Roles to request
         request.setAttribute("roles", User.Role.values());
@@ -200,7 +204,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         session.setAttribute("anonym", anonym);
 
         if (isFailed) {
-            forwardToRegisterForm(request, response);
+            registerForm(request, response);
             return;
         }
 
@@ -227,7 +231,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             alertManager.danger("Registration failed. A user with this username already exists. Please, try again!");
         }
 
-        forwardToRegisterForm(request, response);
+        registerForm(request, response);
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -247,7 +251,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (expectedCode.equals(code)) {
 
             // Insert user to data base.
-            String errorMsg = "";
             try {
                 new UserDao().insert(user);
             } catch (DAOException e) {
@@ -264,7 +267,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
                 // Failed! Come back to edit user info
                 alertManager.danger("Registration failed. Please, try again!");
-                forwardToRegisterForm(request, response);
+                registerForm(request, response);
                 return;
             }
 
@@ -280,12 +283,12 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             alertManager.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            forwardToRegisterForm(request, response);
+            registerForm(request, response);
         }
     }
 
 
-    private void forwardToRecoveryForm(HttpServletRequest request, HttpServletResponse response)
+    private void recoveryForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_PASSWORD_RECOVERY_FORM);
         dispatcher.forward(request, response);
@@ -333,7 +336,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         session.setAttribute("anonym", anonym);
 
         if (isFailed) {
-            forwardToRecoveryForm(request, response);
+            recoveryForm(request, response);
             return;
         }
 
@@ -358,7 +361,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             }
         }
 
-        forwardToRecoveryForm(request, response);
+        recoveryForm(request, response);
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -397,7 +400,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
         }
-        forwardToRecoveryForm(request, response);
+        recoveryForm(request, response);
     }
 
     private void logout(HttpServletRequest request, HttpServletResponse response)

@@ -27,6 +27,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_TEST_BOARD_TESTING = "/WEB-INF/view/testboard/Testing.jsp";
     protected final String VIEW_TEST_BOARD_STUDENTS_RESULTS = "/WEB-INF/view/testboard/StudentsResults.jsp";
     protected final String VIEW_TEST_BOARD_TEST_STATISTICS = "/WEB-INF/view/testboard/TestStatistics.jsp";
+    protected final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/authorization/MyProfileForm.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
 
@@ -49,7 +50,8 @@ public class AbstractBaseControllerServlet extends HttpServlet {
         }
     }
 
-    protected AlertManager getAlertManagerFromSession(HttpSession session) {
+    protected AlertManager getAlertManager(HttpServletRequest request) {
+        HttpSession session = request.getSession();
         AlertManager manager = (AlertManager)session.getAttribute("alertManager");
         if( manager == null ) {
             manager = new AlertManager();

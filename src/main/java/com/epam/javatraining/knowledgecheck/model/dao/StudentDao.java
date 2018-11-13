@@ -57,7 +57,7 @@ public class StudentDao extends UserDao {
 
     private boolean updateProfile(Student student) throws DAOException {
         String sql = "UPDATE student_profiles SET "
-                +"`specialty` = ?, `group` = ?, `year` = ?"
+                +"`specialty` = ?, `group` = ?, `year` = ? "
                 + "WHERE id = ?";
 
         Connection connection = null;

@@ -18,13 +18,15 @@ create table `tutor_profiles` (
   `id` int(11) not null,
   `position` varchar(100),
   `scientific_degree` varchar(100),
-  `academicTitle` varchar(100),
+  `academic_title` varchar(100),
   primary key (`id`),
   unique key `id_unique` (`id`),
   FOREIGN KEY (`id`)
     REFERENCES `users` (`id`)
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
+
+ALTER TABLE tutor_profiles CHANGE academicTitle academic_title varchar(100);
 
 create table `student_profiles` (
   `id` int(11) not null,
@@ -56,7 +58,7 @@ VALUES('Bob', 'Smith', 'bob@gmail.com', 1, 'bob', '123'),
       ('Piter', 'Hangry', 'piter@gmail.com', 2, 'piter', '123');
 
 
-insert into `tutor_profiles`(`id`, `position`, `scientific_degree`, `academicTitle`)
+insert into `tutor_profiles`(`id`, `position`, `scientific_degree`, `academic_title`)
 values(1, 'Assitent of Biology', 'Bachelor of Science',  'Bachelor of Biology'),
       (3, 'Teacher of Math', 'Bachelor of Science',  'Bachelor of Mathematics'),
       (5, 'Senior lecturer of Physics', 'Master of Science',  'Master of Physics'),
@@ -74,6 +76,7 @@ values(2, 'Mathematics', 'PM-033',  1),
       (14, 'Geography', 'Line-2',  16);
 
 
+select * from `student_profiles`;
 select * from `users`;
 
 select `users`.`id`,
@@ -85,7 +88,7 @@ select `users`.`id`,
        `password`,
        `position`,
        `scientific_degree`,
-       `academicTitle`
+       `academic_title`
 from users
        inner join tutor_profiles on users.id = tutor_profiles.id
 UNION ALL

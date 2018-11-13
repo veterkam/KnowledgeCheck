@@ -1,12 +1,18 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
+import com.epam.javatraining.knowledgecheck.exception.RequestException;
+import com.epam.javatraining.knowledgecheck.model.dao.StudentDao;
+import com.epam.javatraining.knowledgecheck.model.dao.TutorDao;
 import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
+import com.epam.javatraining.knowledgecheck.model.entity.Student;
+import com.epam.javatraining.knowledgecheck.model.entity.Tutor;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import com.epam.javatraining.knowledgecheck.service.EmailSender;
 import com.epam.javatraining.knowledgecheck.service.Validator;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
+import org.apache.logging.log4j.util.Strings;
 
 import javax.mail.MessagingException;
 import javax.servlet.RequestDispatcher;
@@ -29,7 +35,11 @@ import java.sql.SQLException;
         "/authorization/recovery",
         "/authorization/recovery/back",
         "/authorization/recovery/confirm",
-        "/authorization/recovery/verify"
+        "/authorization/recovery/verify",
+        "/authorization/myprofile",
+        "/authorization/myprofile/back",
+        "/authorization/myprofile/confirm",
+        "/authorization/myprofile/verify",
 })
 public class AuthorizationControllerServlet extends AbstractBaseControllerServlet {
 
@@ -48,10 +58,10 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             switch (action) {
                 case "/authorization/register":
                     request.getSession().setAttribute("anonym", null);
-                    registerForm(request, response);
+                    showRegisterForm(request, response);
                     break;
                 case "/authorization/register/back":
-                    registerForm(request, response);
+                    showRegisterForm(request, response);
                     break;
                 case "/authorization/register/verify":
                     // User click button Next, verify the fields
@@ -83,6 +93,20 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 case "/authorization/logout":
                     logout(request, response);
                     break;
+                case "/authorization/myprofile":
+                    request.getSession().setAttribute("anonym", null);
+                    showMyProfileForm(request, response);
+                    break;
+                case "/authorization/myprofile/back":
+                    showMyProfileForm(request, response);
+                    break;
+                case "/authorization/myprofile/verify":
+                    // User click button Next, verify the fields
+                    verifyProfileInfo(request, response);
+                    break;
+                case "/authorization/myprofile/confirm":
+                    profileConfirmEmail(request, response);
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;
@@ -106,17 +130,25 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     private void loginDo(HttpServletRequest request, HttpServletResponse response)
             throws IOException, DAOException {
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        UserDao UserDao = new UserDao();
-        User user = UserDao.get(username);
+        UserDao userDao = new UserDao();
+        User user = userDao.get(username);
 
         if (user != null && user.getPassword().equals(password)) {
-            HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+
+            if( user.getRole() == User.Role.TUTOR) {
+                TutorDao tutorDao = new TutorDao();
+                user = tutorDao.get(user.getId());
+            } else if( user.getRole() == User.Role.STUDENT) {
+                StudentDao studentDao = new StudentDao();
+                user = studentDao.get(user.getId());
+            }
+
             alertManager.success("Registration success! Welcome " + user.getFullname());
+            request.getSession().setAttribute("user", user);
             response.sendRedirect(request.getContextPath() + "/");
         } else {
             alertManager.danger("Username or password is wrong. Please, try again!");
@@ -124,7 +156,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         }
     }
 
-    private void registerForm(HttpServletRequest request, HttpServletResponse response)
+    private void showRegisterForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Add list of User.Roles to request
         request.setAttribute("roles", User.Role.values());
@@ -133,124 +165,84 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         dispatcher.forward(request, response);
     }
 
-    private String sendVerificationCodeByEmail(String email, String msg)
-            throws MessagingException {
-        String username = getServletContext().getInitParameter("emailUsername");
-        String password = getServletContext().getInitParameter("emailPassword");
-
-        EmailSender sender = new EmailSender(username, password);
-
-        // Generate e-mail verification code
-        Integer rnd = (int) (Math.random() * 1000000 + 1000000);
-        String code = rnd.toString();
-        String subject = "KnowledgeCheck Verification Code";
-        msg += "\nYour verification code is " + code;
-        sender.send(subject, msg, "KnowledgeCheck@knowledgecheck.com", email);
-
-        return code;
-    }
 
     private void registerVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException{
 
         // Process parameters
-        String firstname = request.getParameter("firstname");
-        String lastname = request.getParameter("lastname");
-        String email = request.getParameter("email");
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String repeatPassword = request.getParameter("repeatPassword");
-        String role = request.getParameter("role");
+        User anonym = extractUser(request);
 
-        if (Validator.containNull(firstname, lastname,
-                email, username, password, repeatPassword, role)) {
+        if ( anonym.getFirstname()== null) {
             pageNotFound(request, response);
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        String repeatPassword = request.getParameter("repeatPassword");
+        String role = request.getParameter("role");
 
-        boolean isFailed = false;
         Validator validator = new Validator();
-        validator.validateFirstName(firstname);
-        validator.validateLastName(lastname);
-        validator.validateEmail(email);
-        validator.validateUsername(username);
-        validator.validatePassword(password);
+        validator.validateUser(anonym);
         validator.validatePassword(repeatPassword, "repeat password");
         validator.isNotBlank(role, "role");
 
+        AlertManager alertManager = getAlertManager(request);
+
+        boolean isFailed = false;
         if(validator.isFailed()) {
             alertManager.danger(validator.getErrors());
             isFailed = true;
         }
 
-
-        if (!password.equals(repeatPassword)) {
+        if (anonym.getPassword() != null && !anonym.getPassword().equals(repeatPassword)) {
             alertManager.danger("Passwords are different.");
             isFailed = true;
         }
-
-        User anonym = new User();
-        anonym.setFirstname(firstname);
-        anonym.setLastname(lastname);
-        anonym.setEmail(email);
-        anonym.setUsername(username.toLowerCase());
-        anonym.setPassword(password);
-        anonym.setRole((role != "") ? User.Role.valueOf(role) : User.Role.ADMINISTRATOR);
 
         // Store user info in session for form autofilling
         HttpSession session = request.getSession();
         session.setAttribute("anonym", anonym);
 
         if (isFailed) {
-            registerForm(request, response);
+            showRegisterForm(request, response);
             return;
         }
 
         UserDao userDao = new UserDao();
         // Is the username unique?
-        User user = userDao.get(username);
+        User user = userDao.get(anonym.getUsername());
 
         if (user == null) {
-            // The username is unique.
-            try {
-                String msg = "Hello. Thanks for registration in KnowledgeCheck!";
-                String code = sendVerificationCodeByEmail(email, msg);
-                session.setAttribute("verificationCode", code);
-                // Put flag of e-mail verification into attributes
-                request.setAttribute("verifyEmail", "true");
-                alertManager.info("We sent you a verification code. Please check your mailbox.");
-            } catch (MessagingException e) {
-                logger.error(e.getMessage(), e);
-                alertManager.danger("Can't send message. Verify your e-mail address and try again!");
-            }
+            // The username is unique. Verify e-mail.
+            String msg = "Hello. Thanks for registration in KnowledgeCheck!";
+            askVerificationCode(anonym.getEmail(), msg, request);
 
         } else {
             // The username is not unique.
             alertManager.danger("Registration failed. A user with this username already exists. Please, try again!");
         }
 
-        registerForm(request, response);
+        showRegisterForm(request, response);
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String code = request.getParameter("verificationCode");
-        HttpSession session = request.getSession();
-        String expectedCode = (String) session.getAttribute("verificationCode");
-        User user = (User) session.getAttribute("anonym");
 
-        if (Validator.containNull(code, expectedCode, user)) {
+        boolean confirm;
+
+        try {
+            confirm = checkConfirmation(request);
+        } catch (RequestException e) {
             pageNotFound(request, response);
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
 
-        if (expectedCode.equals(code)) {
-
+        if ( confirm ) {
             // Insert user to data base.
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("anonym");
+
             try {
                 new UserDao().insert(user);
             } catch (DAOException e) {
@@ -267,7 +259,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
                 // Failed! Come back to edit user info
                 alertManager.danger("Registration failed. Please, try again!");
-                registerForm(request, response);
+                showRegisterForm(request, response);
                 return;
             }
 
@@ -283,7 +275,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             alertManager.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            registerForm(request, response);
+            showRegisterForm(request, response);
         }
     }
 
@@ -307,7 +299,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
 
         boolean isFailed = false;
         Validator validator = new Validator();
@@ -348,17 +340,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     " with e-mail " + email + ". Please, try again!";
             alertManager.danger(errorMsg);
         } else {
-            try {
-                String msg = "Hello. You started password recovering. ";
-                String code = sendVerificationCodeByEmail(email, msg);
-                session.setAttribute("verificationCode", code);
-                // Put flag of e-mail verification into attributes
-                request.setAttribute("verifyEmail", "true");
-                alertManager.success("We sent you a verification code. Please check your mailbox.");
-            } catch (MessagingException e) {
-                logger.error(e.getMessage(), e);
-                alertManager.danger("Can't send message. Verify your e-mail address and try again!");
-            }
+            String msg = "Hello. You started password recovering. ";
+            askVerificationCode(email, msg, request);
         }
 
         recoveryForm(request, response);
@@ -366,30 +349,36 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, DAOException, IOException {
-        String code = request.getParameter("verificationCode");
         HttpSession session = request.getSession();
-        String expectedCode = (String) session.getAttribute("verificationCode");
         User anonym = (User) session.getAttribute("anonym");
 
-        if (Validator.containNull(code, expectedCode, anonym)) {
+
+        boolean confirm;
+
+        try {
+            confirm = checkConfirmation(request);
+        } catch (RequestException e) {
             pageNotFound(request, response);
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
 
-        if (expectedCode.equals(code)) {
+        if ( confirm ) {
             UserDao userDao = new UserDao();
             User user = userDao.get(anonym.getUsername());
 
             if (user != null) {
                 user.setPassword(anonym.getPassword());
-                userDao.update(user);
-                session.setAttribute("user", user);
-                session.setAttribute("anonym", null);
-                alertManager.success("Recovery password success! Welcome " + user.getFullname());
-                response.sendRedirect(request.getContextPath() + "/");
-                return;
+                if ( userDao.update(user) ) {
+                    session.setAttribute("user", user);
+                    session.setAttribute("anonym", null);
+                    alertManager.success("Recovery password success! Welcome " + user.getFullname());
+                    response.sendRedirect(request.getContextPath() + "/");
+                    return;
+                } else {
+                    alertManager.danger("Sorry, can't update " + anonym.getUsername() + ". Please, try again!");
+                }
             } else {
                 alertManager.danger("Sorry, can't find " + anonym.getUsername() + ". Please, try again!");
             }
@@ -407,8 +396,286 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             throws IOException {
         //session destroy
         request.getSession().invalidate();
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
         alertManager.success("Logout success!");
         response.sendRedirect(request.getContextPath() + "/");
+    }
+
+    private void showMyProfileForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        // Add list of User.Roles to request
+        request.setAttribute("roles", User.Role.values());
+
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_MY_PROFILE_FORM);
+        dispatcher.forward(request, response);
+    }
+
+
+
+    private void verifyProfileInfo(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        User modifyUser = extractUser(request, user.getRole());
+
+        if(modifyUser.getFirstname() == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        AlertManager alertManager = getAlertManager(request);
+        // Process parameters
+        String repeatPassword = request.getParameter("repeatPassword");
+
+        // Add disabled fields
+        modifyUser.setId(user.getId());
+        modifyUser.setUsername(user.getUsername());
+        modifyUser.setRole(user.getRole());
+        if(repeatPassword == null){
+            // user didn't change password
+            modifyUser.setPassword(user.getPassword());
+        }
+
+        boolean isFailed = false;
+        Validator validator = new Validator();
+        validator.validateUser(modifyUser);
+
+        if(repeatPassword != null) {
+            // user changed password
+            // validate password
+            validator.validatePassword(repeatPassword, "repeat password");
+
+            if(validator.isFailed()) {
+                alertManager.danger(validator.getErrors());
+                validator.reset();
+                isFailed = true;
+            }
+
+            if (!repeatPassword.equals(modifyUser.getPassword())) {
+                alertManager.danger("Passwords are different.");
+                isFailed = true;
+            }
+
+        } else if(validator.isFailed()) {
+            alertManager.danger(validator.getErrors());
+            validator.reset();
+            isFailed = true;
+        }
+
+        // Store user info in session for form autofilling
+        HttpSession session = request.getSession();
+        session.setAttribute("anonym", modifyUser);
+
+        if (isFailed) {
+            showMyProfileForm(request, response);
+            return;
+        }
+
+        if(repeatPassword != null || !user.getEmail().equals(modifyUser.getEmail()) ) {
+            // User modified password or email, ask confirmation
+            String msg = "Hello. To confirm profile modification, please use verification code.";
+            askVerificationCode(modifyUser.getEmail(), msg, request);
+            showMyProfileForm(request, response);
+        } else {
+            // User didn't modify password and email, save changes without asking confirmation
+            saveMyProfile(modifyUser, request, response);
+        }
+    }
+
+    private void profileConfirmEmail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        boolean confirm;
+
+        try {
+            confirm = checkConfirmation(request);
+        } catch (RequestException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        if ( confirm ) {
+            // save profile modification
+            HttpSession session = request.getSession();
+            user = (User) session.getAttribute("anonym");
+            saveMyProfile(user, request, response);
+        } else {
+            // Verification code is wrong. Come back to edit verification code
+            getAlertManager(request).danger("Verification code is wrong. Please, try again!");
+            // Put flag of e-mail verification into attributes
+            request.setAttribute("verifyEmail", "true");
+            showMyProfileForm(request, response);
+        }
+    }
+
+    private boolean checkConfirmation(HttpServletRequest request) throws RequestException {
+        String code = request.getParameter("verificationCode");
+        String expectedCode = (String) request.getSession().getAttribute("verificationCode");
+
+        if (Validator.containNull(code, expectedCode)) {
+            throw new RequestException("Request is invalid, con not find verification code");
+        }
+
+        return expectedCode.equals(code);
+    }
+
+    private void saveMyProfile(User user, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        boolean success;
+        try {
+            success = saveUser(user);
+        } catch(DAOException e) {
+            logger.error(e.getMessage(), e);
+            success = false;
+        }
+
+        if( success ) {
+            request.getSession().setAttribute("user", user);
+            getAlertManager(request).success("Profile data saved successfully.");
+        } else {
+            getAlertManager(request).danger("Profile data saving failed. Please try again.");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/authorization/myprofile");
+    }
+
+    private boolean saveUser(User user) throws DAOException {
+        switch(user.getRole()) {
+            case  STUDENT:
+                StudentDao studentDao = new StudentDao();
+                return studentDao.update( (Student) user );
+            case  TUTOR:
+                TutorDao tutorDao = new TutorDao();
+                return tutorDao.update( (Tutor) user );
+            default:
+                UserDao userDao = new UserDao();
+                return userDao.update( user );
+        }
+    }
+
+    private User extractUser(HttpServletRequest request, User.Role role) {
+        switch(role) {
+            case STUDENT:
+                return extractStudent(request);
+            case TUTOR:
+                return extractTutor(request);
+            default:
+                return extractUser(request);
+        }
+    }
+
+    private Tutor extractTutor(HttpServletRequest request) {
+        Tutor tutor = new Tutor();
+        extractUser(tutor, request);
+        String position = request.getParameter("position");
+        String scientificDegree = request.getParameter("scientificDegree");
+        String academicTitle = request.getParameter("academicTitle");
+
+        tutor.setPosition(position);
+        tutor.setScientificDegree(scientificDegree);
+        tutor.setAcademicTitle(academicTitle);
+
+        return tutor;
+    }
+
+    private Student extractStudent(HttpServletRequest request) {
+        Student student = new Student();
+        extractUser(student, request);
+        String specialty = request.getParameter("specialty");
+        String group = request.getParameter("group");
+        String strYear = request.getParameter("year");
+
+        int year;
+        try {
+            year = Integer.parseInt(strYear);
+        } catch (NumberFormatException e) {
+            year = 0;
+        }
+
+        student.setSpecialty(specialty);
+        student.setGroup(group);
+        student.setYear(year);
+
+        return student;
+    }
+
+    private User extractUser(HttpServletRequest request) {
+        User user = new User();
+        extractUser(user, request);
+        return user;
+    }
+
+    private void extractUser( User out, HttpServletRequest request) {
+        // Process parameters
+        String firstname = request.getParameter("firstname");
+        String lastname = request.getParameter("lastname");
+        String email = request.getParameter("email");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String role = request.getParameter("role");
+
+        if( Strings.isNotBlank(username)) {
+            username = username.toLowerCase();
+        }
+
+        out.setFirstname(firstname);
+        out.setLastname(lastname);
+        out.setEmail(email);
+        out.setUsername(username);
+        out.setPassword(password);
+        out.setRole(Strings.isBlank(role) ? User.Role.ADMINISTRATOR : User.Role.valueOf(role));
+    }
+
+    private String sendVerificationCodeByEmail(String email, String msg)
+            throws MessagingException {
+        String username = getServletContext().getInitParameter("emailUsername");
+        String password = getServletContext().getInitParameter("emailPassword");
+
+        EmailSender sender = new EmailSender(username, password);
+
+        // Generate e-mail verification code
+        Integer rnd = (int) (Math.random() * 1000000 + 1000000);
+        String code = rnd.toString();
+        String subject = "KnowledgeCheck Verification Code";
+        msg += "\nYour verification code is " + code;
+        sender.send(subject, msg, "KnowledgeCheck@knowledgecheck.com", email);
+
+        return code;
+    }
+
+    private void askVerificationCode(String email, String msg, HttpServletRequest request) {
+        AlertManager alertManager = getAlertManager(request);
+        try {
+            String code = sendVerificationCodeByEmail(email, msg);
+            request.getSession().setAttribute("verificationCode", code);
+            // Put flag of e-mail verification into attributes
+            request.setAttribute("verifyEmail", "true");
+            alertManager.info("We sent you a verification code. Please check your mailbox.");
+        } catch (MessagingException e) {
+            logger.error(e.getMessage(), e);
+            alertManager.danger("Can't send message. Verify your e-mail address and try again!");
+        }
     }
 }

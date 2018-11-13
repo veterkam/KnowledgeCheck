@@ -3,8 +3,9 @@
 <nav class="navbar navbar-expand-sm fixed-top bg-dark navbar-dark">
     <a class="navbar-brand" href="${pageContext.request.contextPath}/">Home</a>
     <c:if test="${user != null}">
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/authorization/myprofile">My Profile</a>
+
         <c:if test="${user.role=='TUTOR'}">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/profile">My Profile</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/teststatistics">Test Statistics</a>

@@ -13,7 +13,7 @@ public class TutorDao extends UserDao {
     }
 
     private void insertProfile(Tutor tutor) throws DAOException {
-        String sql = "INSERT INTO tutor_profiles (id, position, scientific_degree, academicTitle) " +
+        String sql = "INSERT INTO tutor_profiles (id, position, scientific_degree, academic_title) " +
                 "VALUES(?, ?, ?, ?)";
 
         Connection connection = null;
@@ -54,7 +54,7 @@ public class TutorDao extends UserDao {
 
     private boolean updateProfile(Tutor tutor) throws DAOException {
         String sql = "UPDATE tutor_profiles SET "
-                +"position = ?, scientific_degree = ?, academicTitle = ?"
+                +"position = ?, scientific_degree = ?, academic_title = ?"
                 + "WHERE id = ?";
 
         Connection connection = null;
@@ -103,7 +103,7 @@ public class TutorDao extends UserDao {
         int role = resultSet.getInt("role");
         String position = resultSet.getString("position");
         String scientificDegree = resultSet.getString("scientific_degree");
-        String academicTitle = resultSet.getString("academicTitle");
+        String academicTitle = resultSet.getString("academic_title");
 
         Tutor tutor = new Tutor();
         tutor.setId(id);
@@ -131,7 +131,7 @@ public class TutorDao extends UserDao {
                 " `password`," +
                 " `position`," +
                 " `scientific_degree`," +
-                " `academicTitle`" +
+                " `academic_title`" +
                 " from users" +
                 " left join tutor_profiles on users.id = tutor_profiles.id" +
                 " where users.id = ? AND role = ?";

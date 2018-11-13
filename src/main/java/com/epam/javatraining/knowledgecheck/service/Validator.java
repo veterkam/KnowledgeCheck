@@ -1,6 +1,7 @@
 package com.epam.javatraining.knowledgecheck.service;
 
 
+import com.epam.javatraining.knowledgecheck.model.entity.User;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.ArrayList;
@@ -58,6 +59,15 @@ public class Validator {
         }
 
         return false;
+    }
+    
+    public boolean validateUser(User user) {
+        boolean result =    validateFirstName(user.getFirstname()) &&
+                            validateLastName(user.getLastname()) &&
+                            validateEmail(user.getEmail()) &&
+                            validateUsername(user.getUsername()) &&
+                            validatePassword(user.getPassword());
+        return result;
     }
 
     public boolean validateFirstName(String firstName) {

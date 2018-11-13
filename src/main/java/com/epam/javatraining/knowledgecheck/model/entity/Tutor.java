@@ -7,7 +7,6 @@ public class Tutor extends User {
     private String position;
     private String scientificDegree;
     private String academicTitle;
-    private List<String> subjects = new ArrayList<>();
 
     public static Tutor getInstance() {
         return new Tutor(new User("login", "password"));
@@ -27,14 +26,6 @@ public class Tutor extends User {
 
     public void setPosition(String position) {
         this.position = position;
-    }
-
-    public List<String> getSubjects() {
-        return subjects;
-    }
-
-    public void setSubjects(List<String> subjects) {
-        this.subjects = subjects;
     }
 
     public String getScientificDegree() {

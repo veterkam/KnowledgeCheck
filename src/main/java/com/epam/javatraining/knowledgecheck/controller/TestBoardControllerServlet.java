@@ -242,7 +242,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
         Test test = new Test();
         test.setId(id);
         test.setTutor(new Tutor(user));
@@ -267,7 +267,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        AlertManager alertManager = getAlertManagerFromSession(request.getSession());
+        AlertManager alertManager = getAlertManager(request);
         Test test = new Test();
         test.setTutor(new Tutor(user));
 
@@ -454,7 +454,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         Test test = testDao.getComplex(testId);
 
         if(test == null) {
-            getAlertManagerFromSession(request.getSession()).danger("Can't find the test. Please, try again!");
+            getAlertManager(request).danger("Can't find the test. Please, try again!");
             response.sendRedirect(request.getContextPath() + "/" );
         } else {
             request.setAttribute("test", test);
@@ -553,9 +553,9 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         int score = Math.round(100.0f * ((float)correctlySelAnswerCount) / ((float) correctAnswerMap.size()));
         String message = "Your result is " + score + "% correct answers!";
         if (score > 50) {
-            getAlertManagerFromSession(request.getSession()).success(message);
+            getAlertManager(request).success(message);
         } else {
-            getAlertManagerFromSession(request.getSession()).danger(message);
+            getAlertManager(request).danger(message);
         }
 
         response.sendRedirect(request.getContextPath() + "/");

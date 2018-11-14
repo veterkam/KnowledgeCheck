@@ -1,6 +1,7 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
+import com.epam.javatraining.knowledgecheck.model.entity.Test;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 
 import java.sql.*;
@@ -15,8 +16,8 @@ public class UserDao extends AbstractDao{
 
     public int insert(User user) throws DAOException {
         int resultId;
-        String sql = "INSERT INTO users (firstname, lastname, email, role, username, password) " +
-                "VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (firstname, lastname, email, role, username, password, verified) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?)";
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -31,6 +32,7 @@ public class UserDao extends AbstractDao{
             statement.setInt(4, user.getRole().ordinal());
             statement.setString(5, user.getUsername());
             statement.setString(6, user.getPassword());
+            statement.setBoolean(7, user.isVerified());
 
             boolean isRowInserted = statement.executeUpdate() > 0;
 
@@ -53,6 +55,12 @@ public class UserDao extends AbstractDao{
     }
 
     private User extractUserFromResultSet(ResultSet resultSet) throws SQLException {
+        User user = new User();
+        extractUserFromResultSet(user, resultSet);
+        return user;
+    }
+
+    protected void extractUserFromResultSet(User out, ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String firstname = resultSet.getString("firstname");
         String lastname = resultSet.getString("lastname");
@@ -60,25 +68,34 @@ public class UserDao extends AbstractDao{
         int roleInt = resultSet.getInt("role");
         String username = resultSet.getString("username");
         String password = resultSet.getString("password");
+        boolean verified = resultSet.getBoolean("verified");
 
         User.Role role = User.Role.fromOrdinal(roleInt);
-        User user = new User(id, firstname, lastname,
-                email, role, username, password);
-        return user;
+
+        out.setId(id);
+        out.setFirstname(firstname);
+        out.setLastname(lastname);
+        out.setEmail(email);
+        out.setRole(role);
+        out.setUsername(username);
+        out.setPassword(password);
+        out.setVerified(verified);
     }
 
-    public List<User> listAll() throws DAOException {
+    public List<User> getList(long offset, long count) throws DAOException {
         List<User> listUser = new ArrayList<>();
-        String sql = "SELECT * FROM users";
+        String sql = "SELECT * FROM users ORDER BY username LIMIT ?, ?";
 
         Connection connection = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
             connection = getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
+            statement = connection.prepareStatement(sql);
+            statement.setLong(1, offset);
+            statement.setLong(2, count);
+            resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
                 User user = extractUserFromResultSet(resultSet);
@@ -95,6 +112,10 @@ public class UserDao extends AbstractDao{
     }
 
     public boolean delete(User user) throws DAOException {
+        return delete(user.getId());
+    }
+
+    public boolean delete(int userId) throws DAOException {
         String sql = "DELETE FROM users WHERE id = ?";
         Connection connection = null;
         PreparedStatement statement = null;
@@ -103,7 +124,7 @@ public class UserDao extends AbstractDao{
             connection = getConnection();
 
             statement = connection.prepareStatement(sql);
-            statement.setInt(1, user.getId());
+            statement.setInt(1, userId);
 
             isRowDeleted = statement.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -118,13 +139,19 @@ public class UserDao extends AbstractDao{
 
     public boolean update(User user) throws DAOException {
 
-        String sql = "UPDATE users SET "
-                +"firstname = ?, lastname = ?, email = ?, role = ?, username = ?, password = ? "
-                + "WHERE id = ?";
+        String sql = "UPDATE users SET " +
+                        "firstname = ?, " +
+                        "lastname = ?, " +
+                        "email = ?, " +
+                        "role = ?, " +
+                        "username = ?, " +
+                        "password = ?, " +
+                        "verified = ? " +
+                        "WHERE id = ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
-        boolean isRowUpdated = false;
+        boolean isRowUpdated;
         try {
             connection = getConnection();
 
@@ -135,7 +162,8 @@ public class UserDao extends AbstractDao{
             statement.setInt(4, user.getRole().ordinal());
             statement.setString(5, user.getUsername());
             statement.setString(6, user.getPassword());
-            statement.setInt(7, user.getId());
+            statement.setBoolean(7, user.isVerified());
+            statement.setInt(8, user.getId());
 
             isRowUpdated = statement.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -202,5 +230,30 @@ public class UserDao extends AbstractDao{
         }
 
         return user;
+    }
+
+    public int getUserCount() throws DAOException {
+        String sql = "SELECT COUNT(*) FROM users";
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        int result = 0;
+
+        try {
+            connection = getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sql);
+
+            if(resultSet.next()) {
+                result = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading user data failed.", e);
+        } finally {
+            closeCommunication(connection, statement, resultSet);
+        }
+        return result;
     }
 }

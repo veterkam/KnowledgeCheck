@@ -97,26 +97,13 @@ public class StudentDao extends UserDao {
     }
 
     private Student extractStudentFromResultSet(ResultSet resultSet) throws SQLException {
-        int id = resultSet.getInt("id");
-        String firstname = resultSet.getString("firstname");
-        String lastname = resultSet.getString("lastname");
-        String email = resultSet.getString("email");
-        String username = resultSet.getString("username");
-        String password = resultSet.getString("password");
-        int role = resultSet.getInt("role");
+        Student student = new Student();
+        extractUserFromResultSet(student, resultSet);
+        // extract profile
         String specialty = resultSet.getString("specialty");
         String group = resultSet.getString("group");
         int year = resultSet.getInt("year");
 
-
-        Student student = new Student();
-        student.setId(id);
-        student.setFirstname(firstname);
-        student.setLastname(lastname);
-        student.setEmail(email);
-        student.setRole(User.Role.fromOrdinal(role));
-        student.setUsername(username);
-        student.setPassword(password);
         student.setSpecialty(specialty);
         student.setGroup(group);
         student.setYear(year);
@@ -127,16 +114,17 @@ public class StudentDao extends UserDao {
     public Student get(int id) throws DAOException {
         Student student = null;
         final User.Role role = User.Role.STUDENT;
-        String sql = "SELECT users.`id`," +
-                " `firstname`," +
-                " `lastname`," +
-                " `email`," +
-                " `role`," +
-                " `username`," +
-                " `password`," +
-                " `specialty`," +
-                " `group`," +
-                " `year`" +
+        String sql = "SELECT users.`id` as `id`, " +
+                " `firstname`, " +
+                " `lastname`, " +
+                " `email`, " +
+                " `role`, " +
+                " `username`, " +
+                " `password`, " +
+                " `verified`, " +
+                " `specialty`, " +
+                " `group`, " +
+                " `year` " +
                 " from users" +
                 " left join student_profiles on users.id = student_profiles.id" +
                 " where users.id = ? and users.role = ?";
@@ -171,15 +159,16 @@ public class StudentDao extends UserDao {
         final User.Role role = User.Role.STUDENT;
         List<Student> students = new ArrayList<>();
 
-        String sql = "SELECT DISTINCT users.`id`," +
-                " `firstname`," +
-                " `lastname`," +
-                " `email`," +
-                " `role`," +
-                " `username`," +
-                " `password`," +
-                " `specialty`," +
-                " `group`," +
+        String sql = "SELECT DISTINCT users.`id`, " +
+                " `firstname`, " +
+                " `lastname`, " +
+                " `email`, " +
+                " `role`, " +
+                " `username`, " +
+                " `password`, " +
+                " `verified`, " +
+                " `specialty`, " +
+                " `group`, " +
                 " `year`" +
                 "FROM users " +
                 "LEFT JOIN student_profiles on users.id = student_profiles.id " +

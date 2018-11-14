@@ -6,6 +6,7 @@ public class Pagination {
     private int current;
     private int prev;
     private int next;
+    private int elementLimit;
 
     public Pagination(int pageNo, int pageCount, int pageLimit) {
         this.current = pageNo;
@@ -65,5 +66,13 @@ public class Pagination {
 
     public void setNext(int next) {
         this.next = next;
+    }
+
+    public int getElementLimit() {
+        return elementLimit;
+    }
+
+    public void setElementLimit(int elementLimit) {
+        this.elementLimit = elementLimit;
     }
 }

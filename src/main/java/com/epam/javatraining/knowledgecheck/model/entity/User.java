@@ -11,6 +11,7 @@ public class User {
     private String password;
     private String email;
     private Role role;
+    private boolean verified;
 
     public User() {
 
@@ -123,15 +124,11 @@ public class User {
         public static Role fromOrdinal(int n) {return values()[n];}
     }
 
-    public boolean isIncorrect() {
-        return  Strings.isBlank(firstname) ||
-                Strings.isBlank(lastname) ||
-                Strings.isBlank(username) ||
-                Strings.isBlank(password) ||
-                Strings.isBlank(email);
+    public boolean isVerified() {
+        return verified;
     }
 
-    public boolean isCorrect() {
-        return !isIncorrect();
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 }

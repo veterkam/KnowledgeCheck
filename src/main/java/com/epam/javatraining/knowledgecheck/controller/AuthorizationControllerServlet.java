@@ -8,9 +8,7 @@ import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
 import com.epam.javatraining.knowledgecheck.model.entity.Student;
 import com.epam.javatraining.knowledgecheck.model.entity.Tutor;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
-import com.epam.javatraining.knowledgecheck.service.AlertManager;
-import com.epam.javatraining.knowledgecheck.service.EmailSender;
-import com.epam.javatraining.knowledgecheck.service.Validator;
+import com.epam.javatraining.knowledgecheck.service.*;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import org.apache.logging.log4j.util.Strings;
 
@@ -23,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/authorization/login",
@@ -40,8 +39,13 @@ import java.sql.SQLException;
         "/authorization/myprofile/back",
         "/authorization/myprofile/confirm",
         "/authorization/myprofile/verify",
+        "/authorization/users",
+        "/authorization/users/remove",
+        "/authorization/users/verify"
 })
 public class AuthorizationControllerServlet extends AbstractBaseControllerServlet {
+    private final int COUNT_USER_ON_PAGE = 20;
+    private final int PAGINATION_LIMIT = 5;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -107,6 +111,15 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                 case "/authorization/myprofile/confirm":
                     profileConfirmEmail(request, response);
                     break;
+                case "/authorization/users":
+                    showUserList(request, response);
+                    break;
+                case "/authorization/users/remove":
+                    removeUser(request, response);
+                    break;
+                case "/authorization/users/verify":
+                    changeUserVerificationStatus(request, response);
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;
@@ -137,7 +150,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         UserDao userDao = new UserDao();
         User user = userDao.get(username);
 
-        if (user != null && user.getPassword().equals(password)) {
+        if (user != null && user.isVerified() && user.getPassword().equals(password)) {
 
             if( user.getRole() == User.Role.TUTOR) {
                 TutorDao tutorDao = new TutorDao();
@@ -243,6 +256,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             HttpSession session = request.getSession();
             User user = (User) session.getAttribute("anonym");
 
+            boolean verified = ( user.getRole() != User.Role.ADMINISTRATOR );
+            user.setVerified(verified);
+
             try {
                 new UserDao().insert(user);
             } catch (DAOException e) {
@@ -335,13 +351,13 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         UserDao userDao = new UserDao();
         User user = userDao.get(anonym.getUsername());
 
-        if (user == null || !user.getEmail().equals(email)) {
+        if (user != null && user.isVerified() && user.getEmail().equals(email)) {
+            String msg = "Hello. You started password recovering. ";
+            askVerificationCode(email, msg, request);
+        } else {
             String errorMsg = "Can't find username " + anonym.getUsername() +
                     " with e-mail " + email + ". Please, try again!";
             alertManager.danger(errorMsg);
-        } else {
-            String msg = "Hello. You started password recovering. ";
-            askVerificationCode(email, msg, request);
         }
 
         recoveryForm(request, response);
@@ -527,6 +543,134 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             request.setAttribute("verifyEmail", "true");
             showMyProfileForm(request, response);
         }
+    }
+
+    private void showUserList(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, DAOException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        // Scan parameters
+        // Current page of test list
+        int pageNo = getPageNo(request);
+
+        UserDao userDao = new UserDao();
+        // Calc test count
+        int count = userDao.getUserCount();
+
+        // Init pagination
+        int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_USER_ON_PAGE));
+        Pagination pagination = new Pagination(pageNo, pageCount, PAGINATION_LIMIT);
+        pagination.setElementLimit(COUNT_USER_ON_PAGE);
+
+        // Read user list
+        int offset = (pagination.getCurrent() - 1) * COUNT_USER_ON_PAGE;
+        TutorDao tutorDao = new TutorDao();
+        StudentDao studentDao = new StudentDao();
+
+        List<User> users = userDao.getList(offset, COUNT_USER_ON_PAGE);
+
+        for(int i = 0; i < users.size(); i++) {
+            User u = users.get(i);
+            switch( u.getRole() ) {
+                case TUTOR:
+                    Tutor tutor = tutorDao.get(u.getId());
+                    users.set(i, tutor);
+                    break;
+                case STUDENT:
+                    Student student = studentDao.get(u.getId());
+                    users.set(i, student);
+                    break;
+            }
+        }
+
+        request.setAttribute("users", users);
+        request.setAttribute("pagination", pagination);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_USER_LIST);
+        dispatcher.forward(request, response);
+    }
+
+    private void removeUser(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String strId = request.getParameter("id");
+        int id;
+        try {
+            id = Integer.parseInt(strId);
+        } catch (NumberFormatException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        UserDao userDao = new UserDao();
+        try {
+            userDao.delete(id);
+            getAlertManager(request).success("The user is removed successfully");
+        } catch(DAOException e) {
+            logger.trace(e.getMessage(), e);
+            getAlertManager(request).danger("Can not remove user. Try again!");
+        }
+        response.sendRedirect(request.getContextPath() + "/authorization/users");
+    }
+
+    private void changeUserVerificationStatus(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String strId = request.getParameter("id");
+        int id;
+        try {
+            id = Integer.parseInt(strId);
+        } catch (NumberFormatException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String strVerified = request.getParameter("verified");
+        boolean verified = ( "true".equals(strVerified) );
+
+        UserDao dao = new UserDao();
+        try {
+            User u = dao.get(id);
+            u.setVerified(verified);
+            dao.update(u);
+            getAlertManager(request).success("The verification status of user is updated successfully");
+        } catch (DAOException e) {
+            logger.trace(e.getMessage(), e);
+            getAlertManager(request).danger("Can not update verification status of user. Try again!");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/authorization/users");
+    }
+
+    private int getPageNo(HttpServletRequest request) {
+        String pageNoStr = request.getParameter("pageNo");
+        int pageNo;
+        try {
+            pageNo = Integer.parseInt(pageNoStr);
+        } catch (NumberFormatException e) {
+            pageNo = 1;
+        }
+
+        return pageNo;
     }
 
     private boolean checkConfirmation(HttpServletRequest request) throws RequestException {

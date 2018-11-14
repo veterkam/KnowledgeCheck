@@ -10,9 +10,13 @@ create table `users` (
   `role` int(11) not null,
   `username` varchar(20) not null,
   `password` varchar(30) not null,
+  `verified` BOOLEAN NOT NULL DEFAULT FALSE,
   primary key (`id`),
   unique key `username_unique` (`username`)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
+
+ALTER TABLE users change verified verified BOOLEAN NOT NULL DEFAULT false;
+select * from users;
 
 create table `tutor_profiles` (
   `id` int(11) not null,

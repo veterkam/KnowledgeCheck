@@ -94,25 +94,12 @@ public class TutorDao extends UserDao {
     }
 
     private Tutor extractTutorFromResultSet(ResultSet resultSet) throws SQLException{
-        int id = resultSet.getInt("id");
-        String firstname = resultSet.getString("firstname");
-        String lastname = resultSet.getString("lastname");
-        String email = resultSet.getString("email");
-        String username = resultSet.getString("username");
-        String password = resultSet.getString("password");
-        int role = resultSet.getInt("role");
+        Tutor tutor = new Tutor();
+        extractUserFromResultSet(tutor, resultSet);
         String position = resultSet.getString("position");
         String scientificDegree = resultSet.getString("scientific_degree");
         String academicTitle = resultSet.getString("academic_title");
-
-        Tutor tutor = new Tutor();
-        tutor.setId(id);
-        tutor.setFirstname(firstname);
-        tutor.setLastname(lastname);
-        tutor.setEmail(email);
-        tutor.setRole(User.Role.fromOrdinal(role));
-        tutor.setUsername(username);
-        tutor.setPassword(password);
+        // extract profile info
         tutor.setPosition(position);
         tutor.setScientificDegree(scientificDegree);
         tutor.setAcademicTitle(academicTitle);
@@ -129,6 +116,7 @@ public class TutorDao extends UserDao {
                 " `role`," +
                 " `username`," +
                 " `password`," +
+                " `verified`, " +
                 " `position`," +
                 " `scientific_degree`," +
                 " `academic_title`" +

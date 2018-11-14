@@ -5,6 +5,10 @@
     <c:if test="${user != null}">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/authorization/myprofile">My Profile</a>
 
+        <c:if test="${user.role=='ADMINISTRATOR'}">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/authorization/users">Users</a>
+        </c:if>
+
         <c:if test="${user.role=='TUTOR'}">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>

@@ -13,6 +13,7 @@
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/teststatistics">Test Statistics</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/subjects">Subjects</a>
         </c:if>
     </c:if>
     <!-- Toggler/collapsibe Button -->

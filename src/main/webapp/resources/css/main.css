@@ -101,4 +101,23 @@ body {
     border-color: #343a40;
 }
 
+.table-wrapper-scroll-y {
+    display: block;
+    max-height: 360px;
+    overflow-y: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.padding0 {
+    padding: 0px !important;
+}
+
+.paddingt0 {
+    padding-top: 0px !important;
+}
+
+.paddingb0 {
+    padding-bottom: 0px !important;
+}
+
 

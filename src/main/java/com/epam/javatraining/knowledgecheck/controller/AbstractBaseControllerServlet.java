@@ -22,13 +22,14 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/authorization/PasswordRecoveryForm.jsp";
     protected final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/common/PageNotFound.jsp";
     protected final String VIEW_TEST_BOARD = "/WEB-INF/view/testboard/TestBoard.jsp";
-    protected final String VIEW_TEST_BOARD_MY_TESTS = "/WEB-INF/view/testboard/MyTests.jsp";
-    protected final String VIEW_TEST_BOARD_EDIT_TEST = "/WEB-INF/view/testboard/EditTest.jsp";
-    protected final String VIEW_TEST_BOARD_TESTING = "/WEB-INF/view/testboard/Testing.jsp";
-    protected final String VIEW_TEST_BOARD_STUDENTS_RESULTS = "/WEB-INF/view/testboard/StudentsResults.jsp";
-    protected final String VIEW_TEST_BOARD_TEST_STATISTICS = "/WEB-INF/view/testboard/TestStatistics.jsp";
+    protected final String VIEW_MY_TESTS = "/WEB-INF/view/testboard/MyTests.jsp";
+    protected final String VIEW_EDIT_TEST = "/WEB-INF/view/testboard/EditTest.jsp";
+    protected final String VIEW_TESTING = "/WEB-INF/view/testboard/Testing.jsp";
+    protected final String VIEW_STUDENTS_RESULTS = "/WEB-INF/view/testboard/StudentsResults.jsp";
+    protected final String VIEW_TEST_STATISTICS = "/WEB-INF/view/testboard/TestStatistics.jsp";
     protected final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/authorization/MyProfileForm.jsp";
     protected final String VIEW_USER_LIST = "/WEB-INF/view/authorization/UserList.jsp";
+    protected final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/authorization/SubjectsForm.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
 

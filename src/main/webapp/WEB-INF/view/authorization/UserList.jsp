@@ -9,7 +9,7 @@
 
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Students results</h1>
+            <h1 class="h3 mb-3 font-weight-normal">Users</h1>
         </div>
     </div>
 

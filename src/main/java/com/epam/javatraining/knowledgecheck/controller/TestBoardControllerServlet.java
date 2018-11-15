@@ -29,7 +29,9 @@ import java.util.Map;
         "/testboard/testing",
         "/testboard/testing/result",
         "/testboard/studentsresults",
-        "/testboard/teststatistics"
+        "/testboard/teststatistics",
+        "/testboard/subjects",
+        "/testboard/subjects/save"
 })
 public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
 
@@ -73,6 +75,12 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     break;
                 case "/testboard/teststatistics":
                     testStatistics(request, response);
+                    break;
+                case "/testboard/subjects":
+                    showSubjectsForm(request, response);
+                    break;
+                case "/testboard/subjects/save":
+                    saveSubjects(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -220,7 +228,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
     private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
         // Show all current user's tests with question data and answer data
-        showTests(request, response, VIEW_TEST_BOARD_MY_TESTS, false, true);
+        showTests(request, response, VIEW_MY_TESTS, false, true);
     }
 
     private void removeTest(HttpServletRequest request, HttpServletResponse response)
@@ -300,7 +308,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             // only show empty form
             // Read subject list for subject filter in presentation
             request.setAttribute("subjects", subjectDao.getList() );
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
             dispatcher.forward(request, response);
             return;
         }
@@ -404,7 +412,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             request.setAttribute("subjects",  subjectDao.getList() );
             // Send test data for auto filing
             request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_EDIT_TEST);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
             dispatcher.forward(request, response);
             return;
         }
@@ -458,7 +466,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             response.sendRedirect(request.getContextPath() + "/" );
         } else {
             request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_TESTING);
+            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TESTING);
             dispatcher.forward(request, response);
         }
     }
@@ -596,7 +604,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("testingResultsList", testingResultsList);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_STUDENTS_RESULTS);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_STUDENTS_RESULTS);
         dispatcher.forward(request, response);
     }
 
@@ -669,8 +677,79 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
         storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("statisticsList", statisticsList);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_BOARD_TEST_STATISTICS);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_STATISTICS);
         dispatcher.forward(request, response);
+    }
+
+
+    public void showSubjectsForm(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        SubjectDao subjectDao = new SubjectDao();
+        List<Subject> subjects = subjectDao.getList();
+        request.setAttribute("subjects", subjects);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_SUBJECTS_FORM);
+        dispatcher.forward(request, response);
+    }
+
+    public void saveSubjects(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, DAOException {
+        User user = (User) request.getSession().getAttribute("user");
+
+        if (user == null || user.getRole() != User.Role.TUTOR) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        String[] subjectNames = request.getParameterValues("subjects");
+        String[] subjectIds = request.getParameterValues("subjectIds");
+        String[] modify = request.getParameterValues("modify");
+        String[] remove = request.getParameterValues("remove");
+
+        AlertManager alertManager = getAlertManager(request);
+        SubjectDao subjectDao = new SubjectDao();
+        Subject subject = new Subject();
+        int id;
+
+
+        for(int i = 0; i < subjectNames.length; i++) {
+            try {
+                id = Integer.parseInt(subjectIds[i]);
+            } catch(NumberFormatException e) {
+                pageNotFound(request, response);
+                return;
+            }
+
+            subject.setId(id);
+            subject.setName(subjectNames[i]);
+
+            try {
+                if("1".equals(remove[i])) {
+                    subjectDao.delete(subject);
+                } else if("1".equals(modify[i]) && Strings.isNotBlank(subjectNames[i])) {
+                   if(id > -1) {
+                       subjectDao.update(subject);
+                   } else {
+                       subjectDao.insert(subject);
+                   }
+                }
+            } catch(DAOException e) {
+                logger.error(e.getMessage(), e);
+                alertManager.danger(e.getMessage() + " \"" + subject.getName() + "\"");
+            }
+        }
+
+        if(alertManager.isEmpty()) {
+            alertManager.success("Changes are saved successfully");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/testboard/subjects");
     }
 
     private class ViewOptions {

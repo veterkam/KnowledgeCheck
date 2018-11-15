@@ -72,10 +72,10 @@
         <div class="row">
         <c:if test="${verifyEmail != null}">
             <div class="col-4">
-                <button class="btn btn-dark btn-block m-1" type="submit" name="btnCancel" formnovalidate
-                        formaction="${pageContext.request.contextPath}/authorization/register">
+                <a class="btn btn-dark btn-block m-1" role="button"
+                   href="${pageContext.request.contextPath}/authorization/register" >
                     Cancel
-                </button>
+                </a>
             </div>
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnBack" formnovalidate

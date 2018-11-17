@@ -7,7 +7,7 @@
 <div class="container">
     <h1 class="h3 mb-3 font-weight-normal">Edit test</h1>
     <%@ include file = "../common/Alert.jsp" %>
-    <form class="form-text-edit text-left" data-role="test-container" method="get">
+    <form class="form-text-edit text-left" data-role="test-container" method="post">
         <input type="text" name="testId" value="${test.id}" hidden>
 
         <div class="form-group">

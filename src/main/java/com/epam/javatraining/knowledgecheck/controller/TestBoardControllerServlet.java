@@ -305,7 +305,7 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     return;
                 }
             }
-            // only show empty form
+            // Only show empty edit form
             // Read subject list for subject filter in presentation
             request.setAttribute("subjects", subjectDao.getList() );
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
@@ -322,13 +322,12 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             alertManager.danger("Subject is wrong.");
         }
 
-        Validator validator = new Validator();
-        validator.validateTestTitle(paramTitle);
-        validator.validateTestDescritption(paramDescription);
-
         test.setSubject(subject);
         test.setTitle(paramTitle);
         test.setDescription(paramDescription);
+
+        Validator validator = new Validator();
+        validator.validate(test);
 
         // Fill test object with the data from request parameters
         String[] paramQuestionDescs = request.getParameterValues("questions");
@@ -363,8 +362,8 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
             }
 
             // question object with the data from request parameters
-            validator.validateQuestionDescritption(paramQuestionDescs[i]);
             question.setDescription(paramQuestionDescs[i]);
+            validator.validate(question);
             List<Answer> answerList = new ArrayList<>();
 
             String[] paramAnswers = request.getParameterValues("answers["+i+"]");
@@ -390,14 +389,14 @@ public class TestBoardControllerServlet extends AbstractBaseControllerServlet {
                     // it's new answer, do nothing
                 }
 
-                validator.validateAnswerDescritption(paramAnswers[j]);
-
                 answer.setDescription(paramAnswers[j]);
 
                 String paramCorrect = request.getParameter("corrects["+i+"]["+j+"]");
                 boolean correct = (paramCorrect != null);
                 answer.setCorrect(correct);
                 answerList.add(answer);
+
+                validator.validate(answer);
             }
 
             question.setAnswers(answerList);

@@ -194,7 +194,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         String role = request.getParameter("role");
 
         Validator validator = new Validator();
-        validator.validateUser(anonym);
+        validator.validate(anonym);
         validator.validatePassword(repeatPassword, "repeat password");
         validator.isNotBlank(role, "role");
 
@@ -468,7 +468,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
         boolean isFailed = false;
         Validator validator = new Validator();
-        validator.validateUser(modifyUser);
+        validator.validate(modifyUser);
 
         if(repeatPassword != null) {
             // user changed password

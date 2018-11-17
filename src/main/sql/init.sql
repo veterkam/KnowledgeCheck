@@ -4,19 +4,25 @@ DROP table IF EXISTS `users`;
 
 create table `users` (
   `id` int(11) not null auto_increment,
-  `firstname` varchar(20) not null,
-  `lastname` varchar(20) not null,
+  `firstname` varchar(50) not null,
+  `lastname` varchar(50) not null,
   `email` varchar(50) not null,
   `role` int(11) not null,
-  `username` varchar(20) not null,
-  `password` varchar(30) not null,
+  `username` varchar(50) not null,
+  `password` varchar(50) not null,
   `verified` BOOLEAN NOT NULL DEFAULT FALSE,
   primary key (`id`),
   unique key `username_unique` (`username`)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
 ALTER TABLE users change verified verified BOOLEAN NOT NULL DEFAULT false;
-select * from users;
+ALTER TABLE users change firstname firstname varchar(50) not null;
+ALTER TABLE users change lastname lastname varchar(50) not null;
+ALTER TABLE users change username username varchar(50) not null;
+ALTER TABLE users change password password varchar(50) not null;
+
+DESC users;
+
 
 create table `tutor_profiles` (
   `id` int(11) not null,
@@ -36,7 +42,7 @@ create table `student_profiles` (
   `id` int(11) not null,
   `specialty` varchar(100),
   `group` varchar(10),
-  `year` int(1),
+  `year` int(4),
   primary key (`id`),
   unique key `id_unique` (`id`),
   FOREIGN KEY (`id`)
@@ -127,16 +133,21 @@ where role = 2;
 delete from users where email LIKE "%@mail.%";
 select * from users;
 
+SET @id = 0;
+select * from users where (@id IN (id, 0)) ;
+
 show tables;
 drop table if exists `subjects`;
 
 create table `subjects` (
   `id` int(11) not null auto_increment,
-  `name` varchar(50) not null,
+  `name` varchar(100) not null,
   primary key (`id`),
   unique key `name_unique` (`name`)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
+ALTER TABLE subjects change name name varchar(100) not null;
+desc subjects;
 
 insert into `subjects`(`name`)
 values('computer science'),
@@ -161,28 +172,40 @@ create table `tests` (
   `tutor_id` int(11),
   `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `title` varchar(100),
-  `description` varchar(10000)
+  `description` varchar(1000)
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
+
+ALTER TABLE tests change description description varchar(1000) not null;
+desc tests;
 
 
 create table `questions` (
   `id` bigint(11) not null auto_increment primary key,
-  `test_id` bigint(11),
-  `description` varchar(1000),
+  `test_id` bigint(11) not null,
+  `description` varchar(1000) not null,
   FOREIGN KEY (`test_id`)
     REFERENCES `tests` (`id`)
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
+ALTER TABLE questions change description description varchar(1000) not null;
+ALTER TABLE questions change test_id test_id bigint(11) not null;
+desc questions;
+
 create table `answers` (
   `id` bigint(11) not null auto_increment primary key,
-  `question_id` bigint(11),
-  `description` varchar(1000),
-  `correct` boolean,
+  `question_id` bigint(11) not null,
+  `description` varchar(1000) not null,
+  `correct` boolean not null,
   FOREIGN KEY (`question_id`)
     REFERENCES `questions` (`id`)
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
+
+ALTER TABLE answers change description description varchar(1000) not null;
+ALTER TABLE answers change question_id question_id bigint(11) not null;
+ALTER TABLE answers change correct correct boolean not null;
+desc answers;
 
 
 insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `update_time`)
@@ -501,6 +524,8 @@ select * from tests;
 SELECT * FROM questions;
 
 SELECT * FROM users;
+
+
 
 SELECT answers.question_id as question_id, answers.id as answer_id FROM tests
 INNER JOIN questions ON tests.id = questions.test_id

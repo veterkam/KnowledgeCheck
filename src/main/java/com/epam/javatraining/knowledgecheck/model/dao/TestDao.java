@@ -91,48 +91,45 @@ public class TestDao extends AbstractDao{
         }
     }
 
-    private String getFilter() {
-        String where = "";
-        if(isUseFilter()) {
-
-            if(filterTutorId > 0) {
-                where += " `tutor_id` = '" + filterTutorId + "' ";
-            }
-            if(filterSubjectId > 0) {
-                if(!where.isEmpty()) {
-                    where += " AND ";
-                }
-                where += " `subject_id` = '" + filterSubjectId + "' ";
-            }
-
-            where = " WHERE " + where;
-        }
-
-        return where;
-    }
-
     private String getOrder() {
         String order = "";
         if(isUseOrder()) {
-            order += " ORDER BY `update_time` " + dateOrder;
+            order = " ORDER BY `update_time` ";
+            order += ("ASC".equals(dateOrder)) ? "ASC" : "DESC";
         }
 
         return order;
     }
 
+    private int setFilter(PreparedStatement statement) throws  SQLException {
+        return setFilter(statement, 0);
+    }
+
+    private int setFilter(PreparedStatement statement, int offset) throws SQLException {
+        statement.setLong(++offset, getFilterTutorId());
+        statement.setLong(++offset, getFilterTutorId());
+        statement.setLong(++offset, getFilterSubjectId());
+        statement.setLong(++offset, getFilterSubjectId());
+
+        return offset;
+    }
+
     public int getTestCount() throws DAOException {
-        String sql = "SELECT COUNT(*) FROM tests";
-        sql += getFilter();
+        String sql = "SELECT COUNT(*) FROM tests " +
+                "WHERE " +
+                "(tutor_id = ? OR ? <= 0) AND " +
+                "(subject_id = ? OR ? <= 0) ";
 
         Connection connection = null;
-        Statement statement = null;
+        PreparedStatement statement = null;
         ResultSet resultSet = null;
         int result = 0;
 
         try {
             connection = getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
+            statement = connection.prepareStatement(sql);
+            setFilter(statement);
+            resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
                 result = resultSet.getInt(1);
@@ -172,7 +169,11 @@ public class TestDao extends AbstractDao{
     public List<Test> getPlainList(long offset, long count)
         throws DAOException {
         List<Test> testList = new ArrayList<>();
-        String sql = "SELECT * FROM tests" + getFilter() + getOrder() + " LIMIT ?, ?";
+        String sql = "SELECT * FROM tests " +
+                "WHERE " +
+                "(tutor_id = ? OR ? <= 0) AND " +
+                "(subject_id = ? OR ? <= 0) "
+                + getOrder() + " LIMIT ?, ?";
 
         Connection connection = null;
         PreparedStatement statement = null;
@@ -182,8 +183,9 @@ public class TestDao extends AbstractDao{
             connection = getConnection();
 
             statement = connection.prepareStatement(sql);
-            statement.setLong(1, offset);
-            statement.setLong(2, count);
+            int index = setFilter(statement);
+            statement.setLong(++index, offset);
+            statement.setLong(++index, count);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Test test = extractTestFromResultSet(resultSet);

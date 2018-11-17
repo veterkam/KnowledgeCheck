@@ -1,7 +1,7 @@
 package com.epam.javatraining.knowledgecheck.service;
 
 
-import com.epam.javatraining.knowledgecheck.model.entity.User;
+import com.epam.javatraining.knowledgecheck.model.entity.*;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.ArrayList;
@@ -16,14 +16,23 @@ public class Validator {
     private final String EMAIL_PATTERN = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private final String USERNAME_PATTERN = "^[_A-Za-z0-9-]+$";
 
-    private final int FIRST_NAME_MAX_LENGTH = 20;
-    private final int LAST_NAME_MAX_LENGTH = 20;
+    private final int FIRST_NAME_MAX_LENGTH = 50;
+    private final int LAST_NAME_MAX_LENGTH = 50;
     private final int EMAIL_MAX_LENGTH = 50;
-    private final int USERNAME_MAX_LENGTH = 20;
-    private final int PASSWORD_MAX_LENGTH = 30;
+    private final int USERNAME_MAX_LENGTH = 50;
+    private final int PASSWORD_MAX_LENGTH = 50;
+
+    private final int POSITION_MAX_LENGTH = 100;
+    private final int SCIENTIFIC_DEGREE_MAX_LENGTH = 100;
+    private final int ACADEMIC_TITLE_MAX_LENGTH = 100;
+
+    private final int SPECIALTY_MAX_LENGTH = 100;
+    private final int GROUP_MAX_LENGTH = 10;
+
+    private final int SUBJECT_NAME_MAX_LENGTH = 100;
 
     private final int TEST_TITLE_MAX_LENGTH = 100;
-    private final int TEST_DESCRIPTION_MAX_LENGTH = 10000;
+    private final int TEST_DESCRIPTION_MAX_LENGTH = 1000;
     private final int QUESTION_DESCRIPTION_MAX_LENGTH = 1000;
     private final int ANSWER_DESCRIPTION_MAX_LENGTH = 1000;
 
@@ -61,12 +70,108 @@ public class Validator {
         return false;
     }
     
+    public boolean validate(User user) {
+        switch (user.getRole()) {
+            case STUDENT:
+                return validateStudent((Student) user);
+            case TUTOR:
+                return validateTutor((Tutor) user);
+            default:
+                return validateUser(user);
+        }
+    }
+
     public boolean validateUser(User user) {
-        boolean result =    validateFirstName(user.getFirstname()) &&
-                            validateLastName(user.getLastname()) &&
-                            validateEmail(user.getEmail()) &&
-                            validateUsername(user.getUsername()) &&
-                            validatePassword(user.getPassword());
+        boolean result = true;
+        if( validateFirstName(user.getFirstname()) ) {
+            result = false;
+        }
+
+        if( validateLastName(user.getLastname()) ) {
+            result = false;
+        }
+
+        if( validateEmail(user.getEmail()) ) {
+            result = false;
+        }
+
+        if( validateUsername(user.getUsername()) ) {
+            result = false;
+        }
+
+        if( validatePassword(user.getPassword()) ) {
+            result = false;
+        }
+
+        return result;
+    }
+
+    public boolean validateStudent(Student student) {
+        boolean result = validateUser(student);
+
+        if ( student.getSpecialty() != null && student.getSpecialty().length() > SPECIALTY_MAX_LENGTH ) {
+            errors.add("Length of field student should not be greater " + SPECIALTY_MAX_LENGTH);
+            result = false;
+        }
+
+        if ( student.getGroup() != null && student.getGroup().length() > GROUP_MAX_LENGTH ) {
+            errors.add("Length of field group should not be greater " + GROUP_MAX_LENGTH);
+            result = false;
+        }
+
+        return result;
+    }
+
+    public boolean validateTutor(Tutor tutor) {
+        boolean result = validateUser(tutor);
+
+        if ( tutor.getPosition() != null && tutor.getPosition().length() > POSITION_MAX_LENGTH) {
+            errors.add("Length of field position should not be greater " + POSITION_MAX_LENGTH);
+            result = false;
+        }
+
+        if ( tutor.getScientificDegree() != null && tutor.getScientificDegree().length() > SCIENTIFIC_DEGREE_MAX_LENGTH) {
+            errors.add("Length of field scientific degree should not be greater " + SCIENTIFIC_DEGREE_MAX_LENGTH);
+            result = false;
+        }
+
+        if ( tutor.getAcademicTitle() != null && tutor.getAcademicTitle().length() > ACADEMIC_TITLE_MAX_LENGTH) {
+            errors.add("Length of field academic title should not be greater " + ACADEMIC_TITLE_MAX_LENGTH);
+            result = false;
+        }
+
+        return result;
+    }
+
+    public boolean validate(Subject subject) {
+        boolean result = true;
+
+        if ( subject.getName() != null && subject.getName().length() > SUBJECT_NAME_MAX_LENGTH) {
+            errors.add("Length of field subject name should not be greater " + SUBJECT_NAME_MAX_LENGTH);
+            result = false;
+        }
+
+        return result;
+    }
+
+    public boolean validate(Answer answer) {
+        return validateAnswerDescritption(answer.getDescription());
+    }
+
+    public boolean validate(Question question) {
+        return validateQuestionDescritption(question.getDescription());
+    }
+
+    public boolean validate(Test test) {
+        boolean result = true;
+        if(validateTestTitle(test.getTitle())) {
+            result = false;
+        }
+
+        if(validateTestDescritption(test.getDescription())) {
+            result = false;
+        }
+
         return result;
     }
 
@@ -137,19 +242,19 @@ public class Validator {
         return error == null;
     }
 
-    public boolean validateTestTitle(String title) {
-        return isNotBlank(title, "title", TEST_TITLE_MAX_LENGTH);
+    private boolean validateTestTitle(String title) {
+        return isNotBlank(title, "test title", TEST_TITLE_MAX_LENGTH);
     }
 
-    public boolean validateTestDescritption(String description) {
-        return isNotBlank(description, "description", TEST_DESCRIPTION_MAX_LENGTH);
+    private boolean validateTestDescritption(String description) {
+        return isNotBlank(description, "test description", TEST_DESCRIPTION_MAX_LENGTH);
     }
 
-    public boolean validateQuestionDescritption(String description) {
+    private boolean validateQuestionDescritption(String description) {
         return isNotBlank(description, "question description", QUESTION_DESCRIPTION_MAX_LENGTH);
     }
 
-    public boolean validateAnswerDescritption(String description) {
+    private boolean validateAnswerDescritption(String description) {
         return isNotBlank(description, "answer description", ANSWER_DESCRIPTION_MAX_LENGTH);
     }
 
@@ -162,7 +267,7 @@ public class Validator {
         return isNotBlank(str, fieldName, 65000);
     }
 
-    public boolean isNotBlank(String str, String fieldName, int maxlen) {
+    private boolean isNotBlank(String str, String fieldName, int maxlen) {
         if(fieldName == null) {
             fieldName = "field";
         }
@@ -194,7 +299,7 @@ public class Validator {
         }
 
         if(str.length() > maxlen) {
-            return "Length of %s should not be greater " + maxlen;
+            return "Length of field %s should not be greater " + maxlen;
         }
 
         if(regexp != null) {
@@ -202,7 +307,7 @@ public class Validator {
             Matcher matcher = pattern.matcher(str);
 
             if (!matcher.matches()) {
-                return "Invalid string format of %s";
+                return "Invalid string format of field %s";
             }
         }
 

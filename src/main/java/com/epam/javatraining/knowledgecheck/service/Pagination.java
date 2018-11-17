@@ -6,10 +6,12 @@ public class Pagination {
     private int current;
     private int prev;
     private int next;
+    private int pageCount;
     private int elementLimit;
 
     public Pagination(int pageNo, int pageCount, int pageLimit) {
         this.current = pageNo;
+        this.pageCount = pageCount;
 
         int half = (pageLimit % 2 == 0) ? pageLimit / 2 : pageLimit / 2 + 1;
 
@@ -66,6 +68,10 @@ public class Pagination {
 
     public void setNext(int next) {
         this.next = next;
+    }
+
+    public int getPageCount() {
+        return pageCount;
     }
 
     public int getElementLimit() {

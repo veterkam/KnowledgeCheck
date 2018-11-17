@@ -64,7 +64,10 @@
                                             <div class="row">
                                                 <div class="col text-left">
                                                     <p class="card-text">
-                                                        <strong>${studentTestingResultsLoop.count}. <c:out value="${studentTestingResults.student.fullname}"/> </strong>
+                                                        <strong>${studentTestingResultsLoop.count}.
+                                                            <a href="${pageContext.request.contextPath}/authorization/profile?id=${studentTestingResults.student.id}">
+                                                                <c:out value="${studentTestingResults.student.fullname}"/></a>
+                                                        </strong>
                                                         ${studentTestingResults.score}% correct answers
                                                     </p>
                                                 </div>

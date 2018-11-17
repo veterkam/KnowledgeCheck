@@ -41,7 +41,8 @@ import java.util.List;
         "/authorization/myprofile/verify",
         "/authorization/users",
         "/authorization/users/remove",
-        "/authorization/users/verify"
+        "/authorization/users/verify",
+        "/authorization/profile"
 })
 public class AuthorizationControllerServlet extends AbstractBaseControllerServlet {
     private final int COUNT_USER_ON_PAGE = 20;
@@ -119,6 +120,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     break;
                 case "/authorization/users/verify":
                     changeUserVerificationStatus(request, response);
+                    break;
+                case "/authorization/profile":
+                    showProfile(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -659,6 +663,42 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         }
 
         response.sendRedirect(request.getContextPath() + "/authorization/users");
+    }
+
+    private void showProfile(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, DAOException {
+
+        String strId = request.getParameter("id");
+        int id;
+        try {
+            id = Integer.parseInt(strId);
+        } catch (NumberFormatException e) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        UserDao dao = new UserDao();
+        User data = dao.get(id);
+        if(data == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        switch(data.getRole()) {
+            case STUDENT:
+                data = (new StudentDao()).get(id);
+                break;
+            case TUTOR:
+                data = (new TutorDao()).get(id);
+                break;
+            default:
+                pageNotFound(request, response);
+                return;
+        }
+
+        request.setAttribute("userData", data);
+        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_PROFILE);
+        dispatcher.forward(request, response);
     }
 
     private int getPageNo(HttpServletRequest request) {

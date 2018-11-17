@@ -98,7 +98,7 @@
                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                             data-target="#desc${testLoop.index}"
                                             <c:if test="${fn:length(test.questions) == 0}">disabled</c:if>>
-                                        Description
+                                        Details
                                     </button>
                                 </div>
                             </div>

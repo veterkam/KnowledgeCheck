@@ -30,6 +30,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/authorization/MyProfileForm.jsp";
     protected final String VIEW_USER_LIST = "/WEB-INF/view/authorization/UserList.jsp";
     protected final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/authorization/SubjectsForm.jsp";
+    protected final String VIEW_PROFILE = "/WEB-INF/view/authorization/Profile.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
 

@@ -5,7 +5,7 @@ create table IF NOT EXISTS `users` (
   `email` varchar(50) not null,
   `role` int(11) not null,
   `username` varchar(50) not null,
-  `password` varchar(50) not null,
+  `password` varchar(200) not null,
   `verified` BOOLEAN NOT NULL DEFAULT FALSE,
   primary key (`id`),
   unique key `username_unique` (`username`)
@@ -37,9 +37,9 @@ create table IF NOT EXISTS `student_profiles` (
 
 insert into `users`(`firstname`, `lastname`, `email`, `role`, `username`, `password`, `verified`)
 SELECT t.* FROM (
-  (SELECT 'Bob' as a, 'Smith' as b, 'bob@gmail.com' as c, 1, 'bob' as d, '123' as e, true as f) UNION ALL
-  (SELECT 'Alex', 'McDonald', 'alex@gmail.com', 1, 'alex', '123', true) UNION ALL
-  (SELECT 'Mary', 'Peak', 'mary@gmail.com', 0, 'mary', '123', true)) t
+  (SELECT 'Bob' as a, 'Smith' as b, 'bob@gmail.com' as c, 1, 'bob' as d, '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36' as e, true as f) UNION ALL
+  (SELECT 'Alex', 'McDonald', 'alex@gmail.com', 1, 'alex', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true) UNION ALL
+  (SELECT 'Mary', 'Peak', 'mary@gmail.com', 0, 'mary', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true)) t
    WHERE NOT EXISTS (SELECT * FROM `users`);
 
 insert into `tutor_profiles`(`id`, `position`, `scientific_degree`, `academic_title`)

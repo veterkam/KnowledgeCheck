@@ -6,7 +6,7 @@
   <display-name>Knowledge Check Web Application</display-name>
   <context-param>
     <param-name>dbUrl</param-name><!--&useUnicode=true&characterEncoding=utf8-->
-    <param-value><![CDATA[jdbc:mysql://localhost:3306/knowledge?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false]]></param-value>
+    <param-value><![CDATA[jdbc:mysql://localhost:3306/quiz?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false]]></param-value>
   </context-param>
 
   <context-param>

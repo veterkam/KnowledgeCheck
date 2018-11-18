@@ -128,13 +128,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
                     pageNotFound(request, response);
                     break;
             }
-        } catch (DAOException e) {
-            logger.error(e.getMessage(), e);
-
-            throw new ServletException(e.getMessage(), e);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw e;
+            throw new ServletException(e.getMessage(), e);
         }
     }
 
@@ -145,7 +141,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void loginDo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, DAOException {
+            throws Exception {
 
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
@@ -154,7 +150,12 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         UserDao userDao = new UserDao();
         User user = userDao.get(username);
 
-        if (user != null && user.isVerified() && user.getPassword().equals(password)) {
+        if (user != null && user.isVerified() &&
+                Cipher.validate(password, user.getPassword())) {
+
+            password = Cipher.encode(password);
+            user.setPassword(password);
+            userDao.updatePassword(user);
 
             if( user.getRole() == User.Role.TUTOR) {
                 TutorDao tutorDao = new TutorDao();
@@ -184,7 +185,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
 
     private void registerVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException{
+            throws Exception {
 
         // Process parameters
         User anonym = extractUser(request);
@@ -222,6 +223,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (isFailed) {
             showRegisterForm(request, response);
             return;
+        } else {
+            String password = Cipher.encode(anonym.getPassword());
+            anonym.setPassword(password);
         }
 
         UserDao userDao = new UserDao();
@@ -242,7 +246,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws Exception {
 
         boolean confirm;
 
@@ -307,7 +311,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void recoveryVerifyUserInfo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws Exception {
         // Process parameters
         String email = request.getParameter("email");
         String username = request.getParameter("username");
@@ -341,6 +345,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         User anonym = new User();
         anonym.setEmail(email);
         anonym.setUsername(username.toLowerCase());
+        password = Cipher.encode( password );
         anonym.setPassword(password);
 
         // Store user info in session for form autofilling
@@ -368,7 +373,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, DAOException, IOException {
+            throws ServletException, IOException, DAOException {
         HttpSession session = request.getSession();
         User anonym = (User) session.getAttribute("anonym");
 
@@ -390,7 +395,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
             if (user != null) {
                 user.setPassword(anonym.getPassword());
-                if ( userDao.update(user) ) {
+                if ( userDao.updatePassword(user) ) {
                     session.setAttribute("user", user);
                     session.setAttribute("anonym", null);
                     alertManager.success("Recovery password success! Welcome " + user.getFullname());
@@ -441,7 +446,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
 
 
     private void verifyProfileInfo(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+            throws Exception {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -488,6 +493,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             if (!repeatPassword.equals(modifyUser.getPassword())) {
                 alertManager.danger("Passwords are different.");
                 isFailed = true;
+            } else {
+                String password = Cipher.encode(modifyUser.getPassword());
+                modifyUser.setPassword(password);
             }
 
         } else if(validator.isFailed()) {

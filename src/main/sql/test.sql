@@ -13,7 +13,7 @@ create table `users` (
   `email` varchar(50) not null,
   `role` int(11) not null,
   `username` varchar(50) not null,
-  `password` varchar(50) not null,
+  `password` varchar(200) not null,
   `verified` BOOLEAN NOT NULL DEFAULT FALSE,
   primary key (`id`),
   unique key `username_unique` (`username`)
@@ -23,7 +23,7 @@ ALTER TABLE users change verified verified BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE users change firstname firstname varchar(50) not null;
 ALTER TABLE users change lastname lastname varchar(50) not null;
 ALTER TABLE users change username username varchar(50) not null;
-ALTER TABLE users change password password varchar(50) not null;
+ALTER TABLE users change password password varchar(200) not null;
 
 DESC users;
 
@@ -56,20 +56,20 @@ create table `student_profiles` (
 
 
 insert into `users`(`firstname`, `lastname`, `email`, `role`, `username`, `password`)
-VALUES('Bob', 'Smith', 'bob@gmail.com', 1, 'bob', '123'),
-      ('Alex', 'McDonald', 'alex@gmail.com', 2, 'alex', '123'),
-      ('Mary', 'Peak', 'mary@gmail.com', 1, 'mary', '123'),
-      ('Ann', 'Angry', 'ann@gmail.com', 2, 'ann', '123'),
-      ('Jack', 'Crazy', 'jack@gmail.com', 1, 'jack', '123'),
-      ('Nelson', 'Mandela', 'nelson@gmail.com', 2, 'nelson', '123'),
-      ('Berny', 'Black', 'barny@gmail.com', 1, 'barny', '123'),
-      ('Den', 'Forest', 'den@gmail.com', 2, 'den', '123'),
-      ('Mike', 'Sky', 'mike@gmail.com', 1, 'mike', '123'),
-      ('Iren', 'Gamp', 'iren0@gmail.com', 1, 'iren', '123'),
-      ('Fredy', 'White', 'fredy@gmail.com', 1, 'fredy', '123'),
-      ('John', 'McKey', 'john@gmail.com', 2, 'john', '123'),
-      ('Lucy', 'Love', 'lucy@gmail.com', 2, 'lucy', '123'),
-      ('Piter', 'Hangry', 'piter@gmail.com', 2, 'piter', '123');
+VALUES('Bob', 'Smith', 'bob@gmail.com', 1, 'bob', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Alex', 'McDonald', 'alex@gmail.com', 2, 'alex', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Mary', 'Peak', 'mary@gmail.com', 1, 'mary', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Ann', 'Angry', 'ann@gmail.com', 2, 'ann', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Jack', 'Crazy', 'jack@gmail.com', 1, 'jack', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Nelson', 'Mandela', 'nelson@gmail.com', 2, 'nelson', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Berny', 'Black', 'barny@gmail.com', 1, 'barny', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Den', 'Forest', 'den@gmail.com', 2, 'den', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Mike', 'Sky', 'mike@gmail.com', 1, 'mike', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Iren', 'Gamp', 'iren0@gmail.com', 1, 'iren', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Fredy', 'White', 'fredy@gmail.com', 1, 'fredy', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('John', 'McKey', 'john@gmail.com', 2, 'john', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Lucy', 'Love', 'lucy@gmail.com', 2, 'lucy', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
+      ('Piter', 'Hangry', 'piter@gmail.com', 2, 'piter', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36');
 
 
 insert into `tutor_profiles`(`id`, `position`, `scientific_degree`, `academic_title`)

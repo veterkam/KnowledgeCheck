@@ -25,8 +25,7 @@
             <div class="form-row">
                 <label class="col-sm-4 col-form-label" for="inputPassword" >Password:</label>
                 <input id="inputPassword" class="form-control col-sm-8 mb-1" name="password"
-                       placeholder="Enter your password" required="" type="password"
-                       value="<c:out value="${anonym.password}"/>">
+                       placeholder="Enter your password" required="" type="password">
             </div>
             <div class="form-row">
                 <label class="col-sm-4 col-form-label" for="inputRepeatPassword" class="sr-only">Repeat Password:</label>

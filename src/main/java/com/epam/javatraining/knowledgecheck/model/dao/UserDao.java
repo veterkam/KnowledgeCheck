@@ -176,6 +176,33 @@ public class UserDao extends AbstractDao{
         return isRowUpdated;
     }
 
+    public boolean updatePassword(User user) throws DAOException {
+
+        String sql = "UPDATE users SET " +
+                "password = ? " +
+                "WHERE id = ?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        boolean isRowUpdated;
+        try {
+            connection = getConnection();
+
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, user.getPassword());
+            statement.setInt(2, user.getId());
+
+            isRowUpdated = statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Updating user data failed.", e);
+        } finally {
+            closeCommunication(connection, statement);
+        }
+
+        return isRowUpdated;
+    }
+
     public User get(int id) throws DAOException {
         User user = null;
         String sql = "SELECT * FROM users WHERE id = ?";

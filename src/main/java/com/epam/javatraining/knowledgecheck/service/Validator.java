@@ -20,7 +20,6 @@ public class Validator {
     private final int LAST_NAME_MAX_LENGTH = 50;
     private final int EMAIL_MAX_LENGTH = 50;
     private final int USERNAME_MAX_LENGTH = 50;
-    private final int PASSWORD_MAX_LENGTH = 50;
 
     private final int POSITION_MAX_LENGTH = 100;
     private final int SCIENTIFIC_DEGREE_MAX_LENGTH = 100;
@@ -215,19 +214,7 @@ public class Validator {
     }
 
     public boolean validatePassword(String password, String fieldName) {
-
-        if(fieldName == null) {
-            fieldName = "password";
-        }
-
-        String error = validate(password, null, PASSWORD_MAX_LENGTH);
-
-        if(error != null) {
-            error = String.format(error, fieldName);
-            errors.add(error);
-        }
-
-        return error == null;
+        return isNotBlank(password, fieldName);
     }
 
     public boolean validateEmail(String email) {

@@ -1,3 +1,7 @@
+CREATE DATABASE mydb
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
+
 DROP table IF EXISTS `tutor_profiles`;
 DROP table IF EXISTS `student_profiles`;
 DROP table IF EXISTS `users`;

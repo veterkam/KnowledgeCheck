@@ -1,5 +1,6 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
+import com.epam.javatraining.knowledgecheck.model.SqlScriptRunner;
 import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPoolManager;
 import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import org.apache.logging.log4j.LogManager;
@@ -11,7 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.sql.SQLException;
 
 
@@ -34,6 +36,17 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected static final Logger logger = LogManager.getLogger("controller");
 
+    @Override
+    public void init() throws ServletException {
+        try {
+            initConnectionPoolManager();
+            prepareDataBase();
+        } catch(Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+        }
+    }
+
     private void initConnectionPoolManager() throws ServletException {
         // Init connectionPoll
         String url = getServletContext().getInitParameter("dbUrl");
@@ -53,6 +66,19 @@ public class AbstractBaseControllerServlet extends HttpServlet {
         }
     }
 
+    private void prepareDataBase() throws ServletException {
+        try {
+            URL resource = getClass().getResource("/init.sql");
+            File file = new File(resource.getFile());
+            Reader reader = new FileReader( file );
+
+            SqlScriptRunner runner = new SqlScriptRunner();
+            runner.runScript(reader);
+        } catch(SQLException | IOException e) {
+            throw new ServletException(e);
+        }
+    }
+
     protected AlertManager getAlertManager(HttpServletRequest request) {
         HttpSession session = request.getSession();
         AlertManager manager = (AlertManager)session.getAttribute("alertManager");
@@ -62,11 +88,6 @@ public class AbstractBaseControllerServlet extends HttpServlet {
         }
 
         return manager;
-    }
-
-    @Override
-    public void init() throws ServletException {
-        initConnectionPoolManager();
     }
 
     protected void pageNotFound(HttpServletRequest request, HttpServletResponse response)

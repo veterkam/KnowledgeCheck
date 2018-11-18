@@ -5,6 +5,7 @@ import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPoolManag
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;

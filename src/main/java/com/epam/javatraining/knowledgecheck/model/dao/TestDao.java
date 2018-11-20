@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestDao extends AbstractDao{
+public class TestDao extends BasicDao {
 
     public final static String ORDER_ASC = "ASC";
     public final static String ORDER_DESC = "DESC";
@@ -25,11 +25,29 @@ public class TestDao extends AbstractDao{
     }
 
     public long insertComplex(Test test) throws DAOException {
-        long resultId = insertPlain(test);
+        activateTransactionControl();
+        long resultId;
+        try {
+            resultId = insertPlain(test);
 
-        QuestionDao dao = new QuestionDao();
-        for(Question question : test.getQuestions()) {
-            dao.insertComplex(question);
+            Connection conn = getConnection();
+
+            try {
+                QuestionDao dao = new QuestionDao(conn);
+                for (Question question : test.getQuestions()) {
+                    dao.insertComplex(question);
+                }
+
+                tryCommit(conn);
+            } catch (DAOException e) {
+                tryRollback(conn);
+                throw e;
+            } finally {
+                closeCommunication(conn);
+            }
+
+        } finally {
+            deactivateTransactionControl();
         }
 
         return resultId;
@@ -224,15 +242,33 @@ public class TestDao extends AbstractDao{
     }
 
     public boolean updateComplex(Test test) throws DAOException {
-        if(!updatePlain(test)) {
-            return false;
-        }
-
-        QuestionDao dao = new QuestionDao();
-        for(Question question : test.getQuestions()) {
-            if(!dao.updateComplex(question)) {
-                dao.insertComplex(question);
+        activateTransactionControl();
+        try {
+            if (!updatePlain(test)) {
+                deactivateTransactionControl();
+                return false;
             }
+
+            Connection conn = getConnection();
+
+            try {
+                QuestionDao dao = new QuestionDao(conn);
+                for (Question question : test.getQuestions()) {
+                    if (!dao.updateComplex(question)) {
+                        dao.insertComplex(question);
+                    }
+                }
+
+                tryCommit(conn);
+            } catch (DAOException e) {
+                tryRollback(conn);
+                throw e;
+            } finally {
+                closeCommunication(conn);
+            }
+
+        } finally {
+            deactivateTransactionControl();
         }
 
         return true;

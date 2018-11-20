@@ -27,7 +27,6 @@ public class ConnectionPool {
         reserve = new Stack<>();
         for(int i = 0; i < INITIAL_RESERVE_SIZE; i++) {
             Connection connection = DriverManager.getConnection(url, user, password);
-            connection.setAutoCommit(true);
             reserve.push(connection);
         }
     }
@@ -38,7 +37,6 @@ public class ConnectionPool {
             int length = reserve.capacity();
             for(int i = 0; i < length; i++) {
                 Connection connection = DriverManager.getConnection(url, user, password);
-                connection.setAutoCommit(true);
                 reserve.push(connection);
             }
         }
@@ -49,7 +47,14 @@ public class ConnectionPool {
     }
 
     public boolean releaseConnection(Connection connection) {
-        reserve.push(connection);
+        try {
+            if (connection.isValid(0)) {
+                reserve.push(connection);
+            }
+        } catch (SQLException e) {
+            // do nothing
+        }
+
         return usedConnections.remove(connection);
     }
 

@@ -17,30 +17,20 @@ public class User {
 
     }
 
-    public User(int id) {
-        this.id = id;
-    }
-
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
-    public User(String firstname, String lastname, String email, Role role, String username, String password) {
-        this(username, password);
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.email = email;
-        this.role = role;
-    }
-
-    public User(int id, String firstname, String lastname, String email, Role role, String username, String password) {
-        this(firstname, lastname, email, role, username, password);
-        this.id = id;
-    }
-
-    public User(User user) {
-        this(user.id, user.firstname, user.lastname, user.email, user.role, user.username, user.password);
+    public User(User other) {
+        this.id = other.id;
+        this.firstname = other.firstname;
+        this.lastname = other.lastname;
+        this.username = other.username;
+        this.password = other.password;
+        this.email = other.email;
+        this.role = other.role;
+        this.verified = other.verified;
     }
 
 
@@ -130,5 +120,10 @@ public class User {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public String toString() {
+        String format = "User { id : %d, firstname : %s, lastname : %s, username : %s, password : %s, email : %s, role : %s, verified : %s }";
+        return String.format(format, id, firstname, lastname, username, password, email, role.toString(), verified ? "true" : "false");
     }
 }

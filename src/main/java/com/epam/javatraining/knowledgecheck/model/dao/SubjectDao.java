@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubjectDao extends AbstractDao{
+public class SubjectDao extends BasicDao {
 
     public SubjectDao() {
     }

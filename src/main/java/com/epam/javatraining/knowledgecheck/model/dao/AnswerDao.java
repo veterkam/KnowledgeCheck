@@ -7,10 +7,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnswerDao extends AbstractDao{
+public class AnswerDao extends BasicDao {
 
     public AnswerDao() {
         super();
+    }
+
+    public AnswerDao(Connection conn) {
+        super(conn);
     }
 
     public long insert(Answer answer) throws DAOException {

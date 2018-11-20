@@ -156,14 +156,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             password = Cipher.encode(password);
             user.setPassword(password);
             userDao.updatePassword(user);
-
-            if( user.getRole() == User.Role.TUTOR) {
-                TutorDao tutorDao = new TutorDao();
-                user = tutorDao.get(user.getId());
-            } else if( user.getRole() == User.Role.STUDENT) {
-                StudentDao studentDao = new StudentDao();
-                user = studentDao.get(user.getId());
-            }
+            user = attachProfile(user);
 
             alertManager.success("Registration success! Welcome " + user.getFullname());
             request.getSession().setAttribute("user", user);
@@ -199,7 +192,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         String role = request.getParameter("role");
 
         Validator validator = new Validator();
-        validator.validate(anonym);
+        validator.validateUser(anonym);
         validator.validatePassword(repeatPassword, "repeat password");
         validator.isNotBlank(role, "role");
 
@@ -223,9 +216,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         if (isFailed) {
             showRegisterForm(request, response);
             return;
-        } else {
-            String password = Cipher.encode(anonym.getPassword());
-            anonym.setPassword(password);
         }
 
         UserDao userDao = new UserDao();
@@ -267,6 +257,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             boolean verified = ( user.getRole() != User.Role.ADMINISTRATOR );
             user.setVerified(verified);
 
+            String password = Cipher.encode(user.getPassword());
+            user.setPassword(password);
+
             try {
                 new UserDao().insert(user);
             } catch (DAOException e) {
@@ -290,8 +283,13 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // Success!
             // Store user data in session
             session.setAttribute("anonym", null);
-            session.setAttribute("user", user);
-            alertManager.success("Registration success! Welcome " + user.getFullname());
+
+            if(user.isVerified()) {
+                session.setAttribute("user", user);
+                alertManager.success("Registration success! Welcome " + user.getFullname());
+            } else {
+                alertManager.success("Registration success! You can login after verification. We'll inform you.");
+            }
             response.sendRedirect(request.getContextPath() + "/");
 
         } else {
@@ -345,7 +343,6 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         User anonym = new User();
         anonym.setEmail(email);
         anonym.setUsername(username.toLowerCase());
-        password = Cipher.encode( password );
         anonym.setPassword(password);
 
         // Store user info in session for form autofilling
@@ -373,7 +370,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, DAOException {
+            throws Exception {
         HttpSession session = request.getSession();
         User anonym = (User) session.getAttribute("anonym");
 
@@ -394,7 +391,9 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             User user = userDao.get(anonym.getUsername());
 
             if (user != null) {
-                user.setPassword(anonym.getPassword());
+                user = attachProfile(user);
+                String password = Cipher.encode(anonym.getPassword());
+                user.setPassword(password);
                 if ( userDao.updatePassword(user) ) {
                     session.setAttribute("user", user);
                     session.setAttribute("anonym", null);
@@ -462,46 +461,35 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             return;
         }
 
-        AlertManager alertManager = getAlertManager(request);
-        // Process parameters
         String repeatPassword = request.getParameter("repeatPassword");
-
-        // Add disabled fields
-        modifyUser.setId(user.getId());
-        modifyUser.setUsername(user.getUsername());
-        modifyUser.setRole(user.getRole());
         if(repeatPassword == null){
             // user didn't change password
             modifyUser.setPassword(user.getPassword());
         }
 
-        boolean isFailed = false;
+        // Add disabled fields
+        modifyUser.setId(user.getId());
+        modifyUser.setUsername(user.getUsername());
+        modifyUser.setRole(user.getRole());
+        modifyUser.setVerified(true);
+
         Validator validator = new Validator();
         validator.validate(modifyUser);
+
+        AlertManager alertManager = getAlertManager(request);
+        boolean isFailed = false;
+        if(validator.isFailed()) {
+            alertManager.danger(validator.getErrors());
+            isFailed = true;
+        }
 
         if(repeatPassword != null) {
             // user changed password
             // validate password
-            validator.validatePassword(repeatPassword, "repeat password");
-
-            if(validator.isFailed()) {
-                alertManager.danger(validator.getErrors());
-                validator.reset();
-                isFailed = true;
-            }
-
             if (!repeatPassword.equals(modifyUser.getPassword())) {
                 alertManager.danger("Passwords are different.");
                 isFailed = true;
-            } else {
-                String password = Cipher.encode(modifyUser.getPassword());
-                modifyUser.setPassword(password);
             }
-
-        } else if(validator.isFailed()) {
-            alertManager.danger(validator.getErrors());
-            validator.reset();
-            isFailed = true;
         }
 
         // Store user info in session for form autofilling
@@ -512,6 +500,8 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             showMyProfileForm(request, response);
             return;
         }
+
+        session.setAttribute("passwordChanged", repeatPassword != null );
 
         if(repeatPassword != null || !user.getEmail().equals(modifyUser.getEmail()) ) {
             // User modified password or email, ask confirmation
@@ -525,7 +515,7 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
     }
 
     private void profileConfirmEmail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws Exception {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -547,6 +537,12 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
             // save profile modification
             HttpSession session = request.getSession();
             user = (User) session.getAttribute("anonym");
+
+            boolean pswChanged = (Boolean) session.getAttribute("passwordChanged");
+            if(pswChanged) {
+                String password = Cipher.encode(user.getPassword());
+                user.setPassword(password);
+            }
             saveMyProfile(user, request, response);
         } else {
             // Verification code is wrong. Come back to edit verification code
@@ -868,6 +864,19 @@ public class AuthorizationControllerServlet extends AbstractBaseControllerServle
         } catch (MessagingException e) {
             logger.error(e.getMessage(), e);
             alertManager.danger("Can't send message. Verify your e-mail address and try again!");
+        }
+    }
+
+    private User attachProfile(User user) throws DAOException {
+        switch(user.getRole()) {
+            case TUTOR:
+                TutorDao tutorDao = new TutorDao();
+                return tutorDao.get(user);
+            case STUDENT:
+                StudentDao studentDao = new StudentDao();
+                return studentDao.get(user);
+            default:
+                return user;
         }
     }
 }

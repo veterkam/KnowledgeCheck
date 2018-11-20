@@ -93,18 +93,6 @@ public class TutorDao extends UserDao {
         return true;
     }
 
-    private Tutor extractTutorFromResultSet(ResultSet resultSet) throws SQLException{
-        Tutor tutor = new Tutor();
-        extractUserFromResultSet(tutor, resultSet);
-        String position = resultSet.getString("position");
-        String scientificDegree = resultSet.getString("scientific_degree");
-        String academicTitle = resultSet.getString("academic_title");
-        // extract profile info
-        tutor.setPosition(position);
-        tutor.setScientificDegree(scientificDegree);
-        tutor.setAcademicTitle(academicTitle);
-        return tutor;
-    }
 
     public Tutor get(int id) throws DAOException {
         Tutor tutor = null;
@@ -137,7 +125,9 @@ public class TutorDao extends UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                tutor = extractTutorFromResultSet(resultSet);
+                tutor = new Tutor();
+                extractUserFromResultSet(tutor, resultSet);
+                extractProfileFromResultSet(tutor, resultSet);
             }
 
         } catch (SQLException e) {
@@ -148,5 +138,56 @@ public class TutorDao extends UserDao {
         }
 
         return tutor;
+    }
+
+    public Tutor get(User user) throws DAOException {
+
+        if(user == null || user.getRole() != User.Role.TUTOR) {
+            return null;
+        }
+
+        Tutor tutor = new Tutor(user);
+        String sql = "select `users`.`id`," +
+                " `position`," +
+                " `scientific_degree`," +
+                " `academic_title`" +
+                " from users" +
+                " left join tutor_profiles on users.id = tutor_profiles.id" +
+                " where users.id = ? AND role = ?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, tutor.getId());
+            statement.setInt(2, tutor.getRole().ordinal());
+            resultSet = statement.executeQuery();
+
+            if(resultSet.next()) {
+                extractProfileFromResultSet(tutor, resultSet);
+            }
+
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading tutor data failed.", e);
+        } finally {
+            closeCommunication(connection, statement, resultSet);
+        }
+
+        return tutor;
+    }
+
+    private void extractProfileFromResultSet(Tutor tutor, ResultSet resultSet) throws SQLException{
+        String position = resultSet.getString("position");
+        String scientificDegree = resultSet.getString("scientific_degree");
+        String academicTitle = resultSet.getString("academic_title");
+        // extract profile info
+        tutor.setPosition(position);
+        tutor.setScientificDegree(scientificDegree);
+        tutor.setAcademicTitle(academicTitle);
     }
 }

@@ -8,18 +8,40 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuestionDao extends AbstractDao{
+public class QuestionDao extends BasicDao {
 
     public QuestionDao() {
         super();
     }
 
-    public long insertComplex(Question question) throws DAOException {
-        long resultId = insertPlain(question);
+    public QuestionDao(Connection conn) {
+        super(conn);
+    }
 
-        AnswerDao dao = new AnswerDao();
-        for(Answer answer : question.getAnswers()) {
-            dao.insert(answer);
+    public long insertComplex(Question question) throws DAOException {
+        activateTransactionControl();
+        long resultId;
+        try {
+            resultId = insertPlain(question);
+
+            Connection conn = getConnection();
+
+            try {
+                AnswerDao dao = new AnswerDao(conn);
+                for (Answer answer : question.getAnswers()) {
+                    dao.insert(answer);
+                }
+
+                tryCommit(conn);
+            } catch (DAOException e) {
+                tryRollback(conn);
+                throw e;
+            } finally {
+                closeCommunication(conn);
+            }
+
+        } finally {
+            deactivateTransactionControl();
         }
 
         return resultId;
@@ -136,15 +158,32 @@ public class QuestionDao extends AbstractDao{
     }
 
     public boolean updateComplex(Question question) throws DAOException {
-        if(!updatePlain(question)) {
-            return false;
-        }
-
-        AnswerDao dao = new AnswerDao();
-        for(Answer answer : question.getAnswers()) {
-            if(!dao.update(answer)) {
-                dao.insert(answer);
+        activateTransactionControl();
+        try {
+            if(!updatePlain(question)) {
+                deactivateTransactionControl();
+                return false;
             }
+
+            Connection conn = getConnection();
+
+            try {
+                AnswerDao dao = new AnswerDao(conn);
+                for(Answer answer : question.getAnswers()) {
+                    if(!dao.update(answer)) {
+                        dao.insert(answer);
+                    }
+                }
+
+                tryCommit(conn);
+            } catch (DAOException e) {
+                tryRollback(conn);
+                throw e;
+            } finally {
+                closeCommunication(conn);
+            }
+        } finally {
+            deactivateTransactionControl();
         }
 
         return true;

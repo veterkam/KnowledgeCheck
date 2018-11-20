@@ -96,21 +96,6 @@ public class StudentDao extends UserDao {
         return true;
     }
 
-    private Student extractStudentFromResultSet(ResultSet resultSet) throws SQLException {
-        Student student = new Student();
-        extractUserFromResultSet(student, resultSet);
-        // extract profile
-        String specialty = resultSet.getString("specialty");
-        String group = resultSet.getString("group");
-        int year = resultSet.getInt("year");
-
-        student.setSpecialty(specialty);
-        student.setGroup(group);
-        student.setYear(year);
-
-        return student;
-    }
-
     public Student get(int id) throws DAOException {
         Student student = null;
         final User.Role role = User.Role.STUDENT;
@@ -142,7 +127,51 @@ public class StudentDao extends UserDao {
             resultSet = statement.executeQuery();
 
             if(resultSet.next()) {
-                student = extractStudentFromResultSet(resultSet);
+                student = new Student();
+                extractUserFromResultSet(student, resultSet);
+                extractProfileFromResultSet(student, resultSet);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            throw new DAOException("Reading student data failed.", e);
+        } finally {
+            closeCommunication(connection, statement, resultSet);
+        }
+
+        return student;
+    }
+
+    public Student get(User user) throws DAOException {
+
+        if(user == null || user.getRole() != User.Role.STUDENT) {
+            return null;
+        }
+
+        Student student = new Student(user);
+
+        final User.Role role = User.Role.STUDENT;
+        String sql = "SELECT " +
+                " `specialty`, " +
+                " `group`, " +
+                " `year` " +
+                " from users" +
+                " left join student_profiles on users.id = student_profiles.id" +
+                " where users.id = ? and users.role = ?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, student.getId());
+            statement.setInt(2, student.getRole().ordinal());
+            resultSet = statement.executeQuery();
+
+            if(resultSet.next()) {
+                extractProfileFromResultSet(student, resultSet);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
@@ -190,7 +219,9 @@ public class StudentDao extends UserDao {
             resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                Student student = extractStudentFromResultSet(resultSet);
+                Student student = new Student();
+                extractUserFromResultSet(student, resultSet);
+                extractProfileFromResultSet(student, resultSet);
                 students.add(student);
             }
         } catch (SQLException e) {
@@ -201,5 +232,16 @@ public class StudentDao extends UserDao {
         }
 
         return students;
+    }
+
+    private void extractProfileFromResultSet(Student student, ResultSet resultSet) throws SQLException {
+        // extract profile
+        String specialty = resultSet.getString("specialty");
+        String group = resultSet.getString("group");
+        int year = resultSet.getInt("year");
+
+        student.setSpecialty(specialty);
+        student.setGroup(group);
+        student.setYear(year);
     }
 }

@@ -1,14 +1,13 @@
 package com.epam.javatraining.knowledgecheck.model.dao;
 
 import com.epam.javatraining.knowledgecheck.exception.DAOException;
-import com.epam.javatraining.knowledgecheck.model.entity.Test;
 import com.epam.javatraining.knowledgecheck.model.entity.User;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDao extends AbstractDao{
+public class UserDao extends BasicDao {
 
     public UserDao() {
         super();

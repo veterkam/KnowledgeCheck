@@ -1,6 +1,6 @@
 package com.epam.javatraining.knowledgecheck.exception;
 
-public class DAOException extends Exception {
+public class DAOException extends RuntimeException {
     private String description;
 
     public DAOException(String description) {

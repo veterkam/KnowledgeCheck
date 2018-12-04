@@ -7,8 +7,8 @@
     <h1 class="h3 mb-3 font-weight-normal">Sorry, page not found!</h1>
     <%@ include file = "Alert.jsp" %>
     <p class="text-center mt-5">
-        Please, start with Home Page.
-        <a href="${pageContext.request.contextPath}/">Go Home</a>
+        Please, start with <a href="<c:url value="/"/>">Home Page</a>.
+
     </p>
 </div>
 <%@ include file="JSlibs.jsp" %>

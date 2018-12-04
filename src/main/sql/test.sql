@@ -1,3 +1,6 @@
+CREATE USER 'jeffrey'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL ON db1.* TO 'jeffrey'@'localhost';
+
 CREATE DATABASE mydb
   CHARACTER SET utf8
   COLLATE utf8_general_ci;
@@ -284,7 +287,7 @@ insert into `questions`(`test_id`, `description`)
 values(1, 'When the chromosomes line up in mitosis this is known as which phase?'),
       (1, 'Which cellular organelle contains enzymes that are considered digestive?'),
       (1, 'Organs repair themselves through a process of?'),
-      (1, 'Which of the following is considered a model for enzyme action?'),
+      (1, 'Which of the following is considered a data for enzyme action?'),
       (1, 'Which of the following statements about enzymes is not true?'),
       (1, 'Which of the following statements about prostaglandins is not true?'),
       (1, 'Cholesterol that is known as (LDL) stands for:'),
@@ -338,10 +341,10 @@ values(1, 'Telophase ', false),
       (3, 'Cellular differentiation ', false),
       (3, 'Transformation ', false),
 
-      (4, 'Lock and Key model ', true),
-      (4, 'Enzyme interaction model', false),
-      (4, 'Transformation model ', false),
-      (4, 'Transcription model ', false),
+      (4, 'Lock and Key data ', true),
+      (4, 'Enzyme interaction data', false),
+      (4, 'Transformation data ', false),
+      (4, 'Transcription data ', false),
 
       (5, 'Enzymes are catalysts.', false),
       (5, 'Almost all enzymes are proteins.', false),

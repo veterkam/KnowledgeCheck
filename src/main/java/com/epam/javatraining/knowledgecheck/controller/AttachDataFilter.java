@@ -1,12 +1,10 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
-import com.epam.javatraining.knowledgecheck.service.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @WebFilter(urlPatterns = {"/*"})

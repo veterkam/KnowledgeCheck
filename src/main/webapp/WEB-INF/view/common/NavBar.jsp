@@ -1,19 +1,19 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!-- navbar -->
 <nav class="navbar navbar-expand-sm fixed-top bg-dark navbar-dark">
-    <a class="navbar-brand" href="${pageContext.request.contextPath}/">Home</a>
+    <a class="navbar-brand" href="<c:url value="/" />">Home</a>
     <c:if test="${user != null}">
-        <a class="navbar-brand" href="${pageContext.request.contextPath}/authorization/myprofile">My Profile</a>
+        <a class="navbar-brand" href="<c:url value="/account/myprofile" />">My Profile</a>
 
         <c:if test="${user.role=='ADMINISTRATOR'}">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/authorization/users">Users</a>
+            <a class="navbar-brand" href="<c:url value="/account/users" />" >Users</a>
         </c:if>
 
         <c:if test="${user.role=='TUTOR'}">
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/teststatistics">Test Statistics</a>
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/subjects">Subjects</a>
+            <a class="navbar-brand" href="<c:url value="/testboard/mytests"/>">My Tests</a>
+            <a class="navbar-brand" href="<c:url value="/testboard/studentsresults"/>">Students Results</a>
+            <a class="navbar-brand" href="<c:url value="/testboard/teststatistics"/>">Test Statistics</a>
+            <a class="navbar-brand" href="<c:url value="/testboard/subjects"/>">Subjects</a>
         </c:if>
     </c:if>
     <!-- Toggler/collapsibe Button -->
@@ -29,7 +29,7 @@
             <c:if test="${user != null}">
                 <li class="nav-item">
                     <a class="nav-link" data-value="logout"
-                       href="${pageContext.request.contextPath}/authorization/logout">
+                       href="<c:url value="/account/logout"/>">
                         Logout
                     </a>
                 </li>
@@ -37,19 +37,19 @@
             <c:if test="${user == null}">
                 <li class="nav-item">
                     <a class="nav-link" data-value="login"
-                        href="${pageContext.request.contextPath}/authorization/login">
+                        href="<c:url value="/account/login" />">
                         Login
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-value="register"
-                       href="${pageContext.request.contextPath}/authorization/register">
+                       href="<c:url value="/account/register"/>">
                         Register
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-value="recovery"
-                       href="${pageContext.request.contextPath}/authorization/recovery">
+                       href="<c:url value="/account/recovery"/>">
                         Password recovery
                     </a>
                 </li>

@@ -1,5 +1,5 @@
 create table IF NOT EXISTS `users` (
-  `id` int(11) not null auto_increment,
+  `id` bigint(11) not null auto_increment,
   `firstname` varchar(50) not null,
   `lastname` varchar(50) not null,
   `email` varchar(50) not null,
@@ -12,7 +12,7 @@ create table IF NOT EXISTS `users` (
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
 create table IF NOT EXISTS `tutor_profiles` (
-  `id` int(11) not null,
+  `id` bigint(11) not null,
   `position` varchar(100),
   `scientific_degree` varchar(100),
   `academic_title` varchar(100),
@@ -24,7 +24,7 @@ create table IF NOT EXISTS `tutor_profiles` (
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
 create table IF NOT EXISTS `student_profiles` (
-  `id` int(11) not null,
+  `id` bigint(11) not null,
   `specialty` varchar(100),
   `group` varchar(10),
   `year` int(4),
@@ -49,7 +49,7 @@ SELECT t.* FROM (
    WHERE NOT EXISTS (SELECT * FROM `tutor_profiles`);
 
 create table IF NOT EXISTS `subjects` (
-  `id` int(11) not null auto_increment,
+  `id` bigint(11) not null auto_increment,
   `name` varchar(100) not null,
   primary key (`id`),
   unique key `name_unique` (`name`)
@@ -107,7 +107,7 @@ SELECT t.* FROM (
 	(SELECT 1, 'When the chromosomes line up in mitosis this is known as which phase?') UNION ALL
 	(SELECT 1, 'Which cellular organelle contains enzymes that are considered digestive?') UNION ALL
 	(SELECT 1, 'Organs repair themselves through a process of?') UNION ALL
-	(SELECT 1, 'Which of the following is considered a model for enzyme action?') UNION ALL
+	(SELECT 1, 'Which of the following is considered a data for enzyme action?') UNION ALL
 	(SELECT 1, 'Which of the following statements about enzymes is not true?') UNION ALL
 	(SELECT 1, 'Which of the following statements about prostaglandins is not true?') UNION ALL
 	(SELECT 1, 'Cholesterol that is known as (LDL) stands for:') UNION ALL
@@ -159,10 +159,10 @@ SELECT t.* FROM (
 	(SELECT 3, 'Cellular differentiation ', false) UNION ALL
 	(SELECT 3, 'Transformation ', false) UNION ALL
 
-	(SELECT 4, 'Lock and Key model ', true) UNION ALL
-	(SELECT 4, 'Enzyme interaction model', false) UNION ALL
-	(SELECT 4, 'Transformation model ', false) UNION ALL
-	(SELECT 4, 'Transcription model ', false) UNION ALL
+	(SELECT 4, 'Lock and Key data ', true) UNION ALL
+	(SELECT 4, 'Enzyme interaction data', false) UNION ALL
+	(SELECT 4, 'Transformation data ', false) UNION ALL
+	(SELECT 4, 'Transcription data ', false) UNION ALL
 
 	(SELECT 5, 'Enzymes are catalysts.', false) UNION ALL
 	(SELECT 5, 'Almost all enzymes are proteins.', false) UNION ALL
@@ -327,7 +327,7 @@ SELECT t.* FROM (
 WHERE NOT EXISTS (SELECT * FROM `answers`);
 
 create table IF NOT EXISTS `testing_results` (
-  `student_id` int(11) not null,
+  `student_id` bigint(11) not null,
   `question_id` bigint(11) not null,
   `correct` boolean,
   UNIQUE (`student_id`, `question_id`),

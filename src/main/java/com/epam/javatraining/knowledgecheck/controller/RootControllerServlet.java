@@ -1,20 +1,11 @@
 package com.epam.javatraining.knowledgecheck.controller;
 
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPool;
-import com.epam.javatraining.knowledgecheck.model.connection.ConnectionPoolManager;
-import com.epam.javatraining.knowledgecheck.model.dao.TestDao;
-import com.epam.javatraining.knowledgecheck.model.dao.UserDao;
-import com.epam.javatraining.knowledgecheck.model.entity.Test;
-import com.epam.javatraining.knowledgecheck.model.entity.User;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Date;
 
 /**
  * This servlet acts as a page controller for the application,
@@ -32,7 +23,7 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        doGet(request, response);
+        pageNotFound(request, response);
     }
 
     @Override
@@ -43,8 +34,7 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         try {
             switch (action) {
                 case "/":
-                    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/testboard");
-                    dispatcher.forward(request, response);
+                    forward(request, response,"/testing");
                     break;
                 default:
                     pageNotFound(request, response);

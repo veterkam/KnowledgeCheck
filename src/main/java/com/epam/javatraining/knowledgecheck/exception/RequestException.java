@@ -1,6 +1,6 @@
 package com.epam.javatraining.knowledgecheck.exception;
 
-public class RequestException extends Exception {
+public class RequestException extends RuntimeException {
     private String description;
 
     public RequestException(String description) {

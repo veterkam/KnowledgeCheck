@@ -3,13 +3,11 @@ package edu.javatraining.knowledgecheck.data.dao.jdbc;
 import edu.javatraining.knowledgecheck.data.dao.UserDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.User;
-import com.google.inject.Singleton;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Singleton
 public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
 
     public UserDaoJdbc() {

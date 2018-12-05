@@ -1,6 +1,5 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
-import edu.javatraining.knowledgecheck.data.dao.AnswerDao;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Answer;
 
@@ -8,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnswerDaoJdbcJdbc extends BasicDaoJdbc implements AnswerDao {
+public class AnswerDaoJdbcJdbc extends BasicDaoJdbc {
 
     public AnswerDaoJdbcJdbc() {
         super();

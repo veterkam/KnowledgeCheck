@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
@@ -33,6 +34,7 @@ import java.util.Map;
         "/testing/subjects",
         "/testing/subjects/save"
 })
+@Singleton
 public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     final int COUNT_TEST_ON_PAGE = 10;

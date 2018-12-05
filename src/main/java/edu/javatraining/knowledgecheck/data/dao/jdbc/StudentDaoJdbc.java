@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.data.dao.StudentDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -8,6 +9,7 @@ import edu.javatraining.knowledgecheck.domain.User;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
 

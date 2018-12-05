@@ -1,5 +1,7 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.google.inject.Singleton;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +13,7 @@ import java.io.IOException;
  * handling all requests from the user.
  */
 @WebServlet(urlPatterns = {"/"}, loadOnStartup = 1)
+@Singleton
 public class RootControllerServlet extends AbstractBaseControllerServlet {
     @Override
     public void init() throws ServletException {

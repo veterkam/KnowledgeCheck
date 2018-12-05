@@ -1,5 +1,8 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import edu.javatraining.knowledgecheck.data.dao.StudentDao;
 import edu.javatraining.knowledgecheck.data.dao.TutorDao;
 import edu.javatraining.knowledgecheck.data.dao.UserDao;
@@ -25,49 +28,52 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/account/login",
-        "/account/login/do",
         "/account/logout",
         "/account/register",
         "/account/register/back",
         "/account/register/confirm",
-        "/account/register/processing",
         "/account/recovery",
         "/account/recovery/back",
         "/account/recovery/confirm",
-        "/account/recovery/processing",
         "/account/myprofile",
         "/account/myprofile/back",
         "/account/myprofile/confirm",
-        "/account/myprofile/processing",
         "/account/users",
         "/account/users/remove",
-        "/account/users/processing",
         "/account/profile"
 })
+
+@Singleton
 public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private final int COUNT_USER_ON_PAGE = 20;
     private final int PAGINATION_LIMIT = 5;
-//
-//    @Inject
+
+
     private UserDao userDao;
-//
-//    @Inject
     private TutorDao tutorDao;
-//
-//    @Inject
     private StudentDao studentDao;
+
+    @Inject
+    private Provider<UserDao> userDaoProvider;
+
+    @Inject
+    public void setTutorDao(TutorDao tutorDao) {        System.out.println("Create TutorDaoJdbc");
+
+        this.tutorDao = tutorDao;
+    }
+
+    @Inject
+    public void setStudentDao(StudentDao studentDao) {        System.out.println("Create StudentDaoJdbc");
+
+        this.studentDao = studentDao;
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        userDao = new UserDaoJdbc();
-        tutorDao = new TutorDaoJdbc();
-        studentDao = new StudentDaoJdbc();
+            throws ServletException {
 
         String action = request.getServletPath();
         try {
@@ -114,10 +120,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        userDao = new UserDaoJdbc();
-        tutorDao = new TutorDaoJdbc();
-        studentDao = new StudentDaoJdbc();
-
         String action = request.getServletPath();
         try {
             switch (action) {
@@ -138,23 +140,23 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 case "/account/recovery/confirm":
                     recoveryConfirmEmail(request, response);
                     break;
+//                case "/account/myprofile":
+//                    showMyProfileForm(request, response);
+//                    break;
                 case "/account/myprofile":
-                    showMyProfileForm(request, response);
-                    break;
-                case "/account/myprofile/processing":
                     // User click button Next, verify the fields
                     myProfileProcessing(request, response);
                     break;
                 case "/account/myprofile/confirm":
                     myProfileConfirmEmail(request, response);
                     break;
-                case "/account/users":
-                    showUserList(request, response);
-                    break;
+//                case "/account/users":
+//                    showUserList(request, response);
+//                    break;
                 case "/account/users/remove":
                     removeUser(request, response);
                     break;
-                case "/account/users/processing":
+                case "/account/users":
                     changeUserVerificationStatus(request, response);
                     break;
                 case "/account/profile":
@@ -179,9 +181,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void loginProcessing(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
+        UserDao userDao = userDaoProvider.get();
+        logger.trace("userDao " + userDao);
+
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+
+
 
         User user = userDao.findOneByUsername(username);
 

@@ -138,7 +138,7 @@ where role = 2;
 
 
 delete from users where email LIKE "%@mail.%";
-select * from users;
+select * from users LIMIT 0, 1;
 
 SET @id = 0;
 select * from users where (@id IN (id, 0)) ;

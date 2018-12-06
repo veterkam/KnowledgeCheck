@@ -33,7 +33,7 @@
         <Logger name="filter" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="service" level="trace" additivity="false">
+        <Logger name="Service" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
         <Logger name="DAO" level="trace" additivity="false">

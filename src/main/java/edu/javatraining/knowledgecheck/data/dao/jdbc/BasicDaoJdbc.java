@@ -1,25 +1,40 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.servlet.RequestScoped;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
+import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.ResultSetReader;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.StatementWriter;
 import edu.javatraining.knowledgecheck.exception.DAOException;
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigInteger;
 import java.sql.*;
 
+@Singleton
 public class BasicDaoJdbc {
     protected static final Logger logger = LogManager.getLogger("DAO");
-    protected ConnectionPool connectionPool;
+
+
+    private ConnectionPool connectionPool;
+
     private Connection singleConn;
     private boolean isSingleConnOwner;
 
+    public BasicDaoJdbc(ConnectionPool pool) {
+        connectionPool = pool;
+        isSingleConnOwner = false;
+        singleConn = null;
+
+        logger.trace("BasicDaoJdbc constructor: ConnectionPool " + pool);
+    }
 
     public BasicDaoJdbc() {
-        connectionPool = ConnectionPoolManager.getConnectionPool();
+        connectionPool = null;
         isSingleConnOwner = false;
         singleConn = null;
     }
@@ -30,26 +45,21 @@ public class BasicDaoJdbc {
         connectionPool = null;
     }
 
-    protected void activateTransactionControl() throws DAOException {
+    protected void enableTransactionControl() {
         if(singleConn == null) {
-            try {
-                singleConn = connectionPool.getConnection();
-                isSingleConnOwner = true;
-            } catch (SQLException e) {
-                logger.error(e.getMessage(), e);
-                throw new DAOException(e.getMessage(), e);
-            }
+            singleConn = connectionPool.getConnection();
+            isSingleConnOwner = true;
         }
     }
 
-    protected void deactivateTransactionControl() throws DAOException {
+    protected void disableTransactionControl() {
         if(singleConn != null && isSingleConnOwner) {
             connectionPool.releaseConnection(singleConn);
             singleConn = null;
         }
     }
 
-    protected Connection getConnection() throws DAOException {
+    protected Connection getConnection() {
 
         Connection conn;
         try {
@@ -63,7 +73,7 @@ public class BasicDaoJdbc {
         return conn;
     }
 
-    protected void tryCommit(Connection conn) throws DAOException {
+    protected void tryCommit(Connection conn) {
         if(singleConn != conn || isSingleConnOwner) {
             try {
                 conn.commit();
@@ -74,7 +84,7 @@ public class BasicDaoJdbc {
         }
     }
 
-    protected void tryRollback(Connection conn) throws DAOException {
+    protected void tryRollback(Connection conn) {
         if (singleConn != conn || isSingleConnOwner) {
             try {
                 conn.rollback();
@@ -168,6 +178,20 @@ public class BasicDaoJdbc {
         } finally {
             closeCommunication(connection, statement, resultSet);
         }
+    }
+
+    public Long count(String sql) {
+        PrimitiveEnvelope<Long> count = new PrimitiveEnvelope<Long>();
+
+        select(sql,
+                (statement) -> {},
+                (resultSet) -> {
+                    if(resultSet.next()) {
+                        count.value = resultSet.getLong(1);
+                    }
+                });
+
+        return count.value;
     }
 
     protected Long insert(String sql, StatementWriter writer) {

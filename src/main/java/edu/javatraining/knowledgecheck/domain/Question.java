@@ -1,6 +1,8 @@
 package edu.javatraining.knowledgecheck.domain;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Question {
@@ -54,5 +56,10 @@ public class Question {
     public void setAnswers(List<Answer> answers) {
         this.answers.clear();
         this.answers = answers;
+    }
+
+    public void setAnswers(Answer[] answers) {
+        this.answers.clear();
+        this.answers = Arrays.asList(answers);
     }
 }

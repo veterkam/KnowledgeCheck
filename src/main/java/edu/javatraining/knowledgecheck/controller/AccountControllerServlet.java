@@ -2,20 +2,16 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import edu.javatraining.knowledgecheck.data.dao.StudentDao;
-import edu.javatraining.knowledgecheck.data.dao.TutorDao;
-import edu.javatraining.knowledgecheck.data.dao.UserDao;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.StudentDaoJdbc;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.TutorDaoJdbc;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.UserDaoJdbc;
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;
 import com.google.inject.Inject;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
+import edu.javatraining.knowledgecheck.service.StudentService;
+import edu.javatraining.knowledgecheck.service.TutorService;
+import edu.javatraining.knowledgecheck.service.UserService;
 import edu.javatraining.knowledgecheck.service.tools.*;
 import org.apache.logging.log4j.util.Strings;
 
@@ -28,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @WebServlet(urlPatterns = {
         "/account/login",
@@ -51,25 +48,13 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private final int COUNT_USER_ON_PAGE = 20;
     private final int PAGINATION_LIMIT = 5;
 
-
-    private UserDao userDao;
-    private TutorDao tutorDao;
-    private StudentDao studentDao;
-
     @Inject
-    private Provider<UserDao> userDaoProvider;
-
+    private Provider<UserService> userServiceProvider;
     @Inject
-    public void setTutorDao(TutorDao tutorDao) {        System.out.println("Create TutorDaoJdbc");
-
-        this.tutorDao = tutorDao;
-    }
-
+    private Provider<TutorService> tutorServiceProvider;
     @Inject
-    public void setStudentDao(StudentDao studentDao) {        System.out.println("Create StudentDaoJdbc");
+    private Provider<StudentService> studentServiceProvider;
 
-        this.studentDao = studentDao;
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -118,7 +103,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException {
 
         String action = request.getServletPath();
         try {
@@ -181,23 +166,21 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void loginProcessing(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        UserDao userDao = userDaoProvider.get();
-        logger.trace("userDao " + userDao);
-
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
 
 
-        User user = userDao.findOneByUsername(username);
+        UserService userService = userServiceProvider.get();
+        User user = userService.findOneByUsername(username);
 
         if (user != null && user.isVerified() &&
                 Cipher.validate(password, user.getPassword())) {
 
             password = Cipher.encode(password);
             user.setPassword(password);
-            userDao.updatePassword(user);
+            userService.updatePassword(user);
             user = attachProfile(user);
 
             alertManager.success("Registration success! Welcome " + user.getFullname());
@@ -269,7 +252,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         }
 
         // Is the username unique?
-        User user = userDao.findOneByUsername(anonym.getUsername());
+        UserService userService = userServiceProvider.get();
+        User user = userService.findOneByUsername(anonym.getUsername());
 
         if (user == null) {
             // The username is unique. Verify e-mail.
@@ -310,7 +294,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             user.setPassword(password);
 
             try {
-                userDao.insert(user);
+                UserService userService = userServiceProvider.get();
+                userService.insert(user);
             } catch (DAOException e) {
 
                 Throwable childException = e.getCause();
@@ -406,8 +391,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        UserDaoJdbc userDao = new UserDaoJdbc();
-        User user = userDao.findOneByUsername(anonym.getUsername());
+        UserService userService = userServiceProvider.get();
+        User user = userService.findOneByUsername(anonym.getUsername());
 
         if (user != null && user.isVerified() && user.getEmail().equals(email)) {
             String msg = "Hello. You started password recovering. ";
@@ -439,14 +424,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         AlertManager alertManager = getAlertManager(request);
 
         if ( confirm ) {
-            UserDaoJdbc userDao = new UserDaoJdbc();
-            User user = userDao.findOneByUsername(anonym.getUsername());
+            UserService userService = userServiceProvider.get();
+            User user = userService.findOneByUsername(anonym.getUsername());
 
             if (user != null) {
                 user = attachProfile(user);
                 String password = Cipher.encode(anonym.getPassword());
                 user.setPassword(password);
-                if ( userDao.updatePassword(user) ) {
+                if ( userService.updatePassword(user) ) {
                     session.setAttribute("user", user);
                     session.setAttribute("anonym", null);
                     alertManager.success("Recovery password success! Welcome " + user.getFullname());
@@ -615,12 +600,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
+        UserService userService = userServiceProvider.get();
+
         // Scan parameters
         // Current page of test list
         int pageNo = getPageNo(request);
 
         // Calc test count
-        Long count = userDao.count();
+        Long count = userService.count();
 
         // Init pagination
         int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_USER_ON_PAGE));
@@ -630,18 +617,20 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         // Read user list
         Long offset = (long)(pagination.getCurrent() - 1) * COUNT_USER_ON_PAGE;
 
-        User[] users = userDao.findAll(offset, (long) COUNT_USER_ON_PAGE);
+        List<User> users = userService.findAll(offset, (long) COUNT_USER_ON_PAGE);
 
-        for(int i = 0; i < users.length; i++) {
-            User u = users[i];
+        for(int i = 0; i < users.size(); i++) {
+            User u = users.get(i);
             switch( u.getRole() ) {
                 case TUTOR:
-                    Tutor tutor = tutorDao.findOneById(u.getId());
-                    users[i] = tutor;
+                    TutorService tutorService = tutorServiceProvider.get();
+                    Tutor tutor = tutorService.findOneById(u.getId());
+                    users.set(i, tutor);
                     break;
                 case STUDENT:
-                    Student student = studentDao.findOneById(u.getId());
-                    users[i] = student;
+                    StudentService studentService = studentServiceProvider.get();
+                    Student student = studentService.findOneById(u.getId());
+                    users.set(i, student);
                     break;
             }
         }
@@ -671,9 +660,9 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        UserDaoJdbc userDao = new UserDaoJdbc();
         try {
-            userDao.deleteById(id);
+            UserService userService = userServiceProvider.get();
+            userService.deleteById(id);
             getAlertManager(request).success("The user is removed successfully");
         } catch(DAOException e) {
             logger.trace(e.getMessage(), e);
@@ -704,11 +693,11 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         String strVerified = request.getParameter("verified");
         boolean verified = ( "true".equals(strVerified) );
 
-        UserDaoJdbc dao = new UserDaoJdbc();
         try {
-            User u = dao.findOneById(id);
+            UserService userService = userServiceProvider.get();
+            User u = userService.findOneById(id);
             u.setVerified(verified);
-            dao.update(u);
+            userService.update(u);
             getAlertManager(request).success("The verification status of user is updated successfully");
         } catch (DAOException e) {
             logger.trace(e.getMessage(), e);
@@ -730,8 +719,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        UserDaoJdbc dao = new UserDaoJdbc();
-        User data = dao.findOneById(id);
+        User data = studentServiceProvider.get().findOneById(id);
         if(data == null) {
             pageNotFound(request, response);
             return;
@@ -739,10 +727,10 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         switch(data.getRole()) {
             case STUDENT:
-                data = (new StudentDaoJdbc()).findOneById(id);
+                data = studentServiceProvider.get().findOneById(id);
                 break;
             case TUTOR:
-                data = (new TutorDaoJdbc()).findOneById(id);
+                data = tutorServiceProvider.get().findOneById(id);
                 break;
             default:
                 pageNotFound(request, response);
@@ -801,14 +789,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private boolean saveUser(User user) throws DAOException {
         switch(user.getRole()) {
             case  STUDENT:
-                StudentDaoJdbc studentDao = new StudentDaoJdbc();
-                return studentDao.update( (Student) user );
+                StudentService studentService = studentServiceProvider.get();
+                return studentService.update( (Student) user );
             case  TUTOR:
-                TutorDaoJdbc tutorDao = new TutorDaoJdbc();
-                return tutorDao.update( (Tutor) user );
+                TutorService tutorService = tutorServiceProvider.get();
+                return tutorService.update( (Tutor) user );
             default:
-                UserDaoJdbc userDao = new UserDaoJdbc();
-                return userDao.update( user );
+                UserService userService = userServiceProvider.get();
+                return userService.update( user );
         }
     }
 
@@ -920,11 +908,11 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private User attachProfile(User user) throws DAOException {
         switch(user.getRole()) {
             case TUTOR:
-                TutorDaoJdbc tutorDao = new TutorDaoJdbc();
-                return tutorDao.attachProfile(user);
+                TutorService tutorService = tutorServiceProvider.get();
+                return tutorService.attachProfile(user);
             case STUDENT:
-                StudentDaoJdbc studentDao = new StudentDaoJdbc();
-                return studentDao.attachProfile(user);
+                StudentService studentService = studentServiceProvider.get();
+                return studentService.attachProfile(user);
             default:
                 return user;
         }

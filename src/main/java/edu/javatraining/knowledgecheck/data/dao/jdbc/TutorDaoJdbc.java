@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.TutorDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Tutor;
@@ -24,6 +25,10 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
             " `academic_title`" +
             " from users" +
             " left join tutor_profiles on users.id = tutor_profiles.id";
+
+    public TutorDaoJdbc(ConnectionPool pool) {
+        super(pool);
+    }
 
     public TutorDaoJdbc() {
         super();
@@ -169,12 +174,12 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
     }
 
     @Override
-    public Tutor[] findAll() {
-        return findAll(null, null);
+    public List<Tutor> findAllTutors() {
+        return findAllTutors(null, null);
     }
 
     @Override
-    public Tutor[] findAll(Long offset, Long count) {
+    public List<Tutor> findAllTutors(Long offset, Long count) {
 
         List<Tutor> tutorList = new ArrayList<>();
         String sql = BASIC_SELECT + " where role = ?";
@@ -199,7 +204,7 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
                     }
                 }));
 
-        return tutorList.toArray(new Tutor[tutorList.size()]);
+        return tutorList;//.toArray(new Tutor[tutorList.size()]);
     }
 
     @Override

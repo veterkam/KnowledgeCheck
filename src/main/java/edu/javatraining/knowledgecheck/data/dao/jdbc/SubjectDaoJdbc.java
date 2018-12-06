@@ -1,5 +1,8 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.dao.SubjectDao;
+import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
+import edu.javatraining.knowledgecheck.domain.User;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Subject;
 
@@ -7,148 +10,129 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubjectDaoJdbc extends BasicDaoJdbc {
+public class SubjectDaoJdbc extends BasicDaoJdbc implements SubjectDao {
 
     public SubjectDaoJdbc() {
     }
 
-    public Long insert(Subject subject) throws DAOException {
-        Long resultId;
-        String sql = "INSERT INTO subjects (name) VALUES(?)";
-        Connection connection = null;
-        PreparedStatement statement = null;
+    @Override
+    public Long save(Subject subject) {
 
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(
-                    sql, Statement.RETURN_GENERATED_KEYS);
-
-            statement.setString(1, subject.getName());
-
-            boolean isRowInserted = statement.executeUpdate() > 0;
-
-            if (isRowInserted) {
-                resultId = getGenKey(statement).longValue();
-                subject.setId(resultId);
-            } else {
-                DAOException e = new DAOException("Inserting subject data failed, no rows affected.");
-                logger.error(e.getMessage(), e);
-                throw e;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Inserting subject data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
+        Long id = subject.getId();
+        if(!update(subject)) {
+            id = insert(subject);
         }
 
+        return id;
+    }
+
+    @Override
+    public Subject findOne(Subject subject) {
+        return findOneById(subject.getId());
+    }
+
+    @Override
+    public Subject findOneById(Long id) {
+        String sql = "SELECT * FROM subjects WHERE id = ?";
+
+        PrimitiveEnvelope<Subject> subject = new PrimitiveEnvelope<>();
+
+        select(sql,
+                (statement -> {
+                    statement.setLong(1, id);
+                }),
+                (resultSet -> {
+                    if(resultSet.next()) {
+                        String name = resultSet.getString("name");
+                        subject.value = new Subject(id, name);
+                    }
+                }));
+
+        return subject.value;
+    }
+
+    @Override
+    public List<Subject> findAll() {
+        return findAll(null, null);
+    }
+
+    @Override
+    public List<Subject> findAll(Long offset, Long count) {
+        List<Subject> subjectList = new ArrayList<>();
+        String sql = "SELECT * FROM subjects";
+        if(offset != null) {
+            sql += " LIMIT ?, ?";
+        }
+
+        select(sql,
+
+                (statement -> {
+                    if(offset != null) {
+                        statement.setLong(1, offset);
+                        statement.setLong(2, count);
+                    }
+                }),
+
+                (resultSet -> {
+                    while (resultSet.next()) {
+                        Long id = resultSet.getLong("id");
+                        String name = resultSet.getString("name");
+                        Subject subject = new Subject(id, name);
+                        subjectList.add(subject);
+                    }
+                }));
+
+        return subjectList;//.toArray(new Subject[subjectList.size()]);
+    }
+
+    @Override
+    public Long count() {
+        String sql = "SELECT COUNT(*) FROM subjects";
+        return super.count(sql);
+    }
+
+    @Override
+    public Long insert(Subject subject) {
+
+        String sql = "INSERT INTO subjects (name) VALUES(?)";
+
+        Long resultId = insert(sql,
+                (statement -> {
+                    statement.setString(1, subject.getName());
+                }));
+
+        subject.setId(resultId);
         return resultId;
     }
 
-    private Subject extractSubjectFromResultSet(ResultSet resultSet) throws SQLException {
-        Long id = resultSet.getLong("id");
-        String name = resultSet.getString("name");
-        return new Subject(id, name);
-    }
-
-    public List<Subject> getList() throws DAOException {
-        List<Subject> subjectList = new ArrayList<>();
-        String sql = "SELECT * FROM subjects";
-
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sql);
-
-            while (resultSet.next()) {
-                Subject subject = extractSubjectFromResultSet(resultSet);
-                subjectList.add(subject);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading subject data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
-
-        return subjectList;
-    }
-
-    public boolean delete(Subject subject) throws DAOException {
-        String sql = "DELETE FROM subjects WHERE id = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowDeleted = false;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, subject.getId());
-
-            isRowDeleted = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Deleting subject data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowDeleted;
-    }
-
-    public boolean update(Subject subject) throws DAOException {
+    @Override
+    public boolean update(Subject subject) {
 
         String sql = "UPDATE subjects SET name = ? WHERE id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowUpdated = false;
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, subject.getName());
-            statement.setLong(2, subject.getId());
-
-            isRowUpdated = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Updating subject data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowUpdated;
+        return update(sql,
+                (statement -> {
+                    statement.setString(1, subject.getName());
+                    statement.setLong(2, subject.getId());
+                }));
     }
 
-    public Subject get(Long id) throws DAOException {
-        Subject subject = null;
-        String sql = "SELECT * FROM subjects WHERE id = ?";
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, id);
-            resultSet = statement.executeQuery();
-
-            if(resultSet.next()) {
-                subject = extractSubjectFromResultSet(resultSet);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading subject data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
-
-        return subject;
+    @Override
+    public boolean delete(Subject subject) {
+        return deleteById(subject.getId());
     }
+
+    @Override
+    public boolean deleteById(Long id) {
+        String sql = "DELETE FROM subjects WHERE id = ?";
+
+        return delete(sql,
+                (statement -> {
+                    statement.setLong(1, id);
+                }));
+    }
+
+
+
+
 }

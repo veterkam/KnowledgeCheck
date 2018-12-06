@@ -110,7 +110,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         // Read subject list for subject filter
         SubjectDaoJdbc subjectDao = new SubjectDaoJdbc();
-        presentation.setSubjects( subjectDao.getList() );
+        presentation.setSubjects( subjectDao.findAll() );
 
         // Scan parameters
         // Current page of test list
@@ -158,7 +158,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         testDao.enableOrder();
 
         // Calc test count
-        int count = testDao.getTestCount();
+        Long count = testDao.count();
 
         // Init pagination
         int pageCount = (int) Math.ceil(((double)count) / ((double)COUNT_TEST_ON_PAGE));
@@ -198,17 +198,17 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         List<Test> tests;
         if(onlyTest) {
             // without question and answers
-            tests = testDao.getPlainList(offset, (long) COUNT_TEST_ON_PAGE);
+            tests = testDao.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
         } else {
             // with question and answers
-            tests = testDao.getComplexList(offset, (long) COUNT_TEST_ON_PAGE);
+            tests = testDao.findComplexAll(offset, (long) COUNT_TEST_ON_PAGE);
         }
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
             List<Integer> scores = new ArrayList<>();
             TestingResultDaoJdbc trDao = new TestingResultDaoJdbc();
             for (Test test : tests) {
-                TestingResults tr = trDao.get(user.getId(), test.getId());
+                TestingResults tr = trDao.find(user.getId(), test.getId());
                 scores.add(tr.getScore());
             }
             request.setAttribute("scores", scores);
@@ -298,7 +298,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         if (Validator.containNull(paramSubject, paramTitle, paramDescription)) {
             // Parameters do not have test data
             if(test.getId() > -1) {
-                test = testDao.getComplex(test.getId());
+                test = testDao.findComplexOneById(test.getId());
                 if(test.getTutorId() == user.getId()) {
                     request.setAttribute("test", test );
                 } else {
@@ -309,7 +309,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             }
             // Only show empty edit form
             // Read subject list for subject filter in presentation
-            request.setAttribute("subjects", subjectDao.getList() );
+            request.setAttribute("subjects", subjectDao.findAll() );
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
             dispatcher.forward(request, response);
             return;
@@ -319,7 +319,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         try {
             Long subjectId = Long.parseLong(paramSubject);
-            subject = subjectDao.get(subjectId);
+            subject = subjectDao.findOneById(subjectId);
         } catch (NumberFormatException e) {
             alertManager.danger("Subject is wrong.");
         }
@@ -410,7 +410,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             // We have errors
             alertManager.danger(validator.getErrors());
             // Read subject list for subject filter in presentation
-            request.setAttribute("subjects",  subjectDao.getList() );
+            request.setAttribute("subjects",  subjectDao.findAll() );
             // Send test data for auto filing
             request.setAttribute("test", test);
             RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
@@ -419,7 +419,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         if(!remAnswerList.isEmpty()) {
-            AnswerDaoJdbcJdbc dao = new AnswerDaoJdbcJdbc();
+            AnswerDaoJdbc dao = new AnswerDaoJdbc();
             for(Answer answer : remAnswerList) {
                 dao.delete(answer);
             }
@@ -460,7 +460,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         TestDaoJdbc testDao = new TestDaoJdbc();
-        Test test = testDao.getComplex(testId);
+        Test test = testDao.findComplexOneById(testId);
 
         if(test == null) {
             getAlertManager(request).danger("Can't find the test. Please, try again!");
@@ -587,7 +587,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         List<Test> tests;
 
         // single test list, without question and answers
-        tests = testDao.getPlainList(offset, (long) COUNT_TEST_ON_PAGE);
+        tests = testDao.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
         QuestionDaoJdbc questionDao = new QuestionDaoJdbc();
         // Results of testing for each test and student
         List< List<TestingResults> > testingResultsList = new ArrayList<>();
@@ -597,7 +597,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             List<Question> questions =  questionDao.getPlainList(test.getId());
             test.setQuestions(questions);
             // read students's results of testing
-            List<TestingResults> testingResults = testingResultsDao.get(test.getId());
+            List<TestingResults> testingResults = testingResultsDao.find(test.getId());
             testingResultsList.add(testingResults);
         }
 
@@ -626,7 +626,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         List<Test> tests;
 
         // single test list, without question and answers
-        tests = testDao.getPlainList(offset, (long) COUNT_TEST_ON_PAGE);
+        tests = testDao.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
         QuestionDaoJdbc questionDao = new QuestionDaoJdbc();
         TestingResultDaoJdbc testingResultsDao = new TestingResultDaoJdbc();
         List<TestStatistics> statisticsList = new ArrayList<>();
@@ -635,7 +635,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             List<Question> questions =  questionDao.getPlainList(test.getId());
             test.setQuestions(questions);
             // read students's results of testing
-            List<TestingResults> testingResultsList = testingResultsDao.get(test.getId());
+            List<TestingResults> testingResultsList = testingResultsDao.find(test.getId());
 
             // Calculate statistics
             TestStatistics statistics = new TestStatistics();
@@ -693,7 +693,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         SubjectDaoJdbc subjectDao = new SubjectDaoJdbc();
-        List<Subject> subjects = subjectDao.getList();
+        List<Subject> subjects = subjectDao.findAll();
         request.setAttribute("subjects", subjects);
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_SUBJECTS_FORM);
         dispatcher.forward(request, response);

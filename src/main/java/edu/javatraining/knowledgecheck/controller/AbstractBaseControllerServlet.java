@@ -1,6 +1,10 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
 import edu.javatraining.knowledgecheck.data.SqlScriptRunner;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolManager;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +39,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_PROFILE = "/WEB-INF/view/account/Profile.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
+
 
     @Override
     public void init() throws ServletException {

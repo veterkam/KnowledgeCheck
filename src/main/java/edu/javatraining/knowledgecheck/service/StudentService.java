@@ -1,15 +1,11 @@
-package edu.javatraining.knowledgecheck.data.dao;
-
+package edu.javatraining.knowledgecheck.service;
 
 import edu.javatraining.knowledgecheck.domain.Student;
-import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;
 
 import java.util.List;
 
-public interface StudentDao {
-    Student attachProfile(User user);
-    Student findOneByUsername(String username);
+public interface StudentService {
 
     Long insert(Student student);
     boolean update(Student student);
@@ -18,7 +14,9 @@ public interface StudentDao {
     boolean deleteById(Long id);
     Student findOne(Student student);
     Student findOneById(Long id);
-    List<Student> findAllStudents();
-    List<Student> findAllStudents(Long offset, Long count);
+    List<Student> findAll();
+    List<Student> findAll(Long offset, Long count);
     Long count();
+    Student findOneByUsername(String username);
+    Student attachProfile(User user);
 }

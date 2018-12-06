@@ -1,6 +1,6 @@
 package edu.javatraining.knowledgecheck.data;
 
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolJdbc;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,14 +14,14 @@ public class SqlScriptRunner {
     private static final Logger logger = LogManager.getLogger(SqlScriptRunner.class);
     private static final String DEFAULT_DELIMITER = ";";
 
-    private ConnectionPool connectionPool;
+    private ConnectionPoolJdbc connectionPoolJdbc;
     private String delimiter = DEFAULT_DELIMITER;
 
     /**
      * Default constructor
      */
     public SqlScriptRunner() {
-        this.connectionPool = ConnectionPoolManager.getConnectionPool();
+        this.connectionPoolJdbc = ConnectionPoolManager.getConnectionPoolJdbc();
     }
 
     /**
@@ -31,7 +31,7 @@ public class SqlScriptRunner {
      *            - the source of the script
      */
     public void runScript(Reader reader) throws IOException, SQLException {
-        Connection connection = connectionPool.getConnection();
+        Connection connection = connectionPoolJdbc.getConnection();
         StringBuffer command = null;
         try {
             LineNumberReader lineReader = new LineNumberReader(reader);
@@ -63,7 +63,7 @@ public class SqlScriptRunner {
             logger.error(e.getMessage(), e);
             throw e;
         } finally {
-            connectionPool.releaseConnection(connection);
+            connectionPoolJdbc.releaseConnection(connection);
         }
     }
 

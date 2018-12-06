@@ -2,5 +2,11 @@ package edu.javatraining.knowledgecheck.data.dao;
 
 import edu.javatraining.knowledgecheck.domain.TestingResults;
 
-public interface TestingResultDao extends BasicDao<TestingResults, Long> {
+import java.util.List;
+
+public interface TestingResultDao {
+    void insert(TestingResults testingResults);
+    void update(TestingResults testingResults);
+    TestingResults find(Long studenId, Long testId);
+    List<TestingResults> find(Long testId);
 }

@@ -1,6 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
-import com.google.inject.Singleton;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.StudentDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -26,7 +26,11 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
             " `year` " +
             " from users" +
             " left join student_profiles on users.id = student_profiles.id";
-    
+
+    public StudentDaoJdbc(ConnectionPool pool) {
+        super(pool);
+    }
+
     public StudentDaoJdbc() {
         super();
     }
@@ -166,12 +170,12 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
     }
 
     @Override
-    public Student[] findAll() {
-        return findAll(null, null);
+    public List<Student> findAllStudents() {
+        return findAllStudents(null, null);
     }
 
     @Override
-    public Student[] findAll(Long offset, Long count) {
+    public List<Student> findAllStudents(Long offset, Long count) {
 
         List<Student> students = new ArrayList<>();
         String sql = BASIC_SELECT + " where role = ?";
@@ -198,7 +202,7 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
                     }
                 }));
 
-        return  students.toArray(new Student[students.size()]);
+        return  students;//.toArray(new Student[students.size()]);
     }
 
     private boolean updateProfile(Student student) {

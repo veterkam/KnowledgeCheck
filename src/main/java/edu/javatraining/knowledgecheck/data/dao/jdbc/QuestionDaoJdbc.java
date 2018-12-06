@@ -18,8 +18,8 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         super(conn);
     }
 
-    public long insertComplex(Question question) throws DAOException {
-        activateTransactionControl();
+    public long insertComplex(Question question) {
+        enableTransactionControl();
         long resultId;
         try {
             resultId = insertPlain(question);
@@ -27,7 +27,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
             Connection conn = getConnection();
 
             try {
-                AnswerDaoJdbcJdbc dao = new AnswerDaoJdbcJdbc(conn);
+                AnswerDaoJdbc dao = new AnswerDaoJdbc(conn);
                 for (Answer answer : question.getAnswers()) {
                     dao.insert(answer);
                 }
@@ -41,134 +41,85 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
             }
 
         } finally {
-            deactivateTransactionControl();
+            disableTransactionControl();
         }
 
         return resultId;
     }
 
-    public long insertPlain(Question question) throws DAOException {
-        long resultId;
+    public long insertPlain(Question question) {
+
         String sql = "INSERT INTO questions (`test_id`, `description`) " +
                 "VALUES(?, ?)";
-        Connection connection = null;
-        PreparedStatement statement = null;
 
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(
-                    sql, Statement.RETURN_GENERATED_KEYS);
+        Long resultId = insert(sql,
+                (statement -> {
+                    statement.setLong(1, question.getTestId());
+                    statement.setString(2, question.getDescription());
+                }));
 
-            statement.setLong(1, question.getTestId());
-            statement.setString(2, question.getDescription());
+        question.setId(resultId);
 
-            boolean isRowInserted = statement.executeUpdate() > 0;
-
-            if (isRowInserted) {
-                resultId = getGenKey(statement).longValue();
-                question.setId(resultId);
-
-                for(Answer answer : question.getAnswers()) {
-                    answer.setQuestionId(question.getId());
-                }
-            } else {
-                DAOException e = new DAOException("Inserting question data failed, no rows affected.");
-                logger.error(e.getMessage(), e);
-                throw e;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Inserting question data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
+        for(Answer answer : question.getAnswers()) {
+            answer.setQuestionId(question.getId());
         }
 
         return resultId;
     }
 
-    public List<Question> getComplexList(long testId) throws DAOException {
+    public List<Question> getComplexList(long testId) {
         List<Question> questionList = getPlainList(testId);
 
         // attach answers
-        AnswerDaoJdbcJdbc dao = new AnswerDaoJdbcJdbc();
+        AnswerDaoJdbc dao = new AnswerDaoJdbc();
         for(Question question : questionList) {
-            List<Answer> answerList = dao.getList(question.getId());
-            question.setAnswers(answerList);
+            Answer[] answers = dao.findByQuestionId(question.getId());
+            question.setAnswers(answers);
         }
 
         return questionList;
     }
 
-    private Question extractQuestionFromResultSet(ResultSet resultSet) throws SQLException {
-        long id = resultSet.getLong("id");
-        long testId = resultSet.getLong("test_id");
-        String description = resultSet.getString("description");
-        return new Question(id, testId, description);
-    }
-
-
-    public List<Question> getPlainList(long testId) throws DAOException {
+    public List<Question> getPlainList(long testId) {
         List<Question> questionList = new ArrayList<>();
         String sql = "SELECT * FROM questions WHERE test_id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, testId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Question question = extractQuestionFromResultSet(resultSet);
-                questionList.add(question);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading question data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
+        select(sql,
+                (statement -> {
+                    statement.setLong(1, testId);
+                }),
+                (resultSet -> {
+                    while (resultSet.next()) {
+                        Question question = new Question();
+                        extractQuestionFromResultSet(resultSet, question);
+                        questionList.add(question);
+                    }
+                }));
 
         return questionList;
     }
 
-    public boolean delete(Question question) throws DAOException {
+    public boolean delete(Question question) {
         String sql = "DELETE FROM questions WHERE id = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowDeleted = false;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, question.getId());
 
-            isRowDeleted = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Deleting question data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowDeleted;
+        return delete(sql,
+                (statement -> {
+                    statement.setLong(1, question.getId());
+                }));
     }
 
-    public boolean updateComplex(Question question) throws DAOException {
-        activateTransactionControl();
+    public boolean updateComplex(Question question) {
+        enableTransactionControl();
         try {
             if(!updatePlain(question)) {
-                deactivateTransactionControl();
+                disableTransactionControl();
                 return false;
             }
 
             Connection conn = getConnection();
 
             try {
-                AnswerDaoJdbcJdbc dao = new AnswerDaoJdbcJdbc(conn);
+                AnswerDaoJdbc dao = new AnswerDaoJdbc(conn);
                 for(Answer answer : question.getAnswers()) {
                     if(!dao.update(answer)) {
                         dao.insert(answer);
@@ -183,76 +134,56 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
                 closeCommunication(conn);
             }
         } finally {
-            deactivateTransactionControl();
+            disableTransactionControl();
         }
 
         return true;
     }
 
-    public boolean updatePlain(Question question) throws DAOException {
+    public boolean updatePlain(Question question) {
 
         String sql = "UPDATE questions SET description = ? " +
-                " WHERE id = ? AND test_id = ?";
+                " WHERE id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowUpdated = false;
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, question.getDescription());
-            statement.setLong(2, question.getId());
-            statement.setLong(3, question.getTestId());
-
-            isRowUpdated = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Updating question data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowUpdated;
+        return update(sql,
+                statement -> {
+                    statement.setString(1, question.getDescription());
+                    statement.setLong(2, question.getId());
+                });
     }
 
-    public Question getComplex(long id) throws DAOException {
-        Question question = getPlain(id);
+    public Question findComplexById(Long id) {
+        Question question = findPlainById(id);
 
-        AnswerDaoJdbcJdbc dao = new AnswerDaoJdbcJdbc();
+        AnswerDaoJdbc dao = new AnswerDaoJdbc();
         if(question != null) {
-            List<Answer> answerList = dao.getList(id);
-            question.setAnswers(answerList);
+            Answer[] answers = dao.findByQuestionId(id);
+            question.setAnswers(answers);
         }
 
         return question;
     }
 
-    public Question getPlain(long id) throws DAOException {
-        Question question = null;
+    public Question findPlainById(Long id) {
+        Question question = new Question();
         String sql = "SELECT * FROM questions WHERE id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, id);
-            resultSet = statement.executeQuery();
-
-            if(resultSet.next()) {
-                question = extractQuestionFromResultSet(resultSet);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading question data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
+        select(sql,
+                (statement -> {
+                    statement.setLong(1, id);
+                }),
+                (resultSet -> {
+                    if(resultSet.next()) {
+                        extractQuestionFromResultSet(resultSet, question);
+                    }
+                }));
 
         return question;
+    }
+
+    private void extractQuestionFromResultSet(ResultSet resultSet, Question question) throws SQLException {
+        question.setId( resultSet.getLong("id") );
+        question.setTestId( resultSet.getLong("test_id") );
+        question.setDescription( resultSet.getString("description") );
     }
 }

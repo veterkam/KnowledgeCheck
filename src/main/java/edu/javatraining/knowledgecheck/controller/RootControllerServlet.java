@@ -15,6 +15,7 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/"}, loadOnStartup = 1)
 @Singleton
 public class RootControllerServlet extends AbstractBaseControllerServlet {
+
     @Override
     public void init() throws ServletException {
         // RootControllerServlet start up first (loadOnStartup = 1)
@@ -35,9 +36,9 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         String action = request.getServletPath();
         try {
             switch (action) {
-                case "/":
-                    forward(request, response,"/testing");
-                    break;
+//                case "/":
+//                    forward(request, response,"/testing");
+//                    break;
                 default:
                     pageNotFound(request, response);
                     break;

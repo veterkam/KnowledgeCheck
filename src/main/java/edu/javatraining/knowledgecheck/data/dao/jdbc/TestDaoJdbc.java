@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Question;
 import edu.javatraining.knowledgecheck.domain.Subject;
 import edu.javatraining.knowledgecheck.domain.Test;
@@ -28,7 +29,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
     }
 
     public Long insertComplex(Test test) {
-        activateTransactionControl();
+        enableTransactionControl();
         Long resultId;
         try {
             resultId = insertPlain(test);
@@ -50,61 +51,41 @@ public class TestDaoJdbc extends BasicDaoJdbc {
             }
 
         } finally {
-            deactivateTransactionControl();
+            disableTransactionControl();
         }
 
         return resultId;
     }
 
-    public Long insertPlain(Test test) throws DAOException {
-        Long resultId;
+    public Long insertPlain(Test test)  {
         // Insert update_time as default TIMESTAMP
         String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
                 "VALUES(?, ?, ?, ?)";
-        Connection connection = null;
-        PreparedStatement statement = null;
 
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(
-                    sql, Statement.RETURN_GENERATED_KEYS);
+        Long resultId = insert(sql,
+                (statement -> {
+                    statement.setLong(1, test.getSubjectId());
+                    statement.setLong(2, test.getTutorId());
+                    statement.setString(3, test.getTitle());
+                    statement.setString(4, test.getDescription());
+                }));
 
-            statement.setLong(1, test.getSubjectId());
-            statement.setLong(2, test.getTutorId());
-            statement.setString(3, test.getTitle());
-            statement.setString(4, test.getDescription());
+        test.setId(resultId);
 
-            boolean isRowInserted = statement.executeUpdate() > 0;
-
-            if (isRowInserted) {
-                resultId = getGenKey(statement).longValue();
-                test.setId(resultId);
-
-                for(Question question : test.getQuestions()) {
-                    question.setTestId(test.getId());
-                }
-            } else {
-                DAOException e = new DAOException("Inserting test data failed, no rows affected.");
-                logger.error(e.getMessage(), e);
-                throw e;
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Inserting test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
+        for(Question question : test.getQuestions()) {
+            question.setTestId(test.getId());
         }
 
         return resultId;
     }
 
-    private void attachQuestions(Test test) throws DAOException {
+    private void attachQuestions(Test test)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc();
         List<Question> questionList = dao.getComplexList(test.getId());
         test.setQuestions(questionList);
     }
 
-    private void attachQuestions(List<Test> testList) throws DAOException {
+    private void attachQuestions(List<Test> testList)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc();
         for(Test test : testList) {
             List<Question> questionList = dao.getComplexList(test.getId());
@@ -122,52 +103,32 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return order;
     }
 
-    private int setFilter(PreparedStatement statement) throws  SQLException {
-        return setFilter(statement, 0);
-    }
-
-    private int setFilter(PreparedStatement statement, int offset) throws SQLException {
-
-        statement.setObject(++offset, getFilterTutorId(), Types.BIGINT);
-        statement.setObject(++offset, getFilterTutorId(), Types.BIGINT);
-        statement.setObject(++offset, getFilterSubjectId(), Types.BIGINT);
-        statement.setObject(++offset, getFilterSubjectId(), Types.BIGINT);
-
-        return offset;
-    }
-
-    public int getTestCount() throws DAOException {
+    public Long count()  {
 
         String sql = "SELECT COUNT(*) FROM tests " +
                 "WHERE " +
                 "(? IS NULL OR tutor_id = ? ) AND " +
                 "(? IS NULL OR subject_id = ?) ";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        int result = 0;
+        PrimitiveEnvelope<Long> count = new PrimitiveEnvelope<>();
 
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            setFilter(statement);
-            resultSet = statement.executeQuery();
+        select(sql,
+                (statement -> {
+                    statement.setObject(1, getFilterTutorId(), Types.BIGINT);
+                    statement.setObject(2, getFilterTutorId(), Types.BIGINT);
+                    statement.setObject(3, getFilterSubjectId(), Types.BIGINT);
+                    statement.setObject(4, getFilterSubjectId(), Types.BIGINT);
+                }),
+                (resultSet -> {
+                    if(resultSet.next()) {
+                        count.value = resultSet.getLong(1);
+                    }
+                }));
 
-            if(resultSet.next()) {
-                result = resultSet.getInt(1);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
-        return result;
+        return count.value;
     }
 
-    private Test extractTestFromResultSet(ResultSet resultSet)
-            throws SQLException, DAOException {
+    private Test extractTestFromResultSet(Test test, ResultSet resultSet) throws SQLException {
 
         Long id = resultSet.getLong("id");
         Long subjectId = resultSet.getLong("subject_id");
@@ -176,21 +137,26 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         String description = resultSet.getString("description");
         Timestamp updateTime = resultSet.getTimestamp("update_time");
 
-        Subject subject = new SubjectDaoJdbc().get(subjectId);
+        Subject subject = new SubjectDaoJdbc().findOneById(subjectId);
         Tutor tutor = new TutorDaoJdbc().findOneById(tutorId);
 
-        Test test = new Test(id, subject, tutor, title, description, updateTime);
+        test.setId(id);
+        test.setSubject(subject);
+        test.setTutor(tutor);
+        test.setTitle(title);
+        test.setDescription(description);
+        test.setUpdateTime(updateTime);
+
         return test;
     }
 
-    public List<Test> getComplexList(Long offset, Long count) throws DAOException {
-        List<Test> testList = getPlainList(offset, count);
+    public List<Test> findComplexAll(Long offset, Long count)  {
+        List<Test> testList = findPlainAll(offset, count);
         attachQuestions(testList);
         return testList;
     }
 
-    public List<Test> getPlainList(Long offset, Long count)
-        throws DAOException {
+    public List<Test> findPlainAll(Long offset, Long count) {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests " +
                 "WHERE " +
@@ -198,59 +164,42 @@ public class TestDaoJdbc extends BasicDaoJdbc {
                 "(? IS NULL OR subject_id = ?) "
                 + getOrder() + " LIMIT ?, ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
 
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            int index = setFilter(statement);
-            statement.setLong(++index, offset);
-            statement.setLong(++index, count);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Test test = extractTestFromResultSet(resultSet);
-                testList.add(test);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
+        select(sql,
+                (statement -> {
+                    statement.setObject(1, getFilterTutorId(), Types.BIGINT);
+                    statement.setObject(2, getFilterTutorId(), Types.BIGINT);
+                    statement.setObject(3, getFilterSubjectId(), Types.BIGINT);
+                    statement.setObject(4, getFilterSubjectId(), Types.BIGINT);
+                    statement.setLong(5, offset);
+                    statement.setLong(6, count);
+                }),
+                (resultSet -> {
+                    while (resultSet.next()) {
+                        Test test = new Test();
+                        extractTestFromResultSet(test, resultSet);
+                        testList.add(test);
+                    }
+                }));
 
         return testList;
     }
 
-    public boolean delete(Test test) throws DAOException {
+    public boolean delete(Test test)  {
         String sql = "DELETE FROM tests WHERE id = ? AND tutor_id = ?";
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowDeleted = false;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, test.getId());
-            statement.setLong(2, test.getTutorId());
 
-            isRowDeleted = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Deleting test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowDeleted;
+        return delete(sql,
+                (statement -> {
+                    statement.setLong(1, test.getId());
+                    statement.setLong(2, test.getTutorId());
+                }));
     }
 
-    public boolean updateComplex(Test test) throws DAOException {
-        activateTransactionControl();
+    public boolean updateComplex(Test test)  {
+        enableTransactionControl();
         try {
             if (!updatePlain(test)) {
-                deactivateTransactionControl();
+                disableTransactionControl();
                 return false;
             }
 
@@ -273,43 +222,29 @@ public class TestDaoJdbc extends BasicDaoJdbc {
             }
 
         } finally {
-            deactivateTransactionControl();
+            disableTransactionControl();
         }
 
         return true;
     }
 
-    public boolean updatePlain(Test test) throws DAOException {
+    public boolean updatePlain(Test test)  {
 
         String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, update_time = NOW() " +
                 " WHERE id = ? AND tutor_id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        boolean isRowUpdated = false;
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, test.getSubjectId());
-            statement.setString(2, test.getTitle());
-            statement.setString(3, test.getDescription());
-            statement.setLong(4, test.getId());
-            statement.setLong(5, test.getTutorId());
-
-            isRowUpdated = statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Updating test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement);
-        }
-
-        return isRowUpdated;
+        return update(sql,
+                (statement -> {
+                    statement.setLong(1, test.getSubjectId());
+                    statement.setString(2, test.getTitle());
+                    statement.setString(3, test.getDescription());
+                    statement.setLong(4, test.getId());
+                    statement.setLong(5, test.getTutorId());
+                }));
     }
 
-    public Test getComplex(Long id) throws DAOException {
-        Test test = getPlain(id);
+    public Test findComplexOneById(Long id)  {
+        Test test = findPlainOneById(id);
 
         if(test != null) {
             // attach questions
@@ -319,36 +254,25 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return test;
     }
 
-    public Test getPlain(Long id) throws DAOException {
-        Test test = null;
+    public Test findPlainOneById(Long id)  {
+
         String sql = "SELECT * FROM tests WHERE id = ?";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
+        Test test = new Test();
 
-        try {
-            connection = getConnection();
-
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, id);
-            resultSet = statement.executeQuery();
-
-            if(resultSet.next()) {
-                test = extractTestFromResultSet(resultSet);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
-
+        select(sql,
+                (statement -> {
+                    statement.setLong(1, id);
+                }),
+                (resultSet -> {
+                    if(resultSet.next()) {
+                        extractTestFromResultSet(test, resultSet);
+                    }
+                }));
         return test;
     }
 
-    public Map<Long, List<Long>> getCorrectAnswerIds(Long testId)
-        throws DAOException {
+    public Map<Long, List<Long>> getCorrectAnswerIds(Long testId) {
         // Method returns map of lists of correct answer ids,
         // for each question of test with id = testId
         Map<Long, List<Long>> result = new HashMap<>();
@@ -359,33 +283,23 @@ public class TestDaoJdbc extends BasicDaoJdbc {
                 "WHERE answers.correct = TRUE AND tests.id = ? " +
                 "ORDER BY question_id";
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
+        select(sql,
+                (statement -> {
+                    statement.setLong(1, testId);
+                }),
+                (resultSet -> {
+                    while (resultSet.next()) {
+                        Long questionId = resultSet.getLong("question_id");
+                        Long answerId = resultSet.getLong("answer_id");
 
-        try {
-            connection = getConnection();
+                        if(!result.containsKey(questionId)) {
+                            result.put(questionId, new ArrayList<>());
+                        }
 
-            statement = connection.prepareStatement(sql);
-            statement.setLong(1, testId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Long questionId = resultSet.getLong("question_id");
-                Long answerId = resultSet.getLong("answer_id");
-
-                if(!result.containsKey(questionId)) {
-                    result.put(questionId, new ArrayList<>());
-                }
-
-                result.get(questionId).add(answerId);
-            }
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            throw new DAOException("Reading test data failed.", e);
-        } finally {
-            closeCommunication(connection, statement, resultSet);
-        }
+                        result.get(questionId).add(answerId);
+                    }
+                })
+                );
 
         return result;
     }

@@ -18,9 +18,9 @@ public interface BasicDao<E, K> {
 
     E findOneById(K id);
 
-    E[] findAll();
+    List<E> findAll();
 
-    E[] findAll(K offset, K count);
+    List<E> findAll(K offset, K count);
 
     K count();
 }

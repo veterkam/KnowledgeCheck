@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.UserDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.User;
@@ -9,6 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
+
+    public UserDaoJdbc(ConnectionPool pool) {
+        super(pool);
+    }
 
     public UserDaoJdbc() {
         super();
@@ -82,12 +87,12 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
     }
 
     @Override
-    public User[] findAll() {
-        return findAll(null, null);
+    public List<User> findAllUsers() {
+        return findAllUsers(null, null);
     }
 
     @Override
-    public User[] findAll(Long offset, Long count) {
+    public List<User> findAllUsers(Long offset, Long count) {
 
         List<User> userList = new ArrayList<>();
         String sql = "SELECT * FROM users ORDER BY username";
@@ -111,24 +116,14 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
                     }
                 }));
 
-        return userList.toArray(new User[userList.size()]);
+        return userList;//.toArray(new User[userList.size()]);
     }
 
     @Override
     public Long count() {
 
         String sql = "SELECT COUNT(*) FROM users";
-        PrimitiveEnvelope<Long> count = new PrimitiveEnvelope<Long>();
-
-        select(sql,
-                (statement) -> {},
-                (resultSet) -> {
-                    if(resultSet.next()) {
-                        count.value = resultSet.getLong(1);
-                    }
-                });
-
-        return count.value;
+        return super.count(sql);
     }
 
     @Override

@@ -1,6 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-
 <div class="input-group mt-1" data-role="answer-container">
     <input hidden type="text" data-role="answer-id" name="answerIds[]" value="${answer.id}">
     <input hidden type="text" data-role="answer-removing-flag" name="answerRemovingFlags[]" value="0">

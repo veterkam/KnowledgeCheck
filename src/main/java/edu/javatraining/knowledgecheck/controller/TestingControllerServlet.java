@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 @WebServlet(urlPatterns = {
+        "/",
         "/testing",
         "/testing/mytests",
         "/testing/edit",
@@ -317,7 +318,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             // Parameters do not have test data
             if(test.getId() > -1) {
                 test = testService.findComplexOneById(test.getId());
-                if(test.getTutorId() == user.getId()) {
+                if(test.getTutorId().equals( user.getId() )) {
                     request.setAttribute("test", test );
                 } else {
                     alertManager.danger("You don't have permission to change this test.");

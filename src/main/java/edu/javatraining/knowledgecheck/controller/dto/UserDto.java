@@ -2,16 +2,18 @@ package edu.javatraining.knowledgecheck.controller.dto;
 
 //import org.hibernate.validator.constraints.ScriptAssert;
 
+import org.hibernate.validator.constraints.ScriptAssert;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-//@ScriptAssert(
-//        lang = "javascript",
-//        script="_this.password.equals(_this.confirmPassword)",
-//        message="{app.account.password.passwords_do_not_match}",
-//        reportOn="confirmPassword")
+@ScriptAssert(
+        lang = "javascript",
+        script="_this.password.equals(_this.confirmPassword)",
+        message="{app.account.password.passwords_do_not_match}",
+        reportOn="confirmPassword")
 public class UserDto {
     @NotNull(message="{app.account.firstName.not_empty}")
 	@NotEmpty(message="{app.account.firstName.not_empty}")

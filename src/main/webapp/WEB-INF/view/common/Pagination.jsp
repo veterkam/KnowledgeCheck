@@ -1,4 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:if test="${pagination != null && pagination.pageCount > 0}">
     <ul class="pagination justify-content-center">
         <li class="page-item">

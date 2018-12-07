@@ -1,7 +1,6 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!-- navbar -->
 <nav class="navbar navbar-expand-sm fixed-top bg-dark navbar-dark">
-    <a class="navbar-brand" href="${pageContext.request.contextPath}/">Home</a>
+    <a class="navbar-brand" href="${pageContext.request.contextPath}/"><fmt:message key="app.menu.home" /></a>
     <c:if test="${user != null}">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/account/myprofile">My Profile</a>
 

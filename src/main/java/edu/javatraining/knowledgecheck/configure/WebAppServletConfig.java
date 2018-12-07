@@ -6,6 +6,8 @@ import edu.javatraining.knowledgecheck.configure.provider.ConnectionPoolProvider
 import edu.javatraining.knowledgecheck.configure.provider.dao.*;
 import edu.javatraining.knowledgecheck.configure.provider.service.*;
 import edu.javatraining.knowledgecheck.controller.AccountControllerServlet;
+import edu.javatraining.knowledgecheck.controller.EncodeFilter;
+import edu.javatraining.knowledgecheck.controller.SessionLocaleFilter;
 import edu.javatraining.knowledgecheck.controller.TestingControllerServlet;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.*;
@@ -28,19 +30,8 @@ public class WebAppServletConfig extends GuiceServletContextListener {
             protected void configureServlets() {
                 super.configureServlets();
 
-                serve("/",
-                        "/testing",
-                        "/testing/mytests",
-                        "/testing/edit",
-                        "/testing/remove",
-                        "/testing/testing",
-                        "/testing/testing/result",
-                        "/testing/studentsresults",
-                        "/testing/teststatistics",
-                        "/testing/subjects",
-                        "/testing/subjects/save"
-                ).with(TestingControllerServlet.class);
-
+                filter("/*").through(EncodeFilter.class);
+                filter("/*").through(SessionLocaleFilter.class);
 
                 serve(
                         "/account/login",
@@ -58,6 +49,20 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/account/users/remove",
                         "/account/profile"
                         ).with(AccountControllerServlet.class);
+
+                serve("/",
+                        "/testing",
+                        "/testing/mytests",
+                        "/testing/edit",
+                        "/testing/remove",
+                        "/testing/testing",
+                        "/testing/testing/result",
+                        "/testing/studentsresults",
+                        "/testing/teststatistics",
+                        "/testing/subjects",
+                        "/testing/subjects/save"
+                ).with(TestingControllerServlet.class);
+
 
 
                 bind(ConnectionPool.class).toProvider(ConnectionPoolProvider.class).in(Singleton.class);

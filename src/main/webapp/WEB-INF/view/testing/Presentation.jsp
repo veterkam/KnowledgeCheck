@@ -1,4 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <form class="form-inline mb-2  justify-content-center" action="">
     <label for="subjectFilter">Filter:</label>
     <select id="subjectFilter" name="presentationSubjectId" class="custom-select form-control mr-4">

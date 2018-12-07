@@ -1,10 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8" isELIgnored="false" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ include file = "../common/Header.jsp" %>
-<%@ include file = "../common/NavBar.jsp" %>
 <div class="container text-left">
 
     <div class="row">
@@ -163,6 +157,5 @@
             </div>
         </div>
     </c:if>
-</div>
 <%@ include file="../common/JSlibs.jsp" %>
 <%@ include file="../common/Footer.jsp" %>

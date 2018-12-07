@@ -10,10 +10,10 @@
         </c:if>
 
         <c:if test="${user.role=='TUTOR'}">
-            <a class="navbar-brand" href="<c:url value="/testboard/mytests"/>">My Tests</a>
-            <a class="navbar-brand" href="<c:url value="/testboard/studentsresults"/>">Students Results</a>
-            <a class="navbar-brand" href="<c:url value="/testboard/teststatistics"/>">Test Statistics</a>
-            <a class="navbar-brand" href="<c:url value="/testboard/subjects"/>">Subjects</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/mytests">My Tests</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/studentsresults">Students Results</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/teststatistics">Test Statistics</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testboard/subjects">Subjects</a>
         </c:if>
     </c:if>
     <!-- Toggler/collapsibe Button -->
@@ -29,7 +29,7 @@
             <c:if test="${user != null}">
                 <li class="nav-item">
                     <a class="nav-link" data-value="logout"
-                       href="<c:url value="/account/logout"/>">
+                       href="${pageContext.request.contextPath}/account/logout">
                         Logout
                     </a>
                 </li>
@@ -43,13 +43,13 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-value="register"
-                       href="<c:url value="/account/register"/>">
+                       href="${pageContext.request.contextPath}/account/register">
                         Register
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-value="recovery"
-                       href="<c:url value="/account/recovery"/>">
+                       href="${pageContext.request.contextPath}/account/recovery">
                         Password recovery
                     </a>
                 </li>

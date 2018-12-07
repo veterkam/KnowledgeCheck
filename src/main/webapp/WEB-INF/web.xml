@@ -5,25 +5,6 @@
 <web-app>
   <display-name>Knowledge Check Web Application</display-name>
 
-  <filter>
-    <filter-name>guiceFilter</filter-name>
-    <filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
-  </filter>
-
-  <filter-mapping>
-    <filter-name>guiceFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-
-  <servlet-mapping>
-    <servlet-name>default</servlet-name>
-    <url-pattern>/resources/*</url-pattern>
-  </servlet-mapping>
-
-  <error-page>
-    <exception-type>java.lang.Exception</exception-type>
-    <location>/WEB-INF/view/common/Error.jsp</location>
-  </error-page>
 
   <context-param>
     <param-name>dbUrl</param-name><!--&useUnicode=true&characterEncoding=utf8-->
@@ -52,4 +33,25 @@
     <param-name>initSqlScript</param-name>
     <param-value>/WEB-INF/view/common/Error.jsp</param-value>
   </context-param>
+
+    <filter>
+      <filter-name>guiceFilter</filter-name>
+      <filter-class>com.google.inject.servlet.GuiceFilter</filter-class>
+    </filter>
+
+  <filter-mapping>
+      <filter-name>guiceFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>/resources/*</url-pattern>
+  </servlet-mapping>
+
+  <error-page>
+    <exception-type>java.lang.Exception</exception-type>
+    <location>/WEB-INF/view/common/Error.jsp</location>
+  </error-page>
+
 </web-app>

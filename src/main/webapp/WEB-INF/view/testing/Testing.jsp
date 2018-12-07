@@ -82,7 +82,7 @@
                             </div>
                             <div class="col text-center">
                                 <button class="btn btn-dark m-1" type="submit" name="btnResult" data-role="indexing"
-                                        formaction="<c:url value="/testboard/testing/result"/>">
+                                        formaction="${pageContext.request.contextPath}/testboard/testing/result">
                                     Result
                                 </button>
                             </div>
@@ -100,5 +100,5 @@
     </div>
 </div>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="<c:url value="/resources/js/RunTest.js"/>"></script>
+<script src="${pageContext.request.contextPath}/resources/js/RunTest.js"></script>
 <%@ include file="../common/Footer.jsp" %>

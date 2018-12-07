@@ -1,10 +1,10 @@
-package edu.javatraining.knowledgecheck.data.dao;
+package edu.javatraining.knowledgecheck.service;
 
 import edu.javatraining.knowledgecheck.domain.TestingResults;
 
 import java.util.List;
 
-public interface TestingResultDao {
+public interface TestingResultService {
     boolean insert(TestingResults testingResults);
     boolean update(TestingResults testingResults);
     TestingResults find(Long studenId, Long testId);

@@ -18,12 +18,12 @@ public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultD
         super();
     }
 
-    private void insertResultOfAnswer(Long studentId, Long questionId, boolean correct) {
+    private Long insertResultOfAnswer(Long studentId, Long questionId, boolean correct) {
 
         String sql = "INSERT INTO testing_results (student_id, question_id, correct) " +
                 "VALUES(?, ?, ?)";
 
-        insert(sql,
+        return insert(sql,
                 (statement -> {
                     statement.setLong(1, studentId);
                     statement.setLong(2, questionId);
@@ -45,26 +45,35 @@ public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultD
     }
 
     @Override
-    public void insert(TestingResults testingResults) {
+    public boolean insert(TestingResults testingResults) {
 
         Map<Long, Boolean> resultOfAnswers = testingResults.getAnswerResults();
         for(Long questionId : resultOfAnswers.keySet()) {
             boolean correct = resultOfAnswers.get(questionId);
-            insertResultOfAnswer(testingResults.getStudentId(), questionId, correct);
+            if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct) <= 0) {
+                return false;
+            }
         }
+
+        return true;
     }
 
     @Override
-    public void update(TestingResults testingResults) {
+    public boolean update(TestingResults testingResults) {
 
         Map<Long, Boolean> resultOfAnswers = testingResults.getAnswerResults();
         for(Long questionId : resultOfAnswers.keySet()) {
             boolean correct = resultOfAnswers.get(questionId);
 
             if( !updateResultOfAnswer(testingResults.getStudentId(), questionId, correct) ) {
-                insertResultOfAnswer(testingResults.getStudentId(), questionId, correct);
+                if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct) <= 0) {
+                    return false;
+                }
+
             }
         }
+
+        return true;
     }
 
     @Override

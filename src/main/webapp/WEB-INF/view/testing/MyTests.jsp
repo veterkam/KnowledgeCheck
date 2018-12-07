@@ -12,7 +12,7 @@
             <h1 class="h3 mb-3 font-weight-normal">My tests</h1>
         </div>
         <div class="col text-right">
-            <a href="<c:url value="/testing/edit"/>"
+            <a href="${pageContext.request.contextPath}/testing/edit"
                class="btn btn-info btn-dark" role="button">New test</a>
         </div>
     </div>
@@ -23,7 +23,7 @@
         <div class="row">
             <div class="col">
                 <h3 class="h5 mb-3 font-weight-normal">
-                    You don't have any test.&nbsp;<a href="<c:url value="/testing/edit"/>">New test</a>
+                    You don't have any test.&nbsp;<a href="${pageContext.request.contextPath}/testing/edit">New test</a>
                 </h3>
             </div>
         </div>
@@ -86,11 +86,11 @@
                                     <fmt:formatDate type = "both" timeStyle = "short" value = "${test.updateTime}" />
                                 </div>
                                 <div class="col text-right">
-                                    <a href="<c:url value="/testing/edit?testId=${test.id}"/>"
+                                    <a href="${pageContext.request.contextPath}/testing/edit?testId=${test.id}"
                                        class="btn btn-sm btn-dark m-1" role="button">
                                         Edit test
                                     </a>
-                                    <a href="<c:url value="/testing/remove?testId=${test.id}"/>"
+                                    <a href="${pageContext.request.contextPath}/testing/remove?testId=${test.id}"
                                        class="btn btn-sm btn-dark m-1" role="button"
                                        onclick="return confirm('Are you sure you want to remove the test?')">
                                         Remove test

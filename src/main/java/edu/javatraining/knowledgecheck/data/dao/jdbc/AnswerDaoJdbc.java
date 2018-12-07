@@ -79,7 +79,7 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
     }
 
     @Override
-    public Answer[] findByQuestionId(Long questionId) {
+    public List<Answer> findByQuestionId(Long questionId) {
         List<Answer> answerList = new ArrayList<>();
         String sql = "SELECT * FROM answers WHERE question_id=?";
 
@@ -94,7 +94,7 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
                     }
                 }));
 
-        return answerList.toArray(new Answer[answerList.size()]);
+        return answerList;//.toArray(new Answer[answerList.size()]);
     }
 
     @Override

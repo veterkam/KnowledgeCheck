@@ -121,19 +121,19 @@
         <c:if test="${verifyEmail != null}">
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnCancel" formnovalidate
-                        formaction="<c:url value="/account/myprofile"/>">
+                        formaction="${pageContext.request.contextPath}/account/myprofile">
                     Cancel
                 </button>
             </div>
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnBack" formnovalidate
-                        formaction="<c:url value="/account/myprofile/back"/>">
+                        formaction="${pageContext.request.contextPath}/account/myprofile/back">
                     Back
                 </button>
             </div>
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnConfirm"
-                        formaction="<c:url value="/account/myprofile/confirm"/>">
+                        formaction="${pageContext.request.contextPath}/account/myprofile/confirm">
                     Confirm
                 </button>
             </div>
@@ -142,7 +142,7 @@
             <div class="col-3"></div>
             <div class="col-6">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnSave"
-                        formaction="<c:url value="/account/myprofile/verify"/>">
+                        formaction="${pageContext.request.contextPath}/account/myprofile/verify">
                     Save
                 </button>
             </div>
@@ -152,5 +152,5 @@
     </form>
 </div>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="<c:url value="/resources/js/MyProfile.js"/>"></script>
+<script src="${pageContext.request.contextPath}/resources/js/MyProfile.js"></script>
 <%@ include file="../common/Footer.jsp" %>

@@ -19,7 +19,7 @@
         <div class="row">
             <div class="col">
                 <h3 class="h5 mb-3 font-weight-normal">
-                    You don't have any test.&nbsp;<a href="<c:url value="/testing/edit"/>">New test</a>
+                    You don't have any test.&nbsp;<a href="${pageContext.request.contextPath}/testing/edit">New test</a>
                 </h3>
             </div>
         </div>
@@ -65,7 +65,7 @@
                                                 <div class="col text-left">
                                                     <p class="card-text">
                                                         <strong>${studentTestingResultsLoop.count}.
-                                                            <a href="<c:url value="/account/profile?id=${studentTestingResults.student.id}"/>">
+                                                            <a href="${pageContext.request.contextPath}/account/profile?id=${studentTestingResults.student.id}">
                                                                 <c:out value="${studentTestingResults.student.fullname}"/></a>
                                                         </strong>
                                                         ${studentTestingResults.score}% correct answers

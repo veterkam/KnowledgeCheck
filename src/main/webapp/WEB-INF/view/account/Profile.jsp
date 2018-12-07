@@ -20,5 +20,5 @@
     </c:if>
 </div>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="<c:url value="/resources/js/MyProfile.js"/>"></script>
+<script src="${pageContext.request.contextPath}/resources/js/MyProfile.js"></script>
 <%@ include file="../common/Footer.jsp" %>

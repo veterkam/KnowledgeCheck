@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.dao.QuestionDao;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Answer;
 import edu.javatraining.knowledgecheck.domain.Question;
@@ -8,7 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuestionDaoJdbc extends BasicDaoJdbc {
+public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
 
     public QuestionDaoJdbc() {
         super();
@@ -18,9 +19,10 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         super(conn);
     }
 
-    public long insertComplex(Question question) {
+    @Override
+    public Long insertComplex(Question question) {
         enableTransactionControl();
-        long resultId;
+        Long resultId;
         try {
             resultId = insertPlain(question);
 
@@ -47,7 +49,8 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         return resultId;
     }
 
-    public long insertPlain(Question question) {
+    @Override
+    public Long insertPlain(Question question) {
 
         String sql = "INSERT INTO questions (`test_id`, `description`) " +
                 "VALUES(?, ?)";
@@ -67,20 +70,22 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         return resultId;
     }
 
-    public List<Question> getComplexList(long testId) {
-        List<Question> questionList = getPlainList(testId);
+    @Override
+    public List<Question> findComplexAll(Long testId) {
+        List<Question> questionList = findPlainAll(testId);
 
         // attach answers
         AnswerDaoJdbc dao = new AnswerDaoJdbc();
         for(Question question : questionList) {
-            Answer[] answers = dao.findByQuestionId(question.getId());
+            List<Answer> answers = dao.findByQuestionId(question.getId());
             question.setAnswers(answers);
         }
 
         return questionList;
     }
 
-    public List<Question> getPlainList(long testId) {
+    @Override
+    public List<Question> findPlainAll(Long testId) {
         List<Question> questionList = new ArrayList<>();
         String sql = "SELECT * FROM questions WHERE test_id = ?";
 
@@ -99,6 +104,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         return questionList;
     }
 
+    @Override
     public boolean delete(Question question) {
         String sql = "DELETE FROM questions WHERE id = ?";
 
@@ -108,6 +114,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
                 }));
     }
 
+    @Override
     public boolean updateComplex(Question question) {
         enableTransactionControl();
         try {
@@ -140,6 +147,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
         return true;
     }
 
+    @Override
     public boolean updatePlain(Question question) {
 
         String sql = "UPDATE questions SET description = ? " +
@@ -152,18 +160,20 @@ public class QuestionDaoJdbc extends BasicDaoJdbc {
                 });
     }
 
+    @Override
     public Question findComplexById(Long id) {
         Question question = findPlainById(id);
 
         AnswerDaoJdbc dao = new AnswerDaoJdbc();
         if(question != null) {
-            Answer[] answers = dao.findByQuestionId(id);
+            List<Answer> answers = dao.findByQuestionId(id);
             question.setAnswers(answers);
         }
 
         return question;
     }
 
+    @Override
     public Question findPlainById(Long id) {
         Question question = new Question();
         String sql = "SELECT * FROM questions WHERE id = ?";

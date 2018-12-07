@@ -49,11 +49,11 @@
                 <div class="text-right">
                     <button class="btn btn-dark m-1 mt-4" data-role="add-subject">Add subject</button>
                     <button class="btn btn-dark m-1 mt-4" type="submit"
-                            formaction="<c:url value="/testboard/subjects/save"/>">
+                            formaction="${pageContext.request.contextPath}/testboard/subjects/save">
                         Save changes
                     </button>
                     <a class="btn btn-dark m-1 mt-4" role="button"
-                       href="<c:url value="/testboard/subjects"/>" >
+                       href="${pageContext.request.contextPath}/testboard/subjects" >
                         Cancel
                     </a>
                 </div>
@@ -63,5 +63,5 @@
     </form>
 </div>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="<c:url value="/resources/js/Subjects.js"/>"></script>
+<script src="${pageContext.request.contextPath}/resources/js/Subjects.js"></script>
 <%@ include file="../common/Footer.jsp" %>

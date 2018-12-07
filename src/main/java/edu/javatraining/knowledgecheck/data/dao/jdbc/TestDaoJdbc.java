@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.dao.TestDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Question;
 import edu.javatraining.knowledgecheck.domain.Subject;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestDaoJdbc extends BasicDaoJdbc {
+public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
 
     public final static String ORDER_ASC = "ASC";
     public final static String ORDER_DESC = "DESC";
@@ -28,6 +29,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         super();
     }
 
+    @Override
     public Long insertComplex(Test test) {
         enableTransactionControl();
         Long resultId;
@@ -57,6 +59,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return resultId;
     }
 
+    @Override
     public Long insertPlain(Test test)  {
         // Insert update_time as default TIMESTAMP
         String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
@@ -81,14 +84,14 @@ public class TestDaoJdbc extends BasicDaoJdbc {
 
     private void attachQuestions(Test test)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc();
-        List<Question> questionList = dao.getComplexList(test.getId());
+        List<Question> questionList = dao.findComplexAll(test.getId());
         test.setQuestions(questionList);
     }
 
     private void attachQuestions(List<Test> testList)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc();
         for(Test test : testList) {
-            List<Question> questionList = dao.getComplexList(test.getId());
+            List<Question> questionList = dao.findComplexAll(test.getId());
             test.setQuestions(questionList);
         }
     }
@@ -150,12 +153,14 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return test;
     }
 
+    @Override
     public List<Test> findComplexAll(Long offset, Long count)  {
         List<Test> testList = findPlainAll(offset, count);
         attachQuestions(testList);
         return testList;
     }
 
+    @Override
     public List<Test> findPlainAll(Long offset, Long count) {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests " +
@@ -185,6 +190,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return testList;
     }
 
+    @Override
     public boolean delete(Test test)  {
         String sql = "DELETE FROM tests WHERE id = ? AND tutor_id = ?";
 
@@ -195,6 +201,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
                 }));
     }
 
+    @Override
     public boolean updateComplex(Test test)  {
         enableTransactionControl();
         try {
@@ -228,6 +235,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return true;
     }
 
+    @Override
     public boolean updatePlain(Test test)  {
 
         String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, update_time = NOW() " +
@@ -243,6 +251,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
                 }));
     }
 
+    @Override
     public Test findComplexOneById(Long id)  {
         Test test = findPlainOneById(id);
 
@@ -254,6 +263,7 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return test;
     }
 
+    @Override
     public Test findPlainOneById(Long id)  {
 
         String sql = "SELECT * FROM tests WHERE id = ?";
@@ -272,7 +282,8 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return test;
     }
 
-    public Map<Long, List<Long>> getCorrectAnswerIds(Long testId) {
+    @Override
+    public Map<Long, List<Long>> findCorrectAnswerIdsByTestId(Long testId) {
         // Method returns map of lists of correct answer ids,
         // for each question of test with id = testId
         Map<Long, List<Long>> result = new HashMap<>();
@@ -304,54 +315,67 @@ public class TestDaoJdbc extends BasicDaoJdbc {
         return result;
     }
 
+    @Override
     public Long getFilterTutorId() {
         return filterTutorId;
     }
 
+    @Override
     public void setFilterTutorId(Long filterTutorId) {
         this.filterTutorId = filterTutorId;
     }
 
+    @Override
     public Long getFilterSubjectId() {
         return filterSubjectId;
     }
 
+    @Override
     public void setFilterSubjectId(Long filterSubjectId) {
         this.filterSubjectId = filterSubjectId;
     }
 
+    @Override
     public String getDateOrder() {
         return dateOrder;
     }
 
+    @Override
     public void setDateOrder(String dateOrder) {
         this.dateOrder = dateOrder;
     }
 
+    @Override
     public boolean isUseFilter() {
         return useFilter;
     }
 
+    @Override
     public void enableFilter() {
         this.useFilter = true;
     }
 
+    @Override
     public void disableFilter() {
         this.useFilter = false;
     }
 
+    @Override
     public boolean isUseOrder() {
         return useOrder;
     }
 
+    @Override
     public void enableOrder() {
         this.useOrder = true;
     }
 
+    @Override
     public void disableOrder() {
         this.useOrder = false;
     }
 
+    @Override
     public void resetFilterAndOrder() {
         filterSubjectId = null;
         filterTutorId = null;

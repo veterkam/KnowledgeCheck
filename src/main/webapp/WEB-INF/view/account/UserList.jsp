@@ -34,18 +34,18 @@
                         </div>
                         <div class="col text-right">
                             <c:if test="${userData.verified == true}">
-                                <a href="<c:url value="/authorization/users/verify?id=${userData.id}&verified=false"/>"
+                                <a href="${pageContext.request.contextPath}/authorization/users/verify?id=${userData.id}&verified=false"
                                    class="btn btn-sm btn-dark m-1" role="button">
                                     Return to the verification
                                 </a>
                             </c:if>
                             <c:if test="${userData.verified == false}">
-                                <a href="<c:url value="/authorization/users/verify?id=${userData.id}&verified=true"/>"
+                                <a href="${pageContext.request.contextPath}/authorization/users/verify?id=${userData.id}&verified=true"
                                    class="btn btn-sm btn-dark m-1" role="button">
                                     Verification passed
                                 </a>
                             </c:if>
-                            <a href="<c:url value="/authorization/users/remove?id=${userData.id}"/>"
+                            <a href="${pageContext.request.contextPath}/authorization/users/remove?id=${userData.id}"
                                class="btn btn-sm btn-dark m-1" role="button" onclick="return confirm('Are you sure you want to remove the user?')">
                                 Remove
                             </a>

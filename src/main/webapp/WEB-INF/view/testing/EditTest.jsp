@@ -48,12 +48,12 @@
 
 
         <div class="form-group text-right">
-            <a href="<c:url value="/testing/mytests"/>"
+            <a href="${pageContext.request.contextPath}/testing/mytests"
                class="btn btn-dark m-1" role="button">
                 Cancel
             </a>
             <button class="btn btn-dark m-1" type="submit" name="btnSave" data-role="indexing"
-                    formaction="<c:url value="/testing/edit"/>">
+                    formaction="${pageContext.request.contextPath}/testing/edit">
                 Save test
             </button>
         </div>
@@ -61,5 +61,5 @@
     </form>
 </div>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="<c:url value="/resources/js/EditTest.js"/>"></script>
+<script src="${pageContext.request.contextPath}/resources/js/EditTest.js"></script>
 <%@ include file="../common/Footer.jsp" %>

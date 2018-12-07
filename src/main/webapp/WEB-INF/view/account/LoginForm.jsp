@@ -5,7 +5,11 @@
 <%@ include file="../common/NavBar.jsp" %>
 <div class="container">
     <h1 class="h3 mb-3 font-weight-normal">Please login</h1>
-    <form class="form-login" method="post" action="<c:url value="/account/login"/>" name="loginForm">
+
+    <form class="form-login" method="post"
+          <%--action="<c:url value="/account/login"/>" --%>
+            action="${pageContext.request.contextPath}/account/login"
+          name="loginForm">
         <div class="form-row">
             <%@ include file = "../common/Alert.jsp" %>
         </div>
@@ -21,11 +25,13 @@
 
         <p>
             You don't have an account?
-            <a href="<c:url value="/account/register"/>">Register</a>
+            <a href="${pageContext.request.contextPath}/account/register">
+                Register</a>
         </p>
         <p>
             You don't remember a password?
-            <a href="<c:url value="/account/recovery"/>">Recovery</a>
+            <a href="${pageContext.request.contextPath}/account/recovery">
+                Recovery</a>
         </p>
     </form>
 </div>

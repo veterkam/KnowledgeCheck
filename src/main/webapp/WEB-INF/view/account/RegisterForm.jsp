@@ -72,19 +72,19 @@
         <c:if test="${verifyEmail != null}">
             <div class="col-4">
                 <a class="btn btn-dark btn-block m-1" role="button"
-                   href="<c:url value="/account/register"/>" >
+                   href="${pageContext.request.contextPath}/account/register" >
                     Cancel
                 </a>
             </div>
             <div class="col-4">
                 <a class="btn btn-dark btn-block m-1" role="button"
-                   href="<c:url value="/account/register?back"/>">
+                   href="${pageContext.request.contextPath}/account/register?back">
                     Back
                 </a>
             </div>
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnRegister"
-                        formaction="<c:url value="/account/register/confirm"/>" formmethod="post">
+                        formaction="${pageContext.request.contextPath}/account/register/confirm" formmethod="post">
                     Register
                 </button>
             </div>
@@ -93,7 +93,7 @@
             <div class="col-3"></div>
             <div class="col-6">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnNext"
-                        formaction="<c:url value="/account/register"/>" formmethod="post">
+                        formaction="${pageContext.request.contextPath}/account/register" formmethod="post">
                     Next
                 </button>
             </div>
@@ -104,7 +104,7 @@
             <div class="col text-center">
                 <p class="mt-5">
                     Do you have an account?
-                    <a href="<c:url value="/account/login"/>">Login</a>
+                    <a href="${pageContext.request.contextPath}/account/login">Login</a>
                 </p>
             </div>
         </div>

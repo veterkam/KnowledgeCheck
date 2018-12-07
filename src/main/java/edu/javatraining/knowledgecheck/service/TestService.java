@@ -1,11 +1,11 @@
-package edu.javatraining.knowledgecheck.data.dao;
+package edu.javatraining.knowledgecheck.service;
 
 import edu.javatraining.knowledgecheck.domain.Test;
 
 import java.util.List;
 import java.util.Map;
 
-public interface TestDao {
+public interface TestService {
 
     Long insertComplex(Test test);
     Long insertPlain(Test test);

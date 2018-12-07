@@ -1,10 +1,10 @@
-package edu.javatraining.knowledgecheck.data.dao;
+package edu.javatraining.knowledgecheck.service;
 
 import edu.javatraining.knowledgecheck.domain.Question;
 
 import java.util.List;
 
-public interface QuestionDao{
+public interface QuestionService {
 
     Long insertComplex(Question question);
     Long insertPlain(Question question);

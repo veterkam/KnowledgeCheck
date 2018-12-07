@@ -493,7 +493,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         // Read from DB Lists correct answers for each question
         TestDaoJdbc testDao = new TestDaoJdbc();
-        Map<Long, List<Long>> correctAnswerMap = testDao.getCorrectAnswerIds(testId);
+        Map<Long, List<Long>> correctAnswerMap = testDao.findCorrectAnswerIdsByTestId(testId);
 
         Map<Long, List<Long>> selectedAnswerMap = new HashMap<>();
 
@@ -594,7 +594,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         TestingResultDaoJdbc testingResultsDao = new TestingResultDaoJdbc();
         for(Test test : tests) {
             // attach simple question list without answers
-            List<Question> questions =  questionDao.getPlainList(test.getId());
+            List<Question> questions =  questionDao.findPlainAll(test.getId());
             test.setQuestions(questions);
             // read students's results of testing
             List<TestingResults> testingResults = testingResultsDao.find(test.getId());
@@ -632,7 +632,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         List<TestStatistics> statisticsList = new ArrayList<>();
         for(Test test : tests) {
             // attach simple question list without answers
-            List<Question> questions =  questionDao.getPlainList(test.getId());
+            List<Question> questions =  questionDao.findPlainAll(test.getId());
             test.setQuestions(questions);
             // read students's results of testing
             List<TestingResults> testingResultsList = testingResultsDao.find(test.getId());

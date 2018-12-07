@@ -32,7 +32,7 @@
                         <div class="col text-right">
                             <c:if test="${test.tutor != null}">
                                 <strong>Author</strong>:
-                                <a href="<c:url value="/authorization/profile?id=${test.tutor.id}"/>">
+                                <a href="${pageContext.request.contextPath}/authorization/profile?id=${test.tutor.id}">
                                     <c:out value="${test.tutor.fullname}"/>
                                 </a>
                             </c:if>
@@ -55,7 +55,7 @@
                                 </div>
                             </c:if>
                             <div class="col text-right">
-                                <a href="<c:url value="/testing/testing?testId=${test.id}"/>"
+                                <a href="${pageContext.request.contextPath}/testing/testing?testId=${test.id}"
                                    class="btn btn-sm btn-dark m-1" role="button">
                                     Run testing
                                 </a>

@@ -2,6 +2,8 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolJdbc;
+import edu.javatraining.knowledgecheck.data.dao.jdbc.UserDaoJdbc;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -12,6 +14,7 @@ import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import edu.javatraining.knowledgecheck.service.StudentService;
 import edu.javatraining.knowledgecheck.service.TutorService;
 import edu.javatraining.knowledgecheck.service.UserService;
+import edu.javatraining.knowledgecheck.service.impl.UserServiceImpl;
 import edu.javatraining.knowledgecheck.service.tools.*;
 import org.apache.logging.log4j.util.Strings;
 
@@ -169,8 +172,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-
-
 
         UserService userService = userServiceProvider.get();
         User user = userService.findOneByUsername(username);

@@ -31,8 +31,8 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
         super(pool);
     }
 
-    public StudentDaoJdbc() {
-        super();
+    public StudentDaoJdbc(Connection connection) {
+        super(connection);
     }
 
     @Override

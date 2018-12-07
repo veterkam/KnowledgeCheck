@@ -2,9 +2,7 @@ package edu.javatraining.knowledgecheck.configure.provider;
 
 import com.google.inject.Provider;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolJdbc;
-import edu.javatraining.knowledgecheck.data.dao.UserDao;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.UserDaoJdbc;
+import edu.javatraining.knowledgecheck.data.connection.impl.ConnectionPoolJdbc;
 
 
 public class ConnectionPoolProvider implements Provider<ConnectionPool> {

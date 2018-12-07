@@ -1,6 +1,9 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,9 +39,9 @@ public class RootControllerServlet extends AbstractBaseControllerServlet {
         String action = request.getServletPath();
         try {
             switch (action) {
-//                case "/":
-//                    forward(request, response,"/testing");
-//                    break;
+                case "/":
+                    forward(request, response,"/testing");
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;

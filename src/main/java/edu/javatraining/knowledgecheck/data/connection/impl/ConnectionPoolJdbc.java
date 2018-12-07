@@ -1,5 +1,6 @@
-package edu.javatraining.knowledgecheck.data.connection;
+package edu.javatraining.knowledgecheck.data.connection.impl;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +14,7 @@ import java.util.Stack;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ConnectionPoolJdbc implements ConnectionPool{
+public class ConnectionPoolJdbc implements ConnectionPool {
 
     private static final Logger logger = LogManager.getLogger("connection");
 

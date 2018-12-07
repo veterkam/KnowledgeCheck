@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.QuestionDao;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Answer;
@@ -11,8 +12,8 @@ import java.util.List;
 
 public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
 
-    public QuestionDaoJdbc() {
-        super();
+    public QuestionDaoJdbc(ConnectionPool pool) {
+        super(pool);
     }
 
     public QuestionDaoJdbc(Connection conn) {
@@ -75,7 +76,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
         List<Question> questionList = findPlainAll(testId);
 
         // attach answers
-        AnswerDaoJdbc dao = new AnswerDaoJdbc();
+        AnswerDaoJdbc dao = new AnswerDaoJdbc(connectionPool);
         for(Question question : questionList) {
             List<Answer> answers = dao.findByQuestionId(question.getId());
             question.setAnswers(answers);
@@ -164,7 +165,7 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
     public Question findComplexById(Long id) {
         Question question = findPlainById(id);
 
-        AnswerDaoJdbc dao = new AnswerDaoJdbc();
+        AnswerDaoJdbc dao = new AnswerDaoJdbc(connectionPool);
         if(question != null) {
             List<Answer> answers = dao.findByQuestionId(id);
             question.setAnswers(answers);

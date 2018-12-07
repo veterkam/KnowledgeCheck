@@ -72,6 +72,11 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    public Long count() {
+        return dao.count();
+    }
+
+    @Override
     public Long getFilterTutorId() {
         return dao.getFilterTutorId();
     }
@@ -97,8 +102,13 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
-    public void setDateOrder(String dateOrder) {
-        dao.setDateOrder(dateOrder);
+    public void enableDescDateOrder() {
+        dao.enableDescDateOrder();
+    }
+
+    @Override
+    public void enableAscDateOrder() {
+        dao.enableAscDateOrder();
     }
 
     @Override

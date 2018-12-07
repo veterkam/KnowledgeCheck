@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.TestDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Question;
@@ -16,17 +17,15 @@ import java.util.Map;
 
 public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
 
-    public final static String ORDER_ASC = "ASC";
-    public final static String ORDER_DESC = "DESC";
-
     private Long filterTutorId = null;
     private Long filterSubjectId = null;
     private String dateOrder;   // DESC, ASC
     private boolean useFilter = false;
     private boolean useOrder = false;
 
-    public TestDaoJdbc() {
-        super();
+
+    public TestDaoJdbc(ConnectionPool pool) {
+        super(pool);
     }
 
     @Override
@@ -83,13 +82,13 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     }
 
     private void attachQuestions(Test test)  {
-        QuestionDaoJdbc dao = new QuestionDaoJdbc();
+        QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
         List<Question> questionList = dao.findComplexAll(test.getId());
         test.setQuestions(questionList);
     }
 
     private void attachQuestions(List<Test> testList)  {
-        QuestionDaoJdbc dao = new QuestionDaoJdbc();
+        QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
         for(Test test : testList) {
             List<Question> questionList = dao.findComplexAll(test.getId());
             test.setQuestions(questionList);
@@ -106,6 +105,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
         return order;
     }
 
+    @Override
     public Long count()  {
 
         String sql = "SELECT COUNT(*) FROM tests " +
@@ -140,8 +140,8 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
         String description = resultSet.getString("description");
         Timestamp updateTime = resultSet.getTimestamp("update_time");
 
-        Subject subject = new SubjectDaoJdbc().findOneById(subjectId);
-        Tutor tutor = new TutorDaoJdbc().findOneById(tutorId);
+        Subject subject = new SubjectDaoJdbc(connectionPool).findOneById(subjectId);
+        Tutor tutor = new TutorDaoJdbc(connectionPool).findOneById(tutorId);
 
         test.setId(id);
         test.setSubject(subject);
@@ -341,8 +341,15 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     }
 
     @Override
-    public void setDateOrder(String dateOrder) {
-        this.dateOrder = dateOrder;
+    public void enableDescDateOrder() {
+        this.dateOrder = "DESC";
+        enableOrder();
+    }
+
+    @Override
+    public void enableAscDateOrder() {
+        this.dateOrder = "ASC";
+        enableOrder();
     }
 
     @Override

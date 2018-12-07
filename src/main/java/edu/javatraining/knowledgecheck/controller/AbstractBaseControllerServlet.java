@@ -1,11 +1,6 @@
 package edu.javatraining.knowledgecheck.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Provider;
 import edu.javatraining.knowledgecheck.data.SqlScriptRunner;
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.connection.ConnectionPoolManager;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,30 +39,11 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-            initConnectionPoolManager();
-            prepareDataBase();
+            // TODO prepare db
+           // prepareDataBase();
         } catch(Exception e) {
             logger.error(e.getMessage(), e);
             throw e;
-        }
-    }
-
-    private void initConnectionPoolManager() throws ServletException {
-        // Init connectionPoll
-        String url = getServletContext().getInitParameter("dbUrl");
-        String username = getServletContext().getInitParameter("dbUsername");
-        String password = getServletContext().getInitParameter("dbPassword");
-
-        if (url == null || username == null || password == null) {
-            throw new ServletException("Unable to find init parameters");
-        }
-
-        try {
-            ConnectionPoolManager.init(url, username, password);
-        } catch (SQLException | ClassNotFoundException e) {
-            logger.error(e.getMessage(), e);
-
-            throw new ServletException(e);
         }
     }
 
@@ -77,7 +53,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
             File file = new File(resource.getFile());
             Reader reader = new FileReader( file );
 
-            SqlScriptRunner runner = new SqlScriptRunner();
+            SqlScriptRunner runner = new SqlScriptRunner(null);
             runner.runScript(reader);
         } catch(SQLException | IOException e) {
             throw new ServletException(e);

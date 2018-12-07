@@ -7,6 +7,7 @@ import java.util.Map;
 
 public interface TestDao {
 
+    Long count();
     Long insertComplex(Test test);
     Long insertPlain(Test test);
     List<Test> findComplexAll(Long offset, Long count);
@@ -22,7 +23,8 @@ public interface TestDao {
     Long getFilterSubjectId();
     void setFilterSubjectId(Long filterSubjectId);
     String getDateOrder();
-    void setDateOrder(String dateOrder);
+    void enableDescDateOrder();
+    void enableAscDateOrder();
     boolean isUseFilter();
     void enableFilter();
     void disableFilter();

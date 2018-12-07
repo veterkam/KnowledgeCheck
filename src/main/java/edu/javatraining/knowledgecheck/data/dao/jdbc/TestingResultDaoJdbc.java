@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.TestingResultDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.exception.DAOException;
@@ -14,8 +15,9 @@ import java.util.Map;
 
 public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultDao {
 
-    public TestingResultDaoJdbc() {
-        super();
+
+    public TestingResultDaoJdbc(ConnectionPool pool) {
+        super(pool);
     }
 
     private Long insertResultOfAnswer(Long studentId, Long questionId, boolean correct) {
@@ -108,7 +110,7 @@ public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultD
     public List<TestingResults> find(Long testId) {
         List<TestingResults> testingResultsList = new ArrayList<>();
 
-        StudentDaoJdbc studentDao = new StudentDaoJdbc();
+        StudentDaoJdbc studentDao = new StudentDaoJdbc(connectionPool);
         List<Student> students = studentDao.getStudentsTookTest(testId);
 
         for(Student student : students) {

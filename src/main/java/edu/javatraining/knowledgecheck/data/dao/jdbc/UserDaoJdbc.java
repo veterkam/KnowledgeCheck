@@ -15,8 +15,8 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
         super(pool);
     }
 
-    public UserDaoJdbc() {
-        super();
+    public UserDaoJdbc(Connection connection) {
+        super(connection);
     }
 
     @Override

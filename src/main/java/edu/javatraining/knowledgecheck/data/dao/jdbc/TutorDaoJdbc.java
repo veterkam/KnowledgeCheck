@@ -30,8 +30,8 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
         super(pool);
     }
 
-    public TutorDaoJdbc() {
-        super();
+    public TutorDaoJdbc(Connection connection) {
+        super(connection);
     }
 
     @Override

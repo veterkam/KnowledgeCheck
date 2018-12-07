@@ -20,7 +20,7 @@ public class BasicDaoJdbc {
     protected static final Logger logger = LogManager.getLogger("DAO");
 
 
-    private ConnectionPool connectionPool;
+    protected ConnectionPool connectionPool;
 
     private Connection singleConn;
     private boolean isSingleConnOwner;
@@ -31,12 +31,6 @@ public class BasicDaoJdbc {
         singleConn = null;
 
         logger.trace("BasicDaoJdbc constructor: ConnectionPool " + pool);
-    }
-
-    public BasicDaoJdbc() {
-        connectionPool = null;
-        isSingleConnOwner = false;
-        singleConn = null;
     }
 
     public BasicDaoJdbc(Connection connection) {

@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.SubjectDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.User;
@@ -12,7 +13,9 @@ import java.util.List;
 
 public class SubjectDaoJdbc extends BasicDaoJdbc implements SubjectDao {
 
-    public SubjectDaoJdbc() {
+
+    public SubjectDaoJdbc(ConnectionPool pool) {
+        super(pool);
     }
 
     @Override

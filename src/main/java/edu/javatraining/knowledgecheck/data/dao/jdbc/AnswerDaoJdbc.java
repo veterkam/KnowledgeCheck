@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.dao.AnswerDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
 import edu.javatraining.knowledgecheck.domain.Answer;
@@ -10,8 +11,8 @@ import java.util.List;
 
 public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
 
-    public AnswerDaoJdbc() {
-        super();
+    public AnswerDaoJdbc(ConnectionPool pool) {
+        super(pool);
     }
 
     public AnswerDaoJdbc(Connection conn) {

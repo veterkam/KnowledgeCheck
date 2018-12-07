@@ -3,24 +3,15 @@ package edu.javatraining.knowledgecheck.configure;
 import com.google.inject.*;
 import com.google.inject.servlet.RequestScoped;
 import edu.javatraining.knowledgecheck.configure.provider.ConnectionPoolProvider;
-import edu.javatraining.knowledgecheck.configure.provider.dao.UserDaoProvider;
-import edu.javatraining.knowledgecheck.configure.provider.dao.TutorDaoProvider;
-import edu.javatraining.knowledgecheck.configure.provider.dao.StudentDaoProvider;
-import edu.javatraining.knowledgecheck.configure.provider.service.StudentServiceProvider;
-import edu.javatraining.knowledgecheck.configure.provider.service.TutorServiceProvider;
-import edu.javatraining.knowledgecheck.configure.provider.service.UserServiceProvider;
+import edu.javatraining.knowledgecheck.configure.provider.dao.*;
+import edu.javatraining.knowledgecheck.configure.provider.service.*;
 import edu.javatraining.knowledgecheck.controller.AccountControllerServlet;
-import edu.javatraining.knowledgecheck.controller.RootControllerServlet;
 import edu.javatraining.knowledgecheck.controller.TestingControllerServlet;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.dao.StudentDao;
-import edu.javatraining.knowledgecheck.data.dao.TutorDao;
-import edu.javatraining.knowledgecheck.data.dao.UserDao;
+import edu.javatraining.knowledgecheck.data.dao.*;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
-import edu.javatraining.knowledgecheck.service.StudentService;
-import edu.javatraining.knowledgecheck.service.TutorService;
-import edu.javatraining.knowledgecheck.service.UserService;
+import edu.javatraining.knowledgecheck.service.*;
 
 import javax.servlet.annotation.WebListener;
 
@@ -37,7 +28,20 @@ public class WebAppServletConfig extends GuiceServletContextListener {
             protected void configureServlets() {
                 super.configureServlets();
 
-                serve("/").with(RootControllerServlet.class);
+                serve("/",
+                        "/testing",
+                        "/testing/mytests",
+                        "/testing/edit",
+                        "/testing/remove",
+                        "/testing/testing",
+                        "/testing/testing/result",
+                        "/testing/studentsresults",
+                        "/testing/teststatistics",
+                        "/testing/subjects",
+                        "/testing/subjects/save"
+                ).with(TestingControllerServlet.class);
+
+
                 serve(
                         "/account/login",
                         "/account/logout",
@@ -54,18 +58,7 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/account/users/remove",
                         "/account/profile"
                         ).with(AccountControllerServlet.class);
-                serve(
-                        "/testing",
-                        "/testing/mytests",
-                        "/testing/edit",
-                        "/testing/remove",
-                        "/testing/testing",
-                        "/testing/testing/result",
-                        "/testing/studentsresults",
-                        "/testing/teststatistics",
-                        "/testing/subjects",
-                        "/testing/subjects/save"
-                ).with(TestingControllerServlet.class);
+
 
                 bind(ConnectionPool.class).toProvider(ConnectionPoolProvider.class).in(Singleton.class);
 
@@ -73,9 +66,21 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                 bind(TutorDao.class).toProvider(TutorDaoProvider.class).in(RequestScoped.class);
                 bind(StudentDao.class).toProvider(StudentDaoProvider.class).in(RequestScoped.class);
 
-                bind(UserService.class).toProvider(UserServiceProvider.class).in(Singleton.class);
-                bind(TutorService.class).toProvider(TutorServiceProvider.class).in(Singleton.class);
-                bind(StudentService.class).toProvider(StudentServiceProvider.class).in(Singleton.class);
+                bind(AnswerDao.class).toProvider(AnswerDaoProvider.class).in(RequestScoped.class);
+                bind(QuestionDao.class).toProvider(QuestionDaoProvider.class).in(RequestScoped.class);
+                bind(SubjectDao.class).toProvider(SubjectDaoProvider.class).in(RequestScoped.class);
+                bind(TestDao.class).toProvider(TestDaoProvider.class).in(RequestScoped.class);
+                bind(TestingResultDao.class).toProvider(TestingResultDaoProvider.class).in(RequestScoped.class);
+
+                bind(UserService.class).toProvider(UserServiceProvider.class).in(RequestScoped.class);
+                bind(TutorService.class).toProvider(TutorServiceProvider.class).in(RequestScoped.class);
+                bind(StudentService.class).toProvider(StudentServiceProvider.class).in(RequestScoped.class);
+
+                bind(AnswerService.class).toProvider(AnswerServiceProvider.class).in(RequestScoped.class);
+                bind(QuestionService.class).toProvider(QuestionServiceProvider.class).in(RequestScoped.class);
+                bind(SubjectService.class).toProvider(SubjectServiceProvider.class).in(RequestScoped.class);
+                bind(TestService.class).toProvider(TestServiceProvider.class).in(RequestScoped.class);
+                bind(TestingResultService.class).toProvider(TestingResultServiceProvider.class).in(RequestScoped.class);
             }
 
         });

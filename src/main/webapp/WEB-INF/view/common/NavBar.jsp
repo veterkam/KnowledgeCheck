@@ -22,7 +22,7 @@
 
     <div class="collapse navbar-collapse text-right" id="collapsibleNavbar">
         <c:if test="${user != null}">
-            <span class="navbar-text"><fmt:message key="app.menu.welcome" /> <c:out value="${user.username}"/>!</span>
+            <span class="navbar-text"><fmt:message key="app.common.welcome" /> <c:out value="${user.username}"/>!</span>
         </c:if>
         <ul class="navbar-nav">
             <c:if test="${user != null}">

@@ -147,6 +147,10 @@
             </div>
         </c:if>
 
+        <div class="form-row">
+            <input hidden name="_FID" type="text" value="${FID}">
+        </div>
+
         <div class="row m-3">
         <c:if test="${verifyEmail != null}">
             <div class="col-4">

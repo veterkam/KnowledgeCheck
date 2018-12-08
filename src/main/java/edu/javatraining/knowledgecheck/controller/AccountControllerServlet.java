@@ -210,6 +210,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
     private void forwardRegistrationForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        genFormId(request.getSession());
         // Add list of User.Roles to request
         request.setAttribute("roles", User.Role.values());
         forward(request, response, VIEW_REGISTRATION_FORM);
@@ -218,6 +219,11 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
     private void registrationProcessing(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        if(!checkFormId(request)) {
+            pageNotFound(request, response);
+            return;
+        }
 
         // Process parameters
         UserDto userDto = extractUserDto(request);
@@ -246,7 +252,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         } else {
             // The username is not unique.
-            alertManager.danger("Registration failed. An user with this username already exists. Please, try again!");
+            alertManager.danger("app.account.username_already_exists");
         }
 
         forwardRegistrationForm(request, response);
@@ -269,7 +275,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         if ( confirm ) {
             // Insert user to data base.
             HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("anonym");
+            UserDto userDto = (UserDto) session.getAttribute("userDto");
+            User user = userDto.toUser();
 
             boolean verified = ( user.getRole() != User.Role.ADMINISTRATOR );
             user.setVerified(verified);
@@ -286,33 +293,34 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 if(childException instanceof SQLException) {
                     SQLException sqlException = (SQLException) childException;
                     if (sqlException.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
-                        alertManager.danger("Sorry, it's too late, username is already busy.");
+                        alertManager.danger("app.account.username_is_already_busy");
                     } else {
                         logger.error(e.getMessage(), e);
                     }
                 }
 
                 // Failed! Come back to edit user info
-                alertManager.danger("Registration failed. Please, try again!");
+                alertManager.danger("app.account.registration_failed");
                 forwardRegistrationForm(request, response);
                 return;
             }
 
             // Success!
             // Store user data in session
-            session.setAttribute("anonym", null);
+            session.setAttribute("userDto", null);
+            alertManager.success("app.account.registration_success");
 
             if(user.isVerified()) {
                 session.setAttribute("user", user);
-                alertManager.success("Registration success! Welcome " + user.getFullname());
+                alertManager.success("app.common.welcome");
             } else {
-                alertManager.success("Registration success! You can login after verification. We'll inform you.");
+                alertManager.success("app.account.login_after_verification");
             }
             redirect(request, response, "/");
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            alertManager.danger("Verification code is wrong. Please, try again!");
+            alertManager.danger("app.account.code_is_wrong");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
             forwardRegistrationForm(request, response);
@@ -743,7 +751,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         String expectedCode = (String) request.getSession().getAttribute("verificationCode");
 
         if (Validator.containNull(code, expectedCode)) {
-            throw new RequestException("Request is invalid, con not find verification code");
+            throw new RequestException("Request is invalid, can not find verification code");
         }
 
         return expectedCode.equals(code);
@@ -887,10 +895,10 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             request.getSession().setAttribute("verificationCode", code);
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            alertManager.info("We sent you a verification code. Please check your mailbox.");
+            alertManager.info("app.account.we_sent_you_code");
         } catch (MessagingException e) {
             logger.error(e.getMessage(), e);
-            alertManager.danger("Can't send message. Verify your e-mail address and try again!");
+            alertManager.danger("app.account.can_not_send_code");
         }
     }
 

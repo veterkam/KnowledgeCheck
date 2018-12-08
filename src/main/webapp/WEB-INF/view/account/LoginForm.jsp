@@ -1,5 +1,5 @@
 <%@ include file="../common/Header.jsp" %>
-    <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.account.please_login" /></h1>
+    <h1 class="h3 mb-3 font-weight-normal text-center"><fmt:message key="app.account.please_login" /></h1>
 
     <form class="form-login text-left" method="post"
             action="${pageContext.request.contextPath}/account/login"

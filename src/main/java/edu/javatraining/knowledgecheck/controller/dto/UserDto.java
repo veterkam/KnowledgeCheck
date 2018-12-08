@@ -2,50 +2,52 @@ package edu.javatraining.knowledgecheck.controller.dto;
 
 //import org.hibernate.validator.constraints.ScriptAssert;
 
+import edu.javatraining.knowledgecheck.domain.User;
+import org.apache.logging.log4j.util.Strings;
 import org.hibernate.validator.constraints.ScriptAssert;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import javax.validation.constraints.*;
+import java.util.*;
 
 @ScriptAssert(
         lang = "javascript",
-        script="_this.password.equals(_this.confirmPassword)",
-        message="{app.account.password.passwords_do_not_match}",
+        script="_this.password != null && _this.password.equals(_this.confirmPassword)",
+        message="app.account.validation.password.passwords_do_not_match",
         reportOn="confirmPassword")
+@ScriptAssert(
+        lang = "javascript",
+        script="_this.role != null && (_this.role.equals('ADMINISTRATOR') || _this.role.equals('TUTOR') || _this.role.equals('STUDENT'))",
+        message="app.account.validation.role.valid",
+        reportOn="role")
 public class UserDto {
-    @NotNull(message="{app.account.firstName.not_empty}")
-	@NotEmpty(message="{app.account.firstName.not_empty}")
-    @Size(min=3, max=50, message="{app.account.firstName.size}")
+	@NotBlank(message="app.account.validation.firstName.not_empty")
+    @Size(min=3, max=50, message="app.account.validation.firstName.size")
     private String firstName;
 
-    @NotNull(message="{app.account.lastName.not_empty}")
-	@NotEmpty(message="{app.account.lastName.not_empty}")
-    @Size(min=3, max=50, message="{app.account.lastName.size}")
+	@NotBlank(message="app.account.validation.lastName.not_empty")
+    @Size(min=3, max=50, message="app.account.validation.lastName.size")
     private String lastName;
 
-    @NotNull(message="{app.account.username.not_empty}")
-	@NotEmpty(message="{app.account.username.not_empty}")
-    @Size(min=3, max=50, message="{app.account.username.size}")
+	@NotBlank(message="app.account.validation.username.not_empty")
+    @Size(min=3, max=50, message="app.account.validation.username.size")
     private String username;
 
-    @NotNull(message="{app.account.password.not_empty}")
-	@NotEmpty(message="{app.account.password.not_empty}")
-    @Size(min=3, max=100, message="{app.account.password.size}")
+	@NotBlank(message="app.account.validation.password.not_empty")
+    @Size(min=3, max=50, message="app.account.validation.password.size")
     private String password;
 
-    @NotNull(message="{app.account.confirm_password.not_empty}")
-	@NotEmpty(message="{app.account.confirm_password.not_empty}")
+	@NotBlank(message="app.account.validation.confirm_password.not_empty")
     private String confirmPassword;
 
-    @NotNull(message="{app.account.email.not_empty}")
-	@NotEmpty(message="{app.account.email.not_empty}")
-    @Email(message="{app.account.email.valid}")
+	@NotBlank(message="app.account.validation.email.not_empty")
+    @Email(message="app.account.validation.email.valid")
     private String email;
 
-    @NotNull(message="{app.account.role.valid}")
-	@NotEmpty(message="{app.account.role.valid}")
+	@NotBlank(message="app.account.validation.role.not_empty")
     private String role;
 
     public String getFirstName() {
@@ -102,5 +104,18 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+    
+    public User toUser() {
+
+        User u = new User();
+        u.setFirstName(firstName);
+        u.setLastName(lastName);
+        u.setEmail(email);
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRole(User.Role.valueOf(role));
+
+        return u;
     }
 }

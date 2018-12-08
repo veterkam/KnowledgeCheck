@@ -134,8 +134,8 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
 
         Long resultId = insert(sql,
                 (statement) -> {
-                    statement.setString(1, user.getFirstname());
-                    statement.setString(2, user.getLastname());
+                    statement.setString(1, user.getFirstName());
+                    statement.setString(2, user.getLastName());
                     statement.setString(3, user.getEmail());
                     statement.setInt(4, user.getRole().ordinal());
                     statement.setString(5, user.getUsername());
@@ -162,8 +162,8 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
 
         return update(sql,
                 (statement) -> {
-                    statement.setString(1, user.getFirstname());
-                    statement.setString(2, user.getLastname());
+                    statement.setString(1, user.getFirstName());
+                    statement.setString(2, user.getLastName());
                     statement.setString(3, user.getEmail());
                     statement.setInt(4, user.getRole().ordinal());
                     statement.setString(5, user.getUsername());
@@ -221,8 +221,8 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
         User.Role role = User.Role.fromOrdinal(roleInt);
 
         out.setId(id);
-        out.setFirstname(firstname);
-        out.setLastname(lastname);
+        out.setFirstName(firstname);
+        out.setLastName(lastname);
         out.setEmail(email);
         out.setRole(role);
         out.setUsername(username);

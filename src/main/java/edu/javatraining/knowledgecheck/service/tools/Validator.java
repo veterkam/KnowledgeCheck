@@ -81,11 +81,11 @@ public class Validator {
 
     public boolean validateUser(User user) {
         boolean result = true;
-        if( validateFirstName(user.getFirstname()) ) {
+        if( validateFirstName(user.getFirstName()) ) {
             result = false;
         }
 
-        if( validateLastName(user.getLastname()) ) {
+        if( validateLastName(user.getLastName()) ) {
             result = false;
         }
 

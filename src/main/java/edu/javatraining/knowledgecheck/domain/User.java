@@ -3,8 +3,8 @@ package edu.javatraining.knowledgecheck.domain;
 public class User {
 
     private Long id;
-    private String firstname;
-    private String lastname;
+    private String firstName;
+    private String lastName;
     private String username;
     private String password;
     private String email;
@@ -22,8 +22,8 @@ public class User {
 
     public User(User other) {
         this.id = other.id;
-        this.firstname = other.firstname;
-        this.lastname = other.lastname;
+        this.firstName = other.firstName;
+        this.lastName = other.lastName;
         this.username = other.username;
         this.password = other.password;
         this.email = other.email;
@@ -42,23 +42,23 @@ public class User {
     }
 
     public String getFullname() {
-        return firstname + " " + lastname;
+        return firstName + " " + lastName;
     }
 
-    public String getFirstname() {
-        return firstname;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getLastname() {
-        return lastname;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getUsername() {
@@ -94,9 +94,9 @@ public class User {
     }
 
     public enum Role{
-        ADMINISTRATOR("Administrator"),
-        TUTOR("Tutor"),
-        STUDENT("Student");
+        ADMINISTRATOR("app.account.role.administrator"),
+        TUTOR("app.account.role.tutor"),
+        STUDENT("app.account.role.student");
 
         private String caption;
 
@@ -121,7 +121,7 @@ public class User {
     }
 
     public String toString() {
-        String format = "User { id : %d, firstname : %s, lastname : %s, username : %s, password : %s, email : %s, role : %s, verified : %s }";
-        return String.format(format, id, firstname, lastname, username, password, email, role.toString(), verified ? "true" : "false");
+        String format = "User { id : %d, firstName : %s, lastName : %s, username : %s, password : %s, email : %s, role : %s, verified : %s }";
+        return String.format(format, id, firstName, lastName, username, password, email, role.toString(), verified ? "true" : "false");
     }
 }

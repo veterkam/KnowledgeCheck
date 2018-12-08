@@ -1,7 +1,7 @@
 create table IF NOT EXISTS `users` (
   `id` bigint(11) not null auto_increment,
-  `firstname` varchar(50) not null,
-  `lastname` varchar(50) not null,
+  `firstName` varchar(50) not null,
+  `lastName` varchar(50) not null,
   `email` varchar(50) not null,
   `role` int(11) not null,
   `username` varchar(50) not null,
@@ -35,7 +35,7 @@ create table IF NOT EXISTS `student_profiles` (
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
-insert into `users`(`firstname`, `lastname`, `email`, `role`, `username`, `password`, `verified`)
+insert into `users`(`firstName`, `lastName`, `email`, `role`, `username`, `password`, `verified`)
 SELECT t.* FROM (
   (SELECT 'Bob' as a, 'Smith' as b, 'bob@gmail.com' as c, 1, 'bob' as d, '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36' as e, true as f) UNION ALL
   (SELECT 'Alex', 'McDonald', 'alex@gmail.com', 1, 'alex', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true) UNION ALL

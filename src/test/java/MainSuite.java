@@ -1,3 +1,4 @@
+import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
 import edu.javatraining.knowledgecheck.controller.dto.UserDto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +15,8 @@ import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -43,24 +46,17 @@ public class MainSuite {
     @Test
     public void userDtoTest() {
 
-        Validator validator;
-
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-
         UserDto userDto = new UserDto();
         userDto.setFirstName("First");
         userDto.setLastName("LastName");
         userDto.setPassword("123");
         userDto.setConfirmPassword("1423");
+        userDto.setEmail("mailcom");
+        //userDto.setRole("Tutor");
 
-        Set<ConstraintViolation<UserDto>> constraintViolations = validator.validate(userDto);
+        Map<String, List<String>> errors = DtoValidator.validate(userDto);
 
-
-        Assert.assertEquals( 1, constraintViolations.size() );
-        Assert.assertEquals(
-                "may not be null",
-                constraintViolations.iterator().next().getMessage());
+        Assert.assertEquals( 1, errors.size() );
     }
 
 

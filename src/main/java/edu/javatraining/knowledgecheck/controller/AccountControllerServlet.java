@@ -2,6 +2,8 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
+import edu.javatraining.knowledgecheck.controller.dto.UserDto;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -13,7 +15,6 @@ import edu.javatraining.knowledgecheck.service.StudentService;
 import edu.javatraining.knowledgecheck.service.TutorService;
 import edu.javatraining.knowledgecheck.service.UserService;
 import edu.javatraining.knowledgecheck.service.tools.*;
-import org.apache.logging.log4j.util.Strings;
 
 import javax.mail.MessagingException;
 import javax.servlet.RequestDispatcher;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(urlPatterns = {
         "/account/login",
@@ -194,7 +196,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException, IOException {
 
         if( request.getParameter("back") == null ) {
-            request.getSession().setAttribute("anonym", null);
+            request.getSession().setAttribute("userDto", null);
         }
 
         forwardRegisterForm(request, response);
@@ -212,51 +214,29 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws Exception {
 
         // Process parameters
-        User anonym = extractUser(request);
-
-        if ( anonym.getFirstname()== null) {
-            pageNotFound(request, response);
-            return;
-        }
-
-        String repeatPassword = request.getParameter("repeatPassword");
-        String role = request.getParameter("role");
-
-        Validator validator = new Validator();
-        validator.validateUser(anonym);
-        validator.validatePassword(repeatPassword, "repeat password");
-        validator.isNotBlank(role, "role");
-
-        AlertManager alertManager = getAlertManager(request);
-
-        boolean isFailed = false;
-        if(validator.isFailed()) {
-            alertManager.danger(validator.getErrors());
-            isFailed = true;
-        }
-
-        if (anonym.getPassword() != null && !anonym.getPassword().equals(repeatPassword)) {
-            alertManager.danger("Passwords are different.");
-            isFailed = true;
-        }
+        UserDto userDto = extractUserDto(request);
+        Map<String, List<String>> errors = DtoValidator.validate(userDto);
 
         // Store user info in session for form autofilling
         HttpSession session = request.getSession();
-        session.setAttribute("anonym", anonym);
+        session.setAttribute("userDto", userDto);
 
-        if (isFailed) {
+        AlertManager alertManager = getAlertManager(request);
+        if (!errors.isEmpty()) {
+            alertManager.danger("app.account.validation.incorrect_data_entered");
+            request.setAttribute("errors", errors);
             forwardRegisterForm(request, response);
             return;
         }
 
         // Is the username unique?
         UserService userService = userServiceProvider.get();
-        User user = userService.findOneByUsername(anonym.getUsername());
+        User user = userService.findOneByUsername(userDto.getUsername());
 
         if (user == null) {
             // The username is unique. Verify e-mail.
             String msg = "Hello. Thanks for registration in KnowledgeCheck!";
-            askVerificationCode(anonym.getEmail(), msg, request);
+            askVerificationCode(userDto.getEmail(), msg, request);
 
         } else {
             // The username is not unique.
@@ -489,9 +469,9 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        User modifyUser = extractUser(request, user.getRole());
+        User modifyUser = extractUserDto(request, user.getRole());
 
-        if(modifyUser.getFirstname() == null) {
+        if(modifyUser.getFirstName() == null) {
             pageNotFound(request, response);
             return;
         }
@@ -798,7 +778,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private User extractUser(HttpServletRequest request, User.Role role) {
+    private User extractUserDto(HttpServletRequest request, User.Role role) {
         switch(role) {
             case STUDENT:
                 return extractStudent(request);
@@ -850,25 +830,30 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         return user;
     }
 
-    private void extractUser( User out, HttpServletRequest request) {
+    private void extractUser(User out, HttpServletRequest request) {
         // Process parameters
-        String firstname = request.getParameter("firstname");
-        String lastname = request.getParameter("lastname");
-        String email = request.getParameter("email");
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String role = request.getParameter("role");
+        out.setFirstName(request.getParameter("firstName"));
+        out.setLastName(request.getParameter("lastName"));
+        out.setEmail(request.getParameter("email"));
+        out.setUsername(request.getParameter("username"));
+        out.setPassword(request.getParameter("password"));
+    }
 
-        if( Strings.isNotBlank(username)) {
-            username = username.toLowerCase();
-        }
+    private UserDto extractUserDto(HttpServletRequest request) {
+        UserDto userDto = new UserDto();
+        extractUserDto(userDto, request);
+        return userDto;
+    }
 
-        out.setFirstname(firstname);
-        out.setLastname(lastname);
-        out.setEmail(email);
-        out.setUsername(username);
-        out.setPassword(password);
-        out.setRole(Strings.isBlank(role) ? User.Role.ADMINISTRATOR : User.Role.valueOf(role));
+    private void extractUserDto(UserDto out, HttpServletRequest request) {
+        // Process parameters
+        out.setFirstName(request.getParameter("firstName"));
+        out.setLastName(request.getParameter("lastName"));
+        out.setEmail(request.getParameter("email"));
+        out.setUsername(request.getParameter("username"));
+        out.setPassword(request.getParameter("password"));
+        out.setConfirmPassword(request.getParameter("confirmPassword"));
+        out.setRole(request.getParameter("role"));
     }
 
     private String sendVerificationCodeByEmail(String email, String msg)

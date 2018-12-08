@@ -41,7 +41,7 @@
                                 </div>
                                 <div class="col text-right">
                                     <c:if test="${test.tutor != null}">
-                                        <strong>Author</strong>: <c:out value="${test.tutor.firstname} ${test.tutor.lastname}"/>
+                                        <strong>Author</strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
                                     </c:if>
                                 </div>
                             </div>

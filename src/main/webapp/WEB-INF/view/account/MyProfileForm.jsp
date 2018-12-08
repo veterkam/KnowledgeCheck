@@ -8,16 +8,16 @@
         </div>
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="inputFirstName">First Name:</label>
-            <input id="inputFirstName" class="form-control col-sm-8 mb-1" name="firstname"
+            <input id="inputFirstName" class="form-control col-sm-8 mb-1" name="firstName"
                    placeholder="Enter your first name" required="" autofocus="" type="text"
-                   value="<c:out value="${userData.firstname}"/>"
+                   value="<c:out value="${userData.firstName}"/>"
                    <c:if test="${verifyEmail != null}">disabled</c:if>>
         </div>
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="inputLastName" >Last Name:</label>
-            <input id="inputLastName" class="form-control col-sm-8 mb-1" name="lastname"
+            <input id="inputLastName" class="form-control col-sm-8 mb-1" name="lastName"
                    placeholder="Enter your last name" required="" autofocus="" type="text"
-                   value="<c:out value="${userData.lastname}"/>"
+                   value="<c:out value="${userData.lastName}"/>"
                    <c:if test="${verifyEmail != null}">disabled</c:if>>
         </div>
         <div class="form-row">

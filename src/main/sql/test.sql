@@ -11,8 +11,8 @@ DROP table IF EXISTS `users`;
 
 create table `users` (
   `id` int(11) not null auto_increment,
-  `firstname` varchar(50) not null,
-  `lastname` varchar(50) not null,
+  `firstName` varchar(50) not null,
+  `lastName` varchar(50) not null,
   `email` varchar(50) not null,
   `role` int(11) not null,
   `username` varchar(50) not null,
@@ -23,8 +23,8 @@ create table `users` (
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
 ALTER TABLE users change verified verified BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE users change firstname firstname varchar(50) not null;
-ALTER TABLE users change lastname lastname varchar(50) not null;
+ALTER TABLE users change firstName firstName varchar(50) not null;
+ALTER TABLE users change lastName lastName varchar(50) not null;
 ALTER TABLE users change username username varchar(50) not null;
 ALTER TABLE users change password password varchar(200) not null;
 
@@ -58,7 +58,7 @@ create table `student_profiles` (
 ) ENGINE=InnoDB default charset=utf8 collate = utf8_general_ci;
 
 
-insert into `users`(`firstname`, `lastname`, `email`, `role`, `username`, `password`)
+insert into `users`(`firstName`, `lastName`, `email`, `role`, `username`, `password`)
 VALUES('Bob', 'Smith', 'bob@gmail.com', 1, 'bob', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
       ('Alex', 'McDonald', 'alex@gmail.com', 2, 'alex', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
       ('Mary', 'Peak', 'mary@gmail.com', 1, 'mary', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36'),
@@ -97,8 +97,8 @@ select * from `student_profiles`;
 select * from `users`;
 
 select `users`.`id`,
-       `firstname`,
-       `lastname`,
+       `firstName`,
+       `lastName`,
        `email`,
        `role`,
        `username`,
@@ -110,8 +110,8 @@ from users
        inner join tutor_profiles on users.id = tutor_profiles.id
 UNION ALL
 select `users`.`id`,
-       `firstname`,
-       `lastname`,
+       `firstName`,
+       `lastName`,
        `email`,
        `role`,
        `username`,
@@ -123,8 +123,8 @@ from users
        inner join student_profiles on users.id = student_profiles.id;
 
 select `users`.`id`,
-       `firstname`,
-       `lastname`,
+       `firstName`,
+       `lastName`,
        `email`,
        `role`,
        `username`,
@@ -517,7 +517,7 @@ select * from questions;
 delete FROM `subjects` where id="7";
 
 
-select u.id, u.lastname as 'Last name', s.name as 'Subject', tests.description as 'Test', q.description as 'Question', a.description as 'Answer' from tests
+select u.id, u.lastName as 'Last name', s.name as 'Subject', tests.description as 'Test', q.description as 'Question', a.description as 'Answer' from tests
 JOIN users u on u.id = tests.tutor_id
 JOIN subjects s on s.id = tests.subject_id
 JOIN questions q on tests.id = q.test_id

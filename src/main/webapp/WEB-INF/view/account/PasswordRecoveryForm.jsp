@@ -1,5 +1,5 @@
 <%@ include file="../common/Header.jsp" %>
-    <h1 class="h3 mb-3 font-weight-normal">Password recovery</h1>
+    <h1 class="h3 mb-3 font-weight-normal text-center">Password recovery</h1>
 
     <form class="form-register text-left col-12">
         <%@ include file = "../common/Alert.jsp" %>

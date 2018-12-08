@@ -1,4 +1,6 @@
 import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
+import edu.javatraining.knowledgecheck.controller.dto.StudentDto;
+import edu.javatraining.knowledgecheck.controller.dto.TutorDto;
 import edu.javatraining.knowledgecheck.controller.dto.UserDto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +57,40 @@ public class MainSuite {
         //userDto.setRole("Tutor");
 
         Map<String, List<String>> errors = DtoValidator.validate(userDto);
+
+        Assert.assertEquals( 1, errors.size() );
+    }
+
+    @Test
+    public void tutorDtoTest() {
+
+        TutorDto tutorDto = new TutorDto();
+        tutorDto.setFirstName("Ft");
+        tutorDto.setLastName("LastName");
+        tutorDto.setPassword("123");
+        tutorDto.setConfirmPassword("1423");
+        tutorDto.setEmail("mailcom");
+        //tutorDto.setRole("Tutor");
+        tutorDto.setPosition("  ");
+
+        Map<String, List<String>> errors = DtoValidator.validate(tutorDto);
+
+        Assert.assertEquals( 1, errors.size() );
+    }
+
+    @Test
+    public void studentDtoTest() {
+
+        StudentDto studentDto = new StudentDto();
+        studentDto.setFirstName("Ft");
+        studentDto.setLastName("LastName");
+        studentDto.setPassword("123");
+        studentDto.setConfirmPassword("1423");
+        studentDto.setEmail("mailcom");
+        //tutorDto.setRole("Tutor");
+        studentDto.setYear(" dsfdsf ");
+
+        Map<String, List<String>> errors = DtoValidator.validate(studentDto);
 
         Assert.assertEquals( 1, errors.size() );
     }

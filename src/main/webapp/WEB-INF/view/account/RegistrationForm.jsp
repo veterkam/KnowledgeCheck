@@ -2,7 +2,9 @@
     <h1 class="h3 mb-3 font-weight-normal text-center"><fmt:message key="app.account.registration" /></h1>
 
     <form class="form-registration text-left col-12">
-        <%@ include file = "../common/Alert.jsp" %>
+        <div class="form-row">
+            <%@ include file = "../common/Alert.jsp" %>
+        </div>
 
         <c:set value='${errors != null && errors.get("firstName") != null}' var="isInvalid" />
         <div class="form-row">

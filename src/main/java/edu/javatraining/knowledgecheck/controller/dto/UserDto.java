@@ -15,15 +15,10 @@ import java.util.*;
 
 @ScriptAssert(
         lang = "javascript",
-        script="_this.password != null && _this.password.equals(_this.confirmPassword)",
-        message="app.account.validation.password.passwords_do_not_match",
-        reportOn="confirmPassword")
-@ScriptAssert(
-        lang = "javascript",
         script="_this.role != null && (_this.role.equals('ADMINISTRATOR') || _this.role.equals('TUTOR') || _this.role.equals('STUDENT'))",
         message="app.account.validation.role.valid",
         reportOn="role")
-public class UserDto {
+public class UserDto extends UserRecoveryDto{
 	@NotBlank(message="app.account.validation.firstName.not_empty")
     @Size(min=3, max=50, message="app.account.validation.firstName.size")
     private String firstName;
@@ -31,21 +26,6 @@ public class UserDto {
 	@NotBlank(message="app.account.validation.lastName.not_empty")
     @Size(min=3, max=50, message="app.account.validation.lastName.size")
     private String lastName;
-
-	@NotBlank(message="app.account.validation.username.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.username.size")
-    private String username;
-
-	@NotBlank(message="app.account.validation.password.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.password.size")
-    private String password;
-
-	@NotBlank(message="app.account.validation.confirm_password.not_empty")
-    private String confirmPassword;
-
-	@NotBlank(message="app.account.validation.email.not_empty")
-    @Email(message="app.account.validation.email.valid")
-    private String email;
 
 	@NotBlank(message="app.account.validation.role.not_empty")
     private String role;
@@ -66,38 +46,6 @@ public class UserDto {
         this.lastName = lastName;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getRole() {
         return role;
     }
@@ -105,17 +53,31 @@ public class UserDto {
     public void setRole(String role) {
         this.role = role;
     }
-    
+
+    @Override
     public User toUser() {
 
         User u = new User();
-        u.setFirstName(firstName);
-        u.setLastName(lastName);
-        u.setEmail(email);
-        u.setUsername(username);
-        u.setPassword(password);
-        u.setRole(User.Role.valueOf(role));
+        toUser(u);
 
         return u;
+    }
+
+    @Override
+    protected void toUser(User out) {
+
+        super.toUser(out);
+        out.setFirstName(firstName);
+        out.setLastName(lastName);
+        out.setRole(User.Role.valueOf(role));
+    }
+
+    @Override
+    public void fromUser(User u) {
+
+        super.fromUser(u);
+        firstName = u.getFirstName();
+        lastName = u.getLastName();
+        role = u.getRole().toString();
     }
 }

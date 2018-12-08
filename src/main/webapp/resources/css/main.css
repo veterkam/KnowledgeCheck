@@ -78,7 +78,7 @@ body {
 }
 
 .form-registration, .form-recovery {
-    max-width: 450px;
+    max-width: 500px;
 }
 
 .form-login input[type="username"] {

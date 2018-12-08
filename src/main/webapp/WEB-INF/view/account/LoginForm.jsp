@@ -29,7 +29,7 @@
                     <fmt:message key="app.account.registration" /></a><br/>
                 <fmt:message key="app.account.you_do_not_remember_a_password" />
                 <a href="${pageContext.request.contextPath}/account/recovery">
-                    <fmt:message key="app.account.recovery" /></a>
+                    <fmt:message key="app.account.password_recovery" /></a>
             </small>
         </div>
     </form>

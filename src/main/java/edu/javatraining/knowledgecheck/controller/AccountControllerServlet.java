@@ -4,6 +4,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
 import edu.javatraining.knowledgecheck.controller.dto.UserDto;
+import edu.javatraining.knowledgecheck.controller.dto.UserRecoveryDto;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -261,18 +262,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void registrationConfirmEmail(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
-        boolean confirm;
-
-        try {
-            confirm = checkConfirmation(request);
-        } catch (RequestException e) {
+        if(!checkFormId(request)) {
             pageNotFound(request, response);
             return;
         }
 
         AlertManager alertManager = getAlertManager(request);
 
-        if ( confirm ) {
+        if ( checkConfirmation(request) ) {
             // Insert user to data base.
             HttpSession session = request.getSession();
             UserDto userDto = (UserDto) session.getAttribute("userDto");
@@ -332,123 +329,105 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException, IOException {
 
         if(request.getParameter("back") == null) {
-            request.getSession().setAttribute("anonym", null);
+            request.getSession().setAttribute("userDto", null);
         }
+
+        forwardRecoveryForm(request, response);
+    }
+
+    private void forwardRecoveryForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        genFormId(request.getSession());
         forward(request, response, VIEW_PASSWORD_RECOVERY_FORM);
     }
 
     private void recoveryProcessing(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        // Process parameters
-        String email = request.getParameter("email");
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String repeatPassword = request.getParameter("repeatPassword");
 
-        if (Validator.containNull(email, username, password, repeatPassword)) {
+         if(!checkFormId(request)) {
             pageNotFound(request, response);
             return;
         }
 
-        AlertManager alertManager = getAlertManager(request);
-
-        boolean isFailed = false;
-        Validator validator = new Validator();
-        validator.validateEmail(email);
-        validator.validateUsername(username);
-        validator.validatePassword(password);
-        validator.validatePassword(repeatPassword);
-
-        if(validator.isFailed()) {
-            alertManager.danger(validator.getErrors());
-            isFailed = true;
-        }
-
-        if (!password.equals(repeatPassword)) {
-            alertManager.danger("Passwords are different.");
-            isFailed = true;
-        }
-
-        User anonym = new User();
-        anonym.setEmail(email);
-        anonym.setUsername(username.toLowerCase());
-        anonym.setPassword(password);
+        // Process parameters
+        UserRecoveryDto userDto = extractUserRecoveryDto(request);
+        Map<String, List<String>> errors = DtoValidator.validate(userDto);
 
         // Store user info in session for form autofilling
         HttpSession session = request.getSession();
-        session.setAttribute("anonym", anonym);
+        session.setAttribute("userDto", userDto);
 
-        if (isFailed) {
-            forward(request, response, VIEW_PASSWORD_RECOVERY_FORM);
+        if (!errors.isEmpty()) {
+            request.setAttribute("errors", errors);
+            forwardRecoveryForm(request, response);
             return;
         }
 
-        UserService userService = userServiceProvider.get();
-        User user = userService.findOneByUsername(anonym.getUsername());
 
-        if (user != null && user.isVerified() && user.getEmail().equals(email)) {
+        AlertManager alertManager = getAlertManager(request);
+
+        UserService userService = userServiceProvider.get();
+        User user = userService.findOneByUsername(userDto.getUsername());
+
+        if (user != null && user.isVerified() && user.getEmail().equals(userDto.getEmail())) {
             String msg = "Hello. You started password recovering. ";
-            askVerificationCode(email, msg, request);
+            askVerificationCode(user.getEmail(), msg, request);
         } else {
-            String errorMsg = "Can't find username " + anonym.getUsername() +
-                    " with e-mail " + email + ". Please, try again!";
+            String errorMsg = "app.account.can_not_find_username_and_email";
             alertManager.danger(errorMsg);
         }
 
-        forward(request, response, VIEW_PASSWORD_RECOVERY_FORM);
+        forwardRecoveryForm(request, response);
     }
 
     private void recoveryConfirmEmail(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        HttpSession session = request.getSession();
-        User anonym = (User) session.getAttribute("anonym");
 
-
-        boolean confirm;
-
-        try {
-            confirm = checkConfirmation(request);
-        } catch (RequestException e) {
+        if(!checkFormId(request)) {
             pageNotFound(request, response);
             return;
         }
 
+        HttpSession session = request.getSession();
         AlertManager alertManager = getAlertManager(request);
 
-        if ( confirm ) {
+        if ( checkConfirmation(request) ) {
+            UserRecoveryDto userDto = (UserRecoveryDto) session.getAttribute("userDto");
             UserService userService = userServiceProvider.get();
-            User user = userService.findOneByUsername(anonym.getUsername());
+            User user = userService.findOneByUsername(userDto.getUsername());
 
             if (user != null) {
                 user = attachProfile(user);
-                String password = Cipher.encode(anonym.getPassword());
+                String password = Cipher.encode(userDto.getPassword());
                 user.setPassword(password);
                 if ( userService.updatePassword(user) ) {
                     session.setAttribute("user", user);
-                    session.setAttribute("anonym", null);
-                    alertManager.success("Recovery password success! Welcome " + user.getFullname());
+                    session.setAttribute("userDto", null);
+                    alertManager.success("app.account.recovery_password_success");
                     redirect(request, response, "/");
                     return;
                 } else {
-                    alertManager.danger("Sorry, can't updateUpdate " + anonym.getUsername() + ". Please, try again!");
+                    alertManager.danger("app.account.can_not_change_password");
                 }
             } else {
-                alertManager.danger("Sorry, can't find " + anonym.getUsername() + ". Please, try again!");
+                alertManager.danger("app.account.can_not_find_specified_user");
             }
 
         } else {
             // Verification code is wrong. Come back to edit verification code
-            alertManager.danger("Verification code is wrong. Please, try again!");
+            alertManager.danger("app.account.code_is_wrong");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
         }
-        forward(request, response, VIEW_PASSWORD_RECOVERY_FORM);
+
+        forwardRecoveryForm(request, response);
     }
 
     private void logout(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        //session destroy
-        request.getSession().invalidate();
+        // remove user data from session
+        request.getSession().setAttribute("user", null);
         AlertManager alertManager = getAlertManager(request);
         alertManager.success("app.account.logout_success");
         response.sendRedirect(request.getContextPath() + "/");
@@ -746,13 +725,9 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         return pageNo;
     }
 
-    private boolean checkConfirmation(HttpServletRequest request) throws RequestException {
+    private boolean checkConfirmation(HttpServletRequest request) {
         String code = request.getParameter("verificationCode");
         String expectedCode = (String) request.getSession().getAttribute("verificationCode");
-
-        if (Validator.containNull(code, expectedCode)) {
-            throw new RequestException("Request is invalid, can not find verification code");
-        }
 
         return expectedCode.equals(code);
     }
@@ -868,6 +843,20 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         out.setPassword(request.getParameter("password"));
         out.setConfirmPassword(request.getParameter("confirmPassword"));
         out.setRole(request.getParameter("role"));
+    }
+
+    private UserRecoveryDto extractUserRecoveryDto(HttpServletRequest request) {
+        UserRecoveryDto userRecoveryDto = new UserRecoveryDto();
+        extractUserRecoveryDto(userRecoveryDto, request);
+        return userRecoveryDto;
+    }
+
+    private void extractUserRecoveryDto(UserRecoveryDto out, HttpServletRequest request) {
+        // Process parameters
+        out.setEmail(request.getParameter("email"));
+        out.setUsername(request.getParameter("username"));
+        out.setPassword(request.getParameter("password"));
+        out.setConfirmPassword(request.getParameter("confirmPassword"));
     }
 
     private String sendVerificationCodeByEmail(String email, String msg)

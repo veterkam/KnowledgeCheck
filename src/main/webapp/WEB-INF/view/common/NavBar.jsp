@@ -49,7 +49,7 @@
                 <li class="nav-item">
                     <a class="nav-link" data-value="recovery"
                        href="${pageContext.request.contextPath}/account/recovery">
-                        <fmt:message key="app.account.recovery" />
+                        <fmt:message key="app.account.password_recovery" />
                     </a>
                 </li>
             </c:if>

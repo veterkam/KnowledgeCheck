@@ -1,7 +1,7 @@
 <%@ include file="../common/Header.jsp" %>
     <h1 class="h3 mb-3 font-weight-normal text-center">Password recovery</h1>
 
-    <form class="form-register text-left col-12">
+    <form class="form-registration text-left col-12">
         <%@ include file = "../common/Alert.jsp" %>
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="inputUsername" >Username:</label>

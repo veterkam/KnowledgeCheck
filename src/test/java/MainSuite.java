@@ -60,6 +60,14 @@ public class MainSuite {
     }
 
 
+    @Test
+    public void genCSFK() {
+        logger.trace("" + Math.random());
+        logger.trace("" + Math.random());
+        logger.trace("" + Math.random());
+        logger.trace("" + Math.random());
+        logger.trace("" + Math.random());
+    }
 
 
 }

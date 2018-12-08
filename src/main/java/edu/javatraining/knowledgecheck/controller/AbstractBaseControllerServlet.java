@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import com.sun.deploy.net.HttpRequest;
 import edu.javatraining.knowledgecheck.data.SqlScriptRunner;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +20,7 @@ import java.sql.SQLException;
 public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected final String VIEW_LOGIN_FORM = "/WEB-INF/view/account/LoginForm.jsp";
-    protected final String VIEW_REGISTER_FORM = "/WEB-INF/view/account/RegisterForm.jsp";
+    protected final String VIEW_REGISTRATION_FORM = "/WEB-INF/view/account/RegistrationForm.jsp";
     protected final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/account/PasswordRecoveryForm.jsp";
     protected final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/common/PageNotFound.jsp";
     protected final String VIEW_TEST_BOARD = "/WEB-INF/view/testing/TestList.jsp";
@@ -88,5 +89,17 @@ public class AbstractBaseControllerServlet extends HttpServlet {
             throws IOException, ServletException {
 
         forward(request, response, VIEW_PAGE_NOT_FOUND);
+    }
+
+    protected void genFormId(HttpSession session) {
+        session.setAttribute("FID", "" + Math.random());
+    }
+
+    protected boolean checkFormId(HttpServletRequest request) {
+        String originalFormId = (String) request.getSession().getAttribute("FID");
+        String formId = request.getParameter("_FID");
+        request.getSession().removeAttribute("FID");
+
+        return originalFormId.equals(formId);
     }
 }

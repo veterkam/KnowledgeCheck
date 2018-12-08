@@ -2,7 +2,7 @@
     <h1 class="h3 mb-3 font-weight-normal">Profile</h1>
     <c:if test="${anonym != null}"><c:set value="${anonym}" var="userData"></c:set> </c:if>
     <c:if test="${anonym == null}"><c:set value="${user}" var="userData"></c:set> </c:if>
-    <form class="form-register text-left col-12" method="post">
+    <form class="form-registration text-left col-12" method="post">
         <div class="form-row">
             <%@ include file = "../common/Alert.jsp" %>
         </div>

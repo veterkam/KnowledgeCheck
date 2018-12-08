@@ -1,5 +1,5 @@
 <%@ include file = "../common/Header.jsp" %>
-    <h1 class="h3 mb-3 font-weight-normal">Test list</h1>
+    <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing.test_list" /></h1>
     <%@ include file="../common/Alert.jsp" %>
     <div class="row">
         <div class="col">

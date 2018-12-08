@@ -8,25 +8,28 @@
             <%@ include file = "../common/Alert.jsp" %>
         </div>
         <div class="form-group">
-            <label for="inputUsername" class="sr-only">Username</label>
-            <input id="inputUsername" class="form-control" name="username" placeholder="Your Username" required="" autofocus="" type="username">
+            <label for="inputUsername" class="sr-only"><fmt:message key="app.account.username" /></label>
+            <input id="inputUsername" class="form-control" name="username" placeholder="<fmt:message key="app.account.enter_your_username" />" required="" autofocus="" type="username">
         </div>
         <div class="form-group">
-            <label for="inputPassword" class="sr-only">Password</label>
-            <input id="inputPassword" class="form-control" name="password" placeholder="Your Password" required="" type="password">
+            <label for="inputPassword" class="sr-only"><fmt:message key="app.account.password" /></label>
+            <input id="inputPassword" class="form-control" name="password" placeholder="<fmt:message key="app.account.enter_your_password" />" required="" type="password">
         </div>
         <div class="form-row">
-            <button class="btn btn-dark btn-block" type="submit">Login</button>
+            <input hidden name="_FID" type="text" value="${FID}">
+        </div>
+        <div class="form-row">
+            <button class="btn btn-dark btn-block" type="submit"><fmt:message key="app.account.login" /></button>
         </div>
 
         <div class="form-row">
             <small>
-                You don't have an account?
-                <a href="${pageContext.request.contextPath}/account/register">
-                    Register</a><br/>
-                You don't remember a password?
+                <fmt:message key="app.account.you_do_not_have_an_account" />
+                <a href="${pageContext.request.contextPath}/account/registration">
+                    <fmt:message key="app.account.registration" /></a><br/>
+                <fmt:message key="app.account.you_do_not_remember_a_password" />
                 <a href="${pageContext.request.contextPath}/account/recovery">
-                    Recovery</a>
+                    <fmt:message key="app.account.recovery" /></a>
             </small>
         </div>
     </form>

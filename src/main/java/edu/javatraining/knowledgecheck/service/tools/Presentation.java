@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public class Presentation {
-    public static final String DATE_DESCENDING = "Date descending";
-    public static final String DATE_ASCENDING = "Date ascending";
+    public static final String DATE_DESCENDING = "app.presentation.date_descending";
+    public static final String DATE_ASCENDING = "app.presentation.date_ascending";
 
     private List<Subject> subjects;
     private String[] orders = new String[] {DATE_DESCENDING, DATE_ASCENDING};

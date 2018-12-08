@@ -68,7 +68,7 @@ body {
     justify-content: flex-end;
 }
 
-.form-login, .form-register, .form-recovery {
+.form-login, .form-registration, .form-recovery {
     width: 100%;
     margin: auto;
 }
@@ -77,7 +77,7 @@ body {
     max-width: 330px;
 }
 
-.form-register, .form-recovery {
+.form-registration, .form-recovery {
     max-width: 450px;
 }
 

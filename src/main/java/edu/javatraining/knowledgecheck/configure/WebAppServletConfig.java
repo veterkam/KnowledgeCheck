@@ -36,9 +36,9 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                 serve(
                         "/account/login",
                         "/account/logout",
-                        "/account/register",
-                        "/account/register/back",
-                        "/account/register/confirm",
+                        "/account/registration",
+                        "/account/registration/back",
+                        "/account/registration/confirm",
                         "/account/recovery",
                         "/account/recovery/back",
                         "/account/recovery/confirm",

@@ -2,7 +2,7 @@
     <ul class="pagination justify-content-center">
         <li class="page-item">
             <a class="page-link" href="?pageNo=${pagination.prev}">
-                Previous
+                <fmt:message key="app.common.back" />
             </a>
         </li>
         <c:forEach begin="${pagination.begin}" end="${pagination.end}" varStatus="loop">
@@ -14,7 +14,7 @@
         </c:forEach>
         <li class="page-item">
             <a class="page-link" href="?pageNo=${pagination.next}">
-                Next
+                <fmt:message key="app.common.next" />
             </a>
         </li>
     </ul>

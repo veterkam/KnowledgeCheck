@@ -31,9 +31,9 @@ import java.util.Map;
 @WebServlet(urlPatterns = {
         "/account/login",
         "/account/logout",
-        "/account/register",
-        "/account/register/back",
-        "/account/register/confirm",
+        "/account/registration",
+        "/account/registration/back",
+        "/account/registration/confirm",
         "/account/recovery",
         "/account/recovery/back",
         "/account/recovery/confirm",
@@ -73,8 +73,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                     logout(request, response);
                     break;
 
-                case "/account/register":
-                    showRegisterForm(request, response);
+                case "/account/registration":
+                    showRegistrationForm(request, response);
                     break;
 
                 case "/account/recovery":
@@ -113,12 +113,12 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 case "/account/login":
                     loginProcessing(request, response);
                     break;
-                case "/account/register":
+                case "/account/registration":
                     // User click button Next, verify the fields
-                    registerProcessing(request, response);
+                    registrationProcessing(request, response);
                     break;
-                case "/account/register/confirm":
-                    registerConfirmEmail(request, response);
+                case "/account/registration/confirm":
+                    registrationConfirmEmail(request, response);
                     break;
                 case "/account/recovery":
                     // User click button Next, verify the fields
@@ -162,11 +162,17 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void loginForm(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        genFormId(request.getSession());
         forward(request, response, VIEW_LOGIN_FORM);
     }
 
     private void loginProcessing(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+
+        if(!checkFormId(request)) {
+            pageNotFound(request, response);
+            return;
+        }
 
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
@@ -183,35 +189,35 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             userService.updatePassword(user);
             user = attachProfile(user);
 
-            alertManager.success("Registration success! Welcome " + user.getFullname());
+            alertManager.success("app.account.login_success");
             request.getSession().setAttribute("user", user);
             redirect(request, response, "/");
         } else {
-            alertManager.danger("Username or password is wrong. Please, try again!");
+            alertManager.danger("app.account.login_error");
             loginForm(request, response);
         }
     }
 
-    private void showRegisterForm(HttpServletRequest request, HttpServletResponse response)
+    private void showRegistrationForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         if( request.getParameter("back") == null ) {
             request.getSession().setAttribute("userDto", null);
         }
 
-        forwardRegisterForm(request, response);
+        forwardRegistrationForm(request, response);
     }
 
-    private void forwardRegisterForm(HttpServletRequest request, HttpServletResponse response)
+    private void forwardRegistrationForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Add list of User.Roles to request
         request.setAttribute("roles", User.Role.values());
-        forward(request, response, VIEW_REGISTER_FORM);
+        forward(request, response, VIEW_REGISTRATION_FORM);
     }
 
 
-    private void registerProcessing(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+    private void registrationProcessing(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         // Process parameters
         UserDto userDto = extractUserDto(request);
@@ -225,7 +231,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         if (!errors.isEmpty()) {
             alertManager.danger("app.account.validation.incorrect_data_entered");
             request.setAttribute("errors", errors);
-            forwardRegisterForm(request, response);
+            forwardRegistrationForm(request, response);
             return;
         }
 
@@ -243,10 +249,10 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             alertManager.danger("Registration failed. An user with this username already exists. Please, try again!");
         }
 
-        forwardRegisterForm(request, response);
+        forwardRegistrationForm(request, response);
     }
 
-    private void registerConfirmEmail(HttpServletRequest request, HttpServletResponse response)
+    private void registrationConfirmEmail(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
         boolean confirm;
@@ -288,7 +294,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
                 // Failed! Come back to edit user info
                 alertManager.danger("Registration failed. Please, try again!");
-                forwardRegisterForm(request, response);
+                forwardRegistrationForm(request, response);
                 return;
             }
 
@@ -309,7 +315,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             alertManager.danger("Verification code is wrong. Please, try again!");
             // Put flag of e-mail verification into attributes
             request.setAttribute("verifyEmail", "true");
-            forwardRegisterForm(request, response);
+            forwardRegistrationForm(request, response);
         }
     }
 
@@ -436,7 +442,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         //session destroy
         request.getSession().invalidate();
         AlertManager alertManager = getAlertManager(request);
-        alertManager.success("Logout success!");
+        alertManager.success("app.account.logout_success");
         response.sendRedirect(request.getContextPath() + "/");
     }
 

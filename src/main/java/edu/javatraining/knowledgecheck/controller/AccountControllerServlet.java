@@ -4,7 +4,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
-import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;
@@ -300,13 +299,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             }
 
             // Success!
-            // Store user data in session
             session.setAttribute("userDto", null);
             alertManager.success("app.account.registration_success");
 
             if(user.isVerified()) {
+                // Store user data in session
+                user = attachProfile(user);
                 session.setAttribute("user", user);
-                alertManager.success("app.common.welcome");
+                alertManager.success("app.account.welcome");
             } else {
                 alertManager.success("app.account.login_after_verification");
             }

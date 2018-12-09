@@ -189,6 +189,10 @@ public class BasicDaoJdbc {
     }
 
     protected Long insert(String sql, StatementWriter writer) {
+        return insert(sql, writer, true);
+    }
+
+    protected Long insert(String sql, StatementWriter writer, boolean returnId) {
 
         Long resultId;
         Connection connection = null;
@@ -196,14 +200,15 @@ public class BasicDaoJdbc {
 
         try {
             connection = getConnection();
-            statement = connection.prepareStatement(
-                    sql, Statement.RETURN_GENERATED_KEYS);
+            statement = (returnId)
+                    ? connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+                    : connection.prepareStatement(sql);
             writer.write(statement);
 
             boolean isRowInserted = statement.executeUpdate() > 0;
 
             if (isRowInserted) {
-                resultId = getGenKey(statement).longValue();
+                resultId = (returnId) ? getGenKey(statement).longValue() : null;
             } else {
                 DAOException e = new DAOException("Inserting data failed, no rows affected.");
                 logger.error(e.getMessage(), e);

@@ -293,5 +293,4 @@
         </div>
     </form>
 <%@ include file="../common/JSlibs.jsp" %>
-<script src="${pageContext.request.contextPath}/resources/js/MyProfile.js"></script>
 <%@ include file="../common/Footer.jsp" %>

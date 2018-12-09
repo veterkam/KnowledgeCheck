@@ -239,7 +239,8 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
                     statement.setString(2, tutor.getPosition());
                     statement.setString(3, tutor.getScientificDegree());
                     statement.setString(4, tutor.getAcademicTitle());
-                }));
+                }),
+                false);
     }
 
     private boolean updateProfile(Tutor tutor) {

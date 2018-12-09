@@ -3,7 +3,6 @@ package edu.javatraining.knowledgecheck.controller;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.service.*;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
@@ -53,7 +52,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     @Inject
     private Provider<AnswerService> answerServiceProvider;
     @Inject
-    private Provider<TestingResultService> testingResultServiceProvider;
+    private Provider<TestingResultsService> testingResultServiceProvider;
     @Inject
     private Provider<SubjectService> subjectServiceProvider;
 
@@ -225,9 +224,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
             List<Integer> scores = new ArrayList<>();
-            TestingResultService testingResultService = testingResultServiceProvider.get();
+            TestingResultsService testingResultsService = testingResultServiceProvider.get();
             for (Test test : tests) {
-                TestingResults tr = testingResultService.find(user.getId(), test.getId());
+                TestingResults tr = testingResultsService.find(user.getId(), test.getId());
                 scores.add(tr.getScore());
             }
             request.setAttribute("scores", scores);
@@ -574,7 +573,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         // Save results in DB
         TestingResults testingResults = new TestingResults(user.getId(), testId, answerResults);
-        TestingResultService testingResultsDao = testingResultServiceProvider.get();
+        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
         testingResultsDao.update(testingResults);
 
         // Show results
@@ -610,7 +609,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         QuestionService questionDao = questionServiceProvider.get();
         // Results of testing for each test and student
         List< List<TestingResults> > testingResultsList = new ArrayList<>();
-        TestingResultService testingResultsDao = testingResultServiceProvider.get();
+        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
         for(Test test : tests) {
             // attach simple question list without answers
             List<Question> questions =  questionDao.findPlainAll(test.getId());
@@ -647,7 +646,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         // single test list, without question and answers
         tests = testService.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
         QuestionService questionDao = questionServiceProvider.get();
-        TestingResultService testingResultsDao = testingResultServiceProvider.get();
+        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
         List<TestStatistics> statisticsList = new ArrayList<>();
         for(Test test : tests) {
             // attach simple question list without answers

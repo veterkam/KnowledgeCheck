@@ -1,36 +1,37 @@
 package edu.javatraining.knowledgecheck.data.dao.jdbc;
 
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.dao.TestingResultDao;
+import edu.javatraining.knowledgecheck.data.dao.TestingResultsDao;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.tools.PrimitiveEnvelope;
-import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.TestingResults;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultDao {
+public class TestingResultsDaoJdbc extends BasicDaoJdbc implements TestingResultsDao {
 
 
-    public TestingResultDaoJdbc(ConnectionPool pool) {
+    public TestingResultsDaoJdbc(ConnectionPool pool) {
         super(pool);
     }
 
-    private Long insertResultOfAnswer(Long studentId, Long questionId, boolean correct) {
+    private boolean insertResultOfAnswer(Long studentId, Long questionId, boolean correct) {
 
         String sql = "INSERT INTO testing_results (student_id, question_id, correct) " +
                 "VALUES(?, ?, ?)";
 
-        return insert(sql,
+        insert(sql,
                 (statement -> {
                     statement.setLong(1, studentId);
                     statement.setLong(2, questionId);
                     statement.setBoolean(3, correct);
-                }));
+                }),
+                false);
+
+        return true;
     }
 
     private boolean updateResultOfAnswer(Long studentId, Long questionId, boolean correct) {
@@ -52,7 +53,7 @@ public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultD
         Map<Long, Boolean> resultOfAnswers = testingResults.getAnswerResults();
         for(Long questionId : resultOfAnswers.keySet()) {
             boolean correct = resultOfAnswers.get(questionId);
-            if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct) <= 0) {
+            if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct)) {
                 return false;
             }
         }
@@ -68,7 +69,7 @@ public class TestingResultDaoJdbc extends BasicDaoJdbc implements TestingResultD
             boolean correct = resultOfAnswers.get(questionId);
 
             if( !updateResultOfAnswer(testingResults.getStudentId(), questionId, correct) ) {
-                if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct) <= 0) {
+                if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct)) {
                     return false;
                 }
 

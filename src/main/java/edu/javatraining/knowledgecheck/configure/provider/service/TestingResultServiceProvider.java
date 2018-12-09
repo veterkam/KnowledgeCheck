@@ -2,17 +2,17 @@ package edu.javatraining.knowledgecheck.configure.provider.service;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import edu.javatraining.knowledgecheck.data.dao.TestingResultDao;
-import edu.javatraining.knowledgecheck.service.TestingResultService;
-import edu.javatraining.knowledgecheck.service.impl.TestingResultServiceImpl;
+import edu.javatraining.knowledgecheck.data.dao.TestingResultsDao;
+import edu.javatraining.knowledgecheck.service.TestingResultsService;
+import edu.javatraining.knowledgecheck.service.impl.TestingResultsServiceImpl;
 
-public class TestingResultServiceProvider implements Provider<TestingResultService> {
+public class TestingResultServiceProvider implements Provider<TestingResultsService> {
 
     @Inject
-    private TestingResultDao dao;
+    private TestingResultsDao dao;
 
     @Override
-    public TestingResultService get() {
-        return new TestingResultServiceImpl(dao);
+    public TestingResultsService get() {
+        return new TestingResultsServiceImpl(dao);
     }
 }

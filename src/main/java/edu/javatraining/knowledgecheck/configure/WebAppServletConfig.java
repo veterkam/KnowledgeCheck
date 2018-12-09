@@ -75,7 +75,7 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                 bind(QuestionDao.class).toProvider(QuestionDaoProvider.class).in(RequestScoped.class);
                 bind(SubjectDao.class).toProvider(SubjectDaoProvider.class).in(RequestScoped.class);
                 bind(TestDao.class).toProvider(TestDaoProvider.class).in(RequestScoped.class);
-                bind(TestingResultDao.class).toProvider(TestingResultDaoProvider.class).in(RequestScoped.class);
+                bind(TestingResultsDao.class).toProvider(TestingResultDaoProvider.class).in(RequestScoped.class);
 
                 bind(UserService.class).toProvider(UserServiceProvider.class).in(RequestScoped.class);
                 bind(TutorService.class).toProvider(TutorServiceProvider.class).in(RequestScoped.class);
@@ -85,7 +85,7 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                 bind(QuestionService.class).toProvider(QuestionServiceProvider.class).in(RequestScoped.class);
                 bind(SubjectService.class).toProvider(SubjectServiceProvider.class).in(RequestScoped.class);
                 bind(TestService.class).toProvider(TestServiceProvider.class).in(RequestScoped.class);
-                bind(TestingResultService.class).toProvider(TestingResultServiceProvider.class).in(RequestScoped.class);
+                bind(TestingResultsService.class).toProvider(TestingResultServiceProvider.class).in(RequestScoped.class);
             }
 
         });

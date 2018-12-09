@@ -229,7 +229,8 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
                     statement.setString(2, student.getSpecialty());
                     statement.setString(3, student.getGroup());
                     statement.setInt(4, student.getYear());
-                }));
+                }),
+                false);
     }
 
     public List<Student> getStudentsTookTest(long testId)  {

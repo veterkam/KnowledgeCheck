@@ -44,7 +44,7 @@ import java.util.Map;
 
 @Singleton
 public class AccountControllerServlet extends AbstractBaseControllerServlet {
-    private final int COUNT_USER_ON_PAGE = 20;
+    private final int COUNT_USER_ON_PAGE = 10;
     private final int PAGINATION_LIMIT = 5;
 
     @Inject
@@ -85,6 +85,14 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
                 case "/account/users":
                     showUserList(request, response);
+                    break;
+
+                case "/account/users/remove":
+                    removeUser(request, response);
+                    break;
+
+                case "/account/users/verify":
+                    changeUserVerificationStatus(request, response);
                     break;
 
                 case "/account/profile":
@@ -130,15 +138,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                     break;
                 case "/account/myprofile/confirm":
                     myProfileConfirmEmail(request, response);
-                    break;
-//                case "/account/users":
-//                    showUserList(request, response);
-//                    break;
-                case "/account/users/remove":
-                    removeUser(request, response);
-                    break;
-                case "/account/users":
-                    changeUserVerificationStatus(request, response);
                     break;
                 case "/account/profile":
                     showProfile(request, response);
@@ -548,7 +547,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     }
 
     private void showUserList(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, DAOException {
+            throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -607,22 +606,15 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        String strId = request.getParameter("id");
-        Long id;
-        try {
-            id = Long.parseLong(strId);
-        } catch (NumberFormatException e) {
-            pageNotFound(request, response);
-            return;
-        }
+        String username = request.getParameter("username");
 
         try {
             UserService userService = userServiceProvider.get();
-            userService.deleteById(id);
-            getAlertManager(request).success("The user is removed successfully");
+            userService.delete( userService.findOneByUsername(username) );
+            getAlertManager(request).success("app.account.user_removed_successfully");
         } catch(DAOException e) {
             logger.trace(e.getMessage(), e);
-            getAlertManager(request).danger("Can not remove user. Try again!");
+            getAlertManager(request).danger("app.account.failed_remove_user");
         }
 
         redirect(request, response, "/account/users");
@@ -638,27 +630,20 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        String strId = request.getParameter("id");
-        Long id;
-        try {
-            id = Long.parseLong(strId);
-        } catch (NumberFormatException e) {
-            pageNotFound(request, response);
-            return;
-        }
-
         String strVerified = request.getParameter("verified");
+        String username = request.getParameter("username");
+
         boolean verified = ( "true".equals(strVerified) );
 
         try {
             UserService userService = userServiceProvider.get();
-            User u = userService.findOneById(id);
+            User u = userService.findOneByUsername(username);
             u.setVerified(verified);
             userService.update(u);
-            getAlertManager(request).success("The verification status of user is updated successfully");
+            getAlertManager(request).success("app.account.user_status_update_successfully");
         } catch (DAOException e) {
             logger.trace(e.getMessage(), e);
-            getAlertManager(request).danger("Can not updateUpdate verification status of user. Try again!");
+            getAlertManager(request).danger("app.account.failed_update_user_status");
         }
 
         redirect(request, response, "/account/users");

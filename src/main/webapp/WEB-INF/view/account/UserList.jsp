@@ -1,13 +1,16 @@
 <%@ include file = "../common/Header.jsp" %>
-<div class="container text-left">
 
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Users</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.account.users"/></h1>
         </div>
     </div>
 
-    <%@ include file="../common/Alert.jsp" %>
+    <div class="row">
+        <div class="col">
+            <%@ include file="../common/Alert.jsp" %>
+        </div>
+    </div>
 
     <c:if test="${fn:length(users) > 0}">
         <div class="row">
@@ -28,24 +31,24 @@
                         </div>
                         <div class="col text-right">
                             <c:if test="${userData.verified == true}">
-                                <a href="${pageContext.request.contextPath}/authorization/users/verify?id=${userData.id}&verified=false"
+                                <a href="${pageContext.request.contextPath}/account/users/verify?username=${userData.username}&verified=false"
                                    class="btn btn-sm btn-dark m-1" role="button">
-                                    Return to the verification
+                                    <fmt:message key="app.account.return_to_the_verification"/>
                                 </a>
                             </c:if>
                             <c:if test="${userData.verified == false}">
-                                <a href="${pageContext.request.contextPath}/authorization/users/verify?id=${userData.id}&verified=true"
+                                <a href="${pageContext.request.contextPath}/account/users/verify?username=${userData.username}&verified=true"
                                    class="btn btn-sm btn-dark m-1" role="button">
-                                    Verification passed
+                                    <fmt:message key="app.account.verification_passed"/>
                                 </a>
                             </c:if>
-                            <a href="${pageContext.request.contextPath}/authorization/users/remove?id=${userData.id}"
-                               class="btn btn-sm btn-dark m-1" role="button" onclick="return confirm('Are you sure you want to remove the user?')">
-                                Remove
+                            <a href="${pageContext.request.contextPath}/account/users/remove?username=${userData.username}"
+                               class="btn btn-sm btn-dark m-1" role="button" onclick="return confirm('<fmt:message key="app.account.user_removing_confirmation"/>')">
+                                <fmt:message key="app.common.remove"/>
                             </a>
                             <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                     data-target="#userData${userLoop.index}">
-                                Details
+                                <fmt:message key="app.common.details"/>
                             </button>
 
                         </div>
@@ -54,7 +57,7 @@
                 <div class="card-body collapse" id="userData${userLoop.index}">
                     <div class="row">
                         <div class="col-sm-3">
-                            <strong>Full name: </strong>
+                            <strong><fmt:message key="app.account.full_name"/>: </strong>
                         </div>
                         <div class="col-sm-9">
                             <c:out value="${userData.fullname}"/>
@@ -62,7 +65,7 @@
                     </div>
                     <div class="row">
                         <div class="col-sm-3">
-                            <strong>Username: </strong>
+                            <strong><fmt:message key="app.account.username"/>: </strong>
                         </div>
                         <div class="col-sm-9">
                             <c:out value="${userData.username}"/>
@@ -70,7 +73,7 @@
                     </div>
                     <div class="row">
                         <div class="col-sm-3">
-                            <strong>E-mail: </strong>
+                            <strong><fmt:message key="app.account.email"/>: </strong>
                         </div>
                         <div class="col-sm-9">
                             <c:out value="${userData.email}"/>
@@ -78,15 +81,15 @@
                     </div>
                     <div class="row">
                         <div class="col-sm-3">
-                            <strong>Role: </strong>
+                            <strong><fmt:message key="app.account.role"/>: </strong>
                         </div>
                         <div class="col-sm-9">
-                            <c:out value="${userData.role}"/>
+                            <fmt:message key="${userData.role.caption}"/>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-3">
-                            <strong>Verified: </strong>
+                            <strong><fmt:message key="app.account.verified"/>: </strong>
                         </div>
                         <div class="col-sm-9">
                             <c:if test="${userData.verified == true}">&#x2714;</c:if>
@@ -97,7 +100,7 @@
                     <c:if test="${userData.role=='TUTOR'}">
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Position: </strong>
+                                <strong><fmt:message key="app.account.position"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.position}"/>
@@ -105,7 +108,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Scientific degree: </strong>
+                                <strong><fmt:message key="app.account.scientific_degree"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.scientificDegree}"/>
@@ -113,7 +116,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Academic title: </strong>
+                                <strong><fmt:message key="app.account.academic_title"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.academicTitle}"/>
@@ -124,7 +127,7 @@
                     <c:if test="${userData.role=='STUDENT'}">
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Specialty: </strong>
+                                <strong><fmt:message key="app.account.specialty"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.specialty}"/>
@@ -132,7 +135,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Group: </strong>
+                                <strong><fmt:message key="app.account.group"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.group}"/>
@@ -140,7 +143,7 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-3">
-                                <strong>Year: </strong>
+                                <strong><fmt:message key="app.account.year"/>: </strong>
                             </div>
                             <div class="col-sm-9">
                                 <c:out value="${userData.year}"/>

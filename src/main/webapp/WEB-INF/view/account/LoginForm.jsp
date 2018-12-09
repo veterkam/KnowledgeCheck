@@ -4,7 +4,7 @@
     <form class="form-login text-left" method="post"
             action="${pageContext.request.contextPath}/account/login"
           name="loginForm">
-        <div class="form-row">
+        <div class="form-group">
             <%@ include file = "../common/Alert.jsp" %>
         </div>
         <div class="form-group">

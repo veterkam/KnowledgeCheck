@@ -58,6 +58,12 @@ public class TutorDto extends UserDto{
         return t;
     }
 
+    @Override
+    public User toUser() {
+
+        return toTutor();
+    }
+
     public void fromTutor(Tutor t) {
 
         fromUser(t);

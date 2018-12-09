@@ -2,7 +2,7 @@
     <h1 class="h3 mb-3 font-weight-normal text-center"><fmt:message key="app.account.registration" /></h1>
 
     <form class="form-registration text-left col-12">
-        <div class="form-row">
+        <div class="form-group">
             <%@ include file = "../common/Alert.jsp" %>
         </div>
 
@@ -127,7 +127,7 @@
                 <option disabled><fmt:message key="app.account.choose_a_role" /></option>
                 <c:forEach var="role" items="${roles}">
                     <option <c:if test="${role == userDto.role}">selected</c:if>  value="${role}">
-                        <fmt:message key="${role.toString()}" />
+                        <fmt:message key="${role.caption}" />
                     </option>
                 </c:forEach>
             </select>

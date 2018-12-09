@@ -2,7 +2,7 @@
     <h1 class="h3 mb-3 font-weight-normal text-center"><fmt:message key="app.account.password_recovery" /></h1>
 
     <form class="form-registration text-left col-12">
-        <div class="form-row">
+        <div class="form-group">
             <%@ include file = "../common/Alert.jsp" %>
         </div>
         <c:set value='${errors != null && errors.get("username") != null}' var="isInvalid" />

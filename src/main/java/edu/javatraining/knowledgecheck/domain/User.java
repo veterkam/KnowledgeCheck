@@ -104,8 +104,7 @@ public class User {
             this.caption = caption;
         }
 
-        @Override
-        public String toString() {
+        public String getCaption() {
             return caption;
         }
 

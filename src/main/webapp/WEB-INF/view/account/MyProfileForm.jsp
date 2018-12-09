@@ -1,7 +1,7 @@
 <%@ include file="../common/Header.jsp" %>
     <h1 class="h3 mb-3 font-weight-normal text-center"><fmt:message key="app.account.profile" /></h1>
     <form class="form-registration text-left col-12" method="post">
-        <div class="form-row">
+        <div class="form-group">
             <%@ include file = "../common/Alert.jsp" %>
         </div>
         <div class="form-row">
@@ -75,28 +75,20 @@
                 </c:forEach>
             </div>
         </c:if>
-        <c:set value='${errors != null && errors.get("role") != null}' var="isInvalid" />
+
+        <c:forEach var="role" items="${roles}">
+            <c:if test="${role == userDto.role}">
+                <c:set var="roleCaption" value="${role.caption}"/>
+            </c:if>
+        </c:forEach>
+
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="selectRole" ><fmt:message key="app.account.role" /></label>
-            <select id="selectRole" name="role"
-                    class="custom-select form-control col-sm-8 mb-1 ${(isInvalid) ? 'is-invalid' : ''}"
-                    <c:if test="${verifyEmail != null}">disabled</c:if>>
-                <option disabled><fmt:message key="app.account.choose_a_role" /></option>
-                <c:forEach var="role" items="${roles}">
-                    <option <c:if test="${role == userDto.role}">selected</c:if>  value="${role}">
-                        <fmt:message key="${role.toString()}" />
-                    </option>
-                </c:forEach>
-            </select>
+            <input disabled id="selectRole" class="form-control col-sm-8 mb-1" type="text"
+                   value='<fmt:message key="${roleCaption}"/>' >
+            <input hidden  name="role" type="text" value="${userDto.role}">
         </div>
-        <c:if test="${isInvalid}">
-            <c:set value='${errors.get("role")}' var="fieldErrors" />
-            <div class="form-group text-right">
-                <c:forEach var="error" items="${fieldErrors}">
-                    <small class="help-block text-danger text-right"><fmt:message key="${error}" /><br/></small>
-                </c:forEach>
-            </div>
-        </c:if>
+
         <c:if test="${userDto.role == 'STUDENT'}">
             <c:set value='${errors != null && errors.get("specialty") != null}' var="isInvalid" />
             <div class="form-row">
@@ -261,23 +253,28 @@
             </div>
         </c:if>
 
+        <div class="form-row">
+            <input hidden name="_FID" type="text" value="${FID}">
+        </div>
+
         <div class="row">
         <c:if test="${verifyEmail != null}">
             <div class="col-4">
-                <button class="btn btn-dark btn-block m-1" type="submit" name="btnCancel" formnovalidate
-                        formaction="${pageContext.request.contextPath}/account/myprofile">
-                    <fmt:message key='app.common.cancel' />
-                </button>
+                <a class="btn btn-dark btn-block m-1" role="button"
+                   href="${pageContext.request.contextPath}/account/myprofile" >
+                    <fmt:message key="app.common.cancel" />
+                </a>
             </div>
             <div class="col-4">
-                <button class="btn btn-dark btn-block m-1" type="submit" name="btnBack" formnovalidate
-                        formaction="${pageContext.request.contextPath}/account/myprofile/back">
-                    <fmt:message key='app.common.back' />
-                </button>
+                <a class="btn btn-dark btn-block m-1" role="button"
+                   href="${pageContext.request.contextPath}/account/myprofile?back">
+                    <fmt:message key="app.common.back" />
+                </a>
             </div>
             <div class="col-4">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnConfirm"
-                        formaction="${pageContext.request.contextPath}/account/myprofile/confirm">
+                        formaction="${pageContext.request.contextPath}/account/myprofile/confirm"
+                        formmethod="post">
                     <fmt:message key='app.common.confirm' />
                 </button>
             </div>
@@ -286,7 +283,8 @@
             <div class="col-3"></div>
             <div class="col-6">
                 <button class="btn btn-dark btn-block m-1" type="submit" name="btnSave"
-                        formaction="${pageContext.request.contextPath}/account/myprofile/verify">
+                        formaction="${pageContext.request.contextPath}/account/myprofile"
+                        formmethod="post">
                     <fmt:message key='app.common.save' />
                 </button>
             </div>

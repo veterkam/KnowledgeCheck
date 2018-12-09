@@ -2,9 +2,7 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
-import edu.javatraining.knowledgecheck.controller.dto.UserDto;
-import edu.javatraining.knowledgecheck.controller.dto.UserRecoveryDto;
+import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -83,7 +81,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                     break;
 
                 case "/account/myprofile":
-                    request.getSession().setAttribute("anonym", null);
                     showMyProfileForm(request, response);
                     break;
 
@@ -437,89 +434,91 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("user");
-
         if(user == null) {
             pageNotFound(request, response);
             return;
         }
 
-        // Add list of User.Roles to request
-        request.setAttribute("roles", User.Role.values());
+        if( request.getParameter("back") == null ) {
 
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_MY_PROFILE_FORM);
-        dispatcher.forward(request, response);
+            request.getSession().setAttribute("userDto",
+                    convertUserToUserDto(user));
+        }
+
+        forwardMyProfileForm(request, response);
     }
 
+    private UserDto convertUserToUserDto(User u) {
 
+        UserDto userDto;
+
+        switch(u.getRole()) {
+            case TUTOR:
+                userDto = new TutorDto();
+                ((TutorDto) userDto).fromTutor((Tutor) u);
+                break;
+            case STUDENT:
+                userDto = new StudentDto();
+                ((StudentDto) userDto).fromStudent((Student) u);
+                break;
+            default:
+                userDto = new UserDto();
+                userDto.fromUser(u);
+        }
+
+        return userDto;
+    }
+
+    private void forwardMyProfileForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        genFormId(request.getSession());
+        // Add list of User.Roles to request
+        request.setAttribute("roles", User.Role.values());
+        forward(request, response, VIEW_MY_PROFILE_FORM);
+    }
 
     private void myProfileProcessing(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
 
         User user = (User) request.getSession().getAttribute("user");
 
-        if(user == null) {
+        if (!checkFormId(request) || user == null) {
             pageNotFound(request, response);
             return;
         }
 
-        User modifyUser = extractUserDto(request, user.getRole());
-
-        if(modifyUser.getFirstName() == null) {
-            pageNotFound(request, response);
-            return;
-        }
-
-        String repeatPassword = request.getParameter("repeatPassword");
-        if(repeatPassword == null){
-            // user didn't change password
-            modifyUser.setPassword(user.getPassword());
-        }
-
-        // Add disabled fields
-        modifyUser.setId(user.getId());
-        modifyUser.setUsername(user.getUsername());
-        modifyUser.setRole(user.getRole());
-        modifyUser.setVerified(true);
-
-        Validator validator = new Validator();
-        validator.validate(modifyUser);
-
-        AlertManager alertManager = getAlertManager(request);
-        boolean isFailed = false;
-        if(validator.isFailed()) {
-            alertManager.danger(validator.getErrors());
-            isFailed = true;
-        }
-
-        if(repeatPassword != null) {
-            // user changed password
-            // validate password
-            if (!repeatPassword.equals(modifyUser.getPassword())) {
-                alertManager.danger("Passwords are different.");
-                isFailed = true;
-            }
-        }
+        // Process parameters
+        UserDto userDto = extractUserDto(request, user.getRole());
+        Map<String, List<String>> errors = DtoValidator.validate(userDto);
 
         // Store user info in session for form autofilling
         HttpSession session = request.getSession();
-        session.setAttribute("anonym", modifyUser);
+        session.setAttribute("userDto", userDto);
 
-        if (isFailed) {
-            showMyProfileForm(request, response);
+        AlertManager alertManager = getAlertManager(request);
+        if (!errors.isEmpty()) {
+            alertManager.danger("app.account.validation.incorrect_data_entered");
+            request.setAttribute("errors", errors);
+            forwardMyProfileForm(request, response);
             return;
         }
 
-        session.setAttribute("passwordChanged", repeatPassword != null );
-
-        if(repeatPassword != null || !user.getEmail().equals(modifyUser.getEmail()) ) {
-            // User modified password or email, ask confirmation
-            String msg = "Hello. To confirm profile modification, please use verification code.";
-            askVerificationCode(modifyUser.getEmail(), msg, request);
-            showMyProfileForm(request, response);
-        } else {
-            // User didn't modify password and email, save changes without asking confirmation
-            saveMyProfile(modifyUser, request, response);
+        boolean isUnique = true;
+        if (!user.getUsername().equals(userDto.getUsername())) {
+            // Is the username unique?
+            UserService userService = userServiceProvider.get();
+            isUnique = (userService.findOneByUsername(userDto.getUsername()) == null);
         }
+
+        if (isUnique) {
+            // The username is unique. Verify e-mail.
+            String msg = "Hello. To confirm profile modification, please use verification code.";
+            askVerificationCode(userDto.getEmail(), msg, request);
+        } else {
+            // The username is not unique.
+            alertManager.danger("app.account.username_already_exists");
+        }
+        forwardMyProfileForm(request, response);
     }
 
     private void myProfileConfirmEmail(HttpServletRequest request, HttpServletResponse response)
@@ -527,31 +526,21 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         User user = (User) request.getSession().getAttribute("user");
 
-        if(user == null) {
+        if(!checkFormId(request) || user == null) {
             pageNotFound(request, response);
             return;
         }
 
-        boolean confirm;
-
-        try {
-            confirm = checkConfirmation(request);
-        } catch (RequestException e) {
-            pageNotFound(request, response);
-            return;
-        }
-
-        if ( confirm ) {
+        if ( checkConfirmation(request) ) {
             // save profile modification
             HttpSession session = request.getSession();
-            user = (User) session.getAttribute("anonym");
-
-            boolean pswChanged = (Boolean) session.getAttribute("passwordChanged");
-            if(pswChanged) {
-                String password = Cipher.encode(user.getPassword());
-                user.setPassword(password);
-            }
-            saveMyProfile(user, request, response);
+            UserDto userDto = (UserDto) session.getAttribute("userDto");
+            User modifedUser = userDto.toUser();
+            modifedUser.setId(user.getId());
+            modifedUser.setVerified(user.isVerified());
+            String password = Cipher.encode(user.getPassword());
+            modifedUser.setPassword(password);
+            saveMyProfile(modifedUser, request, response);
         } else {
             // Verification code is wrong. Come back to edit verification code
             getAlertManager(request).danger("Verification code is wrong. Please, try again!");
@@ -745,9 +734,9 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         if( success ) {
             request.getSession().setAttribute("user", user);
-            getAlertManager(request).success("Profile data saved successfully.");
+            getAlertManager(request).success("app.account.profile_save_success");
         } else {
-            getAlertManager(request).danger("Profile data saving failed. Please try again.");
+            getAlertManager(request).danger("app.account.profile_save_failed");
         }
 
         response.sendRedirect(request.getContextPath() + "/account/myprofile");
@@ -767,65 +756,37 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private User extractUserDto(HttpServletRequest request, User.Role role) {
+    private UserDto extractUserDto(HttpServletRequest request, User.Role role) {
         switch(role) {
             case STUDENT:
-                return extractStudent(request);
+                return extractStudentDto(request);
             case TUTOR:
-                return extractTutor(request);
+                return extractTutorDto(request);
             default:
-                return extractUser(request);
+                return extractUserDto(request);
         }
     }
 
-    private Tutor extractTutor(HttpServletRequest request) {
-        Tutor tutor = new Tutor();
-        extractUser(tutor, request);
-        String position = request.getParameter("position");
-        String scientificDegree = request.getParameter("scientificDegree");
-        String academicTitle = request.getParameter("academicTitle");
+    private TutorDto extractTutorDto(HttpServletRequest request) {
 
-        tutor.setPosition(position);
-        tutor.setScientificDegree(scientificDegree);
-        tutor.setAcademicTitle(academicTitle);
+        TutorDto tutorDto = new TutorDto();
+        extractUserDto(tutorDto, request);
+        tutorDto.setPosition( request.getParameter("position") );
+        tutorDto.setScientificDegree( request.getParameter("scientificDegree") );
+        tutorDto.setAcademicTitle( request.getParameter("academicTitle") );
 
-        return tutor;
+        return tutorDto;
     }
 
-    private Student extractStudent(HttpServletRequest request) {
-        Student student = new Student();
-        extractUser(student, request);
-        String specialty = request.getParameter("specialty");
-        String group = request.getParameter("group");
-        String strYear = request.getParameter("year");
+    private StudentDto extractStudentDto(HttpServletRequest request) {
 
-        int year;
-        try {
-            year = Integer.parseInt(strYear);
-        } catch (NumberFormatException e) {
-            year = 0;
-        }
+        StudentDto studentDto = new StudentDto();
+        extractUserDto(studentDto, request);
+        studentDto.setSpecialty( request.getParameter("specialty") );
+        studentDto.setGroup( request.getParameter("group") );
+        studentDto.setYear( request.getParameter("year") );
 
-        student.setSpecialty(specialty);
-        student.setGroup(group);
-        student.setYear(year);
-
-        return student;
-    }
-
-    private User extractUser(HttpServletRequest request) {
-        User user = new User();
-        extractUser(user, request);
-        return user;
-    }
-
-    private void extractUser(User out, HttpServletRequest request) {
-        // Process parameters
-        out.setFirstName(request.getParameter("firstName"));
-        out.setLastName(request.getParameter("lastName"));
-        out.setEmail(request.getParameter("email"));
-        out.setUsername(request.getParameter("username"));
-        out.setPassword(request.getParameter("password"));
+        return studentDto;
     }
 
     private UserDto extractUserDto(HttpServletRequest request) {
@@ -836,12 +797,9 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
     private void extractUserDto(UserDto out, HttpServletRequest request) {
         // Process parameters
+        extractUserRecoveryDto(out, request);
         out.setFirstName(request.getParameter("firstName"));
         out.setLastName(request.getParameter("lastName"));
-        out.setEmail(request.getParameter("email"));
-        out.setUsername(request.getParameter("username"));
-        out.setPassword(request.getParameter("password"));
-        out.setConfirmPassword(request.getParameter("confirmPassword"));
         out.setRole(request.getParameter("role"));
     }
 

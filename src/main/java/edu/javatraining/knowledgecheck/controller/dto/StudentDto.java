@@ -59,6 +59,12 @@ public class StudentDto extends UserDto{
         return s;
     }
 
+    @Override
+    public User toUser() {
+
+        return toStudent();
+    }
+
     public void fromStudent(Student s) {
 
         fromUser(s);

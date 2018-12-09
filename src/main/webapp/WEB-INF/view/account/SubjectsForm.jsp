@@ -6,8 +6,10 @@
         </div>
     </div>
 
-    <%@ include file="../common/Alert.jsp" %>
     <form class="col-12" method="post">
+        <div class="form-group">
+            <%@ include file = "../common/Alert.jsp" %>
+        </div>
         <div class="row">
             <div class="col">
                 <div class="table-wrapper-scroll-y">

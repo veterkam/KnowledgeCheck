@@ -78,6 +78,6 @@ public class UserDto extends UserRecoveryDto{
         super.fromUser(u);
         firstName = u.getFirstName();
         lastName = u.getLastName();
-        role = u.getRole().toString();
+        role = "" + u.getRole();
     }
 }

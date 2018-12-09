@@ -15,7 +15,6 @@ import edu.javatraining.knowledgecheck.service.UserService;
 import edu.javatraining.knowledgecheck.service.tools.*;
 
 import javax.mail.MessagingException;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +39,7 @@ import java.util.Map;
         "/account/myprofile/confirm",
         "/account/users",
         "/account/users/remove",
-        "/account/profile"
+        "/account/profile/*"
 })
 
 @Singleton
@@ -61,6 +60,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException {
 
         String action = request.getServletPath();
+
         try {
             switch (action) {
                 case "/account/login":
@@ -124,9 +124,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 case "/account/recovery/confirm":
                     recoveryConfirmEmail(request, response);
                     break;
-//                case "/account/myprofile":
-//                    showMyProfileForm(request, response);
-//                    break;
                 case "/account/myprofile":
                     // User click button Next, verify the fields
                     myProfileProcessing(request, response);
@@ -427,7 +424,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         request.getSession().setAttribute("user", null);
         AlertManager alertManager = getAlertManager(request);
         alertManager.success("app.account.logout_success");
-        response.sendRedirect(request.getContextPath() + "/");
+        redirect(request, response, "/");
     }
 
     private void showMyProfileForm(HttpServletRequest request, HttpServletResponse response)
@@ -538,7 +535,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             User modifedUser = userDto.toUser();
             modifedUser.setId(user.getId());
             modifedUser.setVerified(user.isVerified());
-            String password = Cipher.encode(user.getPassword());
+            String password = Cipher.encode(modifedUser.getPassword());
             modifedUser.setPassword(password);
             saveMyProfile(modifedUser, request, response);
         } else {
@@ -597,8 +594,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         request.setAttribute("users", users);
         request.setAttribute("pagination", pagination);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_USER_LIST);
-        dispatcher.forward(request, response);
+        forward(request, response, VIEW_USER_LIST);
     }
 
     private void removeUser(HttpServletRequest request, HttpServletResponse response)
@@ -628,7 +624,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             logger.trace(e.getMessage(), e);
             getAlertManager(request).danger("Can not remove user. Try again!");
         }
-        response.sendRedirect(request.getContextPath() + "/account/users");
+
+        redirect(request, response, "/account/users");
     }
 
     private void changeUserVerificationStatus(HttpServletRequest request, HttpServletResponse response)
@@ -664,42 +661,30 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             getAlertManager(request).danger("Can not updateUpdate verification status of user. Try again!");
         }
 
-        response.sendRedirect(request.getContextPath() + "/account/users");
+        redirect(request, response, "/account/users");
     }
 
     private void showProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, DAOException {
 
-        String strId = request.getParameter("id");
-        Long id;
-        try {
-            id = Long.parseLong(strId);
-        } catch (NumberFormatException e) {
+        // Extract username from URL
+        String username = request.getPathInfo().substring(1);
+
+        if(username == null) {
             pageNotFound(request, response);
             return;
         }
 
-        User data = studentServiceProvider.get().findOneById(id);
-        if(data == null) {
+        User user = userServiceProvider.get().findOneByUsername(username);
+        if(user == null) {
             pageNotFound(request, response);
             return;
         }
 
-        switch(data.getRole()) {
-            case STUDENT:
-                data = studentServiceProvider.get().findOneById(id);
-                break;
-            case TUTOR:
-                data = tutorServiceProvider.get().findOneById(id);
-                break;
-            default:
-                pageNotFound(request, response);
-                return;
-        }
+        user = attachProfile(user);
 
-        request.setAttribute("userData", data);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_PROFILE);
-        dispatcher.forward(request, response);
+        request.setAttribute("userData", user);
+        forward(request, response, VIEW_PROFILE);
     }
 
     private int getPageNo(HttpServletRequest request) {
@@ -739,10 +724,10 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             getAlertManager(request).danger("app.account.profile_save_failed");
         }
 
-        response.sendRedirect(request.getContextPath() + "/account/myprofile");
+        redirect(request, response, "/account/myprofile");
     }
 
-    private boolean saveUser(User user) throws DAOException {
+    private boolean saveUser(User user) {
         switch(user.getRole()) {
             case  STUDENT:
                 StudentService studentService = studentServiceProvider.get();
@@ -849,7 +834,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         }
     }
 
-    private User attachProfile(User user) throws DAOException {
+    private User attachProfile(User user) {
         switch(user.getRole()) {
             case TUTOR:
                 TutorService tutorService = tutorServiceProvider.get();

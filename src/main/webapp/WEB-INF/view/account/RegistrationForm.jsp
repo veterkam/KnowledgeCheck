@@ -126,7 +126,7 @@
                     <c:if test="${verifyEmail != null}">disabled</c:if>>
                 <option disabled><fmt:message key="app.account.choose_a_role" /></option>
                 <c:forEach var="role" items="${roles}">
-                    <option <c:if test="${role == userDto.role}">selected</c:if>  value="${role}">
+                    <option <c:if test="${role.caption == userDto.role}">selected</c:if>  value="${role.caption}">
                         <fmt:message key="${role.caption}" />
                     </option>
                 </c:forEach>

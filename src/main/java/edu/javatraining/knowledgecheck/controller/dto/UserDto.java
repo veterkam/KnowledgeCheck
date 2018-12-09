@@ -15,7 +15,7 @@ import java.util.*;
 
 @ScriptAssert(
         lang = "javascript",
-        script="_this.role != null && (_this.role.equals('ADMINISTRATOR') || _this.role.equals('TUTOR') || _this.role.equals('STUDENT'))",
+        script="_this.role != null && (_this.role.equals('app.account.role.administrator') || _this.role.equals('app.account.role.tutor') || _this.role.equals('app.account.role.student'))",
         message="app.account.validation.role.valid",
         reportOn="role")
 public class UserDto extends UserRecoveryDto{
@@ -69,7 +69,12 @@ public class UserDto extends UserRecoveryDto{
         super.toUser(out);
         out.setFirstName(firstName);
         out.setLastName(lastName);
-        out.setRole(User.Role.valueOf(role));
+        for(User.Role r : User.Role.values()) {
+            if(r.getCaption().equals(role)) {
+                out.setRole(r);
+                break;
+            }
+        }
     }
 
     @Override
@@ -78,6 +83,6 @@ public class UserDto extends UserRecoveryDto{
         super.fromUser(u);
         firstName = u.getFirstName();
         lastName = u.getLastName();
-        role = "" + u.getRole();
+        role = u.getRole().getCaption();
     }
 }

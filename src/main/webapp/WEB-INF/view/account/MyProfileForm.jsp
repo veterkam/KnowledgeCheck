@@ -76,20 +76,14 @@
             </div>
         </c:if>
 
-        <c:forEach var="role" items="${roles}">
-            <c:if test="${role == userDto.role}">
-                <c:set var="roleCaption" value="${role.caption}"/>
-            </c:if>
-        </c:forEach>
-
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="selectRole" ><fmt:message key="app.account.role" /></label>
             <input disabled id="selectRole" class="form-control col-sm-8 mb-1" type="text"
-                   value='<fmt:message key="${roleCaption}"/>' >
+                   value='<fmt:message key="${userDto.role}"/>' >
             <input hidden  name="role" type="text" value="${userDto.role}">
         </div>
 
-        <c:if test="${userDto.role == 'STUDENT'}">
+        <c:if test="${user.role == 'STUDENT'}">
             <c:set value='${errors != null && errors.get("specialty") != null}' var="isInvalid" />
             <div class="form-row">
                 <label class="col-sm-4 col-form-label" for="inputSpecialty" ><fmt:message key="app.account.specialty" /></label>
@@ -148,7 +142,7 @@
                 </div>
             </c:if>
         </c:if>
-        <c:if test="${userDto.role == 'TUTOR'}">
+        <c:if test="${user.role == 'TUTOR'}">
             <c:set value='${errors != null && errors.get("position") != null}' var="isInvalid" />
             <div class="form-row">
                 <label class="col-sm-4 col-form-label" for="inputPosition" ><fmt:message key="app.account.position" /></label>

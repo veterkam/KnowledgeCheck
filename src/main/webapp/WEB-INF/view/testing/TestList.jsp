@@ -25,7 +25,7 @@
                         <div class="col text-right">
                             <c:if test="${test.tutor != null}">
                                 <strong>Author</strong>:
-                                <a href="${pageContext.request.contextPath}/authorization/profile?id=${test.tutor.id}">
+                                <a href="${pageContext.request.contextPath}/account/profile/${test.tutor.username}">
                                     <c:out value="${test.tutor.fullname}"/>
                                 </a>
                             </c:if>

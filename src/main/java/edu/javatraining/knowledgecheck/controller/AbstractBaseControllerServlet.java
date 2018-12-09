@@ -1,6 +1,5 @@
 package edu.javatraining.knowledgecheck.controller;
 
-import com.sun.deploy.net.HttpRequest;
 import edu.javatraining.knowledgecheck.data.SqlScriptRunner;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +30,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_TEST_STATISTICS = "/WEB-INF/view/testing/TestStatistics.jsp";
     protected final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/account/MyProfileForm.jsp";
     protected final String VIEW_USER_LIST = "/WEB-INF/view/account/UserList.jsp";
-    protected final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/account/SubjectsForm.jsp";
+    protected final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/testing/SubjectsForm.jsp";
     protected final String VIEW_PROFILE = "/WEB-INF/view/account/Profile.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
@@ -80,7 +79,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     }
 
     protected void redirect(HttpServletRequest request, HttpServletResponse response, String url)
-            throws IOException, ServletException {
+            throws IOException {
 
         response.sendRedirect(request.getContextPath() + url);
     }

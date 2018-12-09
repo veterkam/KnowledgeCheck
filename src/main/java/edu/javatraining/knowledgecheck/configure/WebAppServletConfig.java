@@ -46,9 +46,9 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/account/myprofile/back",
                         "/account/myprofile/confirm",
                         "/account/users",
-                        "/account/users/remove",
-                        "/account/profile"
+                        "/account/users/remove"
                         ).with(AccountControllerServlet.class);
+                serveRegex("/account/profile/.+").with(AccountControllerServlet.class);
 
                 serve("/",
                         "/testing",

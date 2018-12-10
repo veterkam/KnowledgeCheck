@@ -66,6 +66,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                 case "/testing/subjects":
                     saveSubjects(request, response);
                     break;
+                case "/testing/edit":
+                    editTestProcessing(request, response);
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;
@@ -97,7 +100,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                     showTutorMyTests(request, response);
                     break;
                 case "/testing/edit":
-                    editTest(request, response);
+                    showEditTestForm(request, response);
                     break;
                 case "/testing/remove":
                     removeTest(request, response);
@@ -299,12 +302,51 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     }
 
-    private void editTest(HttpServletRequest request, HttpServletResponse response)
+    private void forwardEditTestForm(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        User user = (User) request.getSession().getAttribute("user");
+        genFormId(request.getSession());
+        // Read subject list for subject filter in presentation
+        request.setAttribute("subjects", subjectServiceProvider.get().findAll() );
+        forward(request, response, VIEW_EDIT_TEST);
+    }
 
-        if(user == null || user.getRole() != User.Role.TUTOR) {
+    private void showEditTestForm(HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+
+        User user = checkPermit(request, User.Role.TUTOR);
+
+        if(user == null) {
+            pageNotFound(request, response);
+            return;
+        }
+
+        try {
+            Long testId = Long.parseLong( request.getParameter("testId") );
+            // Read test info from Data Base
+            TestService testService = testServiceProvider.get();
+            Test test = testService.findComplexOneById(testId);
+            if(test != null && test.getTutorId().equals( user.getId() )) {
+                request.setAttribute("test", test );
+            } else {
+                getAlertManager(request).danger("app.testing.you_do_not_have_permission_to_change_this_test");
+                redirect(request, response, "/testing/mytests");
+                return;
+            }
+        } catch(NumberFormatException e) {
+            // It is new test
+            // there is nothing to read from DB
+        }
+
+        forwardEditTestForm(request, response);
+    }
+
+    private void editTestProcessing(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        User user = checkPermit(request, User.Role.TUTOR);
+
+        if(!checkFormId(request) || user == null) {
             pageNotFound(request, response);
             return;
         }
@@ -327,33 +369,13 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         TestService testService = testServiceProvider.get();
         SubjectService subjectService = subjectServiceProvider.get();
 
-        if (Validator.containNull(paramSubject, paramTitle, paramDescription)) {
-            // Parameters do not have test data
-            if(test.getId() > -1) {
-                test = testService.findComplexOneById(test.getId());
-                if(test.getTutorId().equals( user.getId() )) {
-                    request.setAttribute("test", test );
-                } else {
-                    alertManager.danger("You don't have permission to change this test.");
-                    response.sendRedirect(request.getContextPath() + "/testing/mytests");
-                    return;
-                }
-            }
-            // Only show empty edit form
-            // Read subject list for subject filter in presentation
-            request.setAttribute("subjects", subjectService.findAll() );
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
-            dispatcher.forward(request, response);
-            return;
-        }
-
         Subject subject = null;
 
         try {
             Long subjectId = Long.parseLong(paramSubject);
             subject = subjectService.findOneById(subjectId);
         } catch (NumberFormatException e) {
-            alertManager.danger("Subject is wrong.");
+            alertManager.danger("app.testing.subject_is_wrong");
         }
 
         test.setSubject(subject);
@@ -468,8 +490,8 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             testService.insertComplex(test);
         }
 
-        alertManager.success("Test was saved successfully.");
-        response.sendRedirect(request.getContextPath() + "/testing/mytests");
+        alertManager.success("app.testing.test_saving_success");
+        redirect(request, response, "/testing/mytests");
     }
 
     public void runTest(HttpServletRequest request, HttpServletResponse response)
@@ -789,6 +811,17 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             this.presentation = presentation;
             this.pagination = pagination;
         }
+    }
+
+    private User checkPermit(HttpServletRequest request, User.Role role) {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != role) {
+            return null;
+        }
+
+        return user;
     }
 
 }

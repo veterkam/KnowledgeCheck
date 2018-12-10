@@ -34,8 +34,7 @@ import java.util.Map;
         "/testing/testing/result",
         "/testing/studentsresults",
         "/testing/teststatistics",
-        "/testing/subjects",
-        "/testing/subjects/save"
+        "/testing/subjects"
 })
 @Singleton
 public class TestingControllerServlet extends AbstractBaseControllerServlet {
@@ -59,7 +58,26 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
-        doGet(request, response);
+
+        String action = request.getServletPath();
+
+        try {
+            switch (action) {
+                case "/testing/subjects":
+                    saveSubjects(request, response);
+                    break;
+                default:
+                    pageNotFound(request, response);
+                    break;
+            }
+        } catch (IOException | DAOException e) {
+            logger.error(e.getMessage(), e);
+
+            throw new ServletException(e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -98,9 +116,6 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                     break;
                 case "/testing/subjects":
                     showSubjectsForm(request, response);
-                    break;
-                case "/testing/subjects/save":
-                    saveSubjects(request, response);
                     break;
                 default:
                     pageNotFound(request, response);
@@ -713,15 +728,14 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         SubjectService subjectService = subjectServiceProvider.get();
         List<Subject> subjects = subjectService.findAll();
         request.setAttribute("subjects", subjects);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_SUBJECTS_FORM);
-        dispatcher.forward(request, response);
+        genFormId(request.getSession());
+        forward(request, response, VIEW_SUBJECTS_FORM);
     }
 
     public void saveSubjects(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, DAOException {
-        User user = (User) request.getSession().getAttribute("user");
 
-        if (user == null || user.getRole() != User.Role.TUTOR) {
+        if(!checkFormId(request)) {
             pageNotFound(request, response);
             return;
         }
@@ -748,26 +762,24 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             subject.setName(subjectNames[i]);
 
             try {
+                // Check action
                 if("1".equals(remove[i])) {
                     subjectService.delete(subject);
                 } else if("1".equals(modify[i]) && Strings.isNotBlank(subjectNames[i])) {
-                   if(id > -1) {
-                       subjectService.update(subject);
-                   } else {
-                       subjectService.insert(subject);
-                   }
+                    subjectService.save(subject);
                 }
             } catch(DAOException e) {
                 logger.error(e.getMessage(), e);
-                alertManager.danger(e.getMessage() + " \"" + subject.getName() + "\"");
+                alertManager.danger("app.common.unknown_error");
+                alertManager.danger("app.common.try_again");
             }
         }
 
         if(alertManager.isEmpty()) {
-            alertManager.success("Changes are saved successfully");
+            alertManager.success("app.common.changes_are_saved");
         }
 
-        response.sendRedirect(request.getContextPath() + "/testing/subjects");
+        redirect(request, response, "/testing/subjects");
     }
 
     private class ViewOptions {

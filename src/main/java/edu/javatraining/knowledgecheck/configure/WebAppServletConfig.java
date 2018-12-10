@@ -61,8 +61,7 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/testing/testing/result",
                         "/testing/studentsresults",
                         "/testing/teststatistics",
-                        "/testing/subjects",
-                        "/testing/subjects/save"
+                        "/testing/subjects"
                 ).with(TestingControllerServlet.class);
 
 

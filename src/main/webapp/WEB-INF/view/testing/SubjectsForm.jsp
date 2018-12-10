@@ -2,7 +2,7 @@
 
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Subjects</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing.subjects" /></h1>
         </div>
     </div>
 
@@ -27,7 +27,7 @@
                                         <input hidden type="text" data-role="subject-modify-flag" name="modify" value="0">
 
                                         <input data-role="subject-input" class="form-control" name="subjects"
-                                               placeholder="Enter subject name" required="" autofocus="" type="text"
+                                               placeholder='<fmt:message key="app.testing.enter_subject_name"/>' required="" autofocus="" type="text"
                                                value="<c:out value="${subject.name}"/>">
                                         <div class="input-group-append">
                                             <button class="btn btn-dark" type="button" title="Remove subject" data-role="remove-subject">-</button>
@@ -42,18 +42,21 @@
                 </div>
 
                 <div class="text-right">
-                    <button class="btn btn-dark m-1 mt-4" data-role="add-subject">Add subject</button>
+                    <button class="btn btn-dark m-1 mt-4" data-role="add-subject"><fmt:message key="app.testing.add_subject" /></button>
                     <button class="btn btn-dark m-1 mt-4" type="submit"
-                            formaction="${pageContext.request.contextPath}/testboard/subjects/save">
-                        Save changes
+                            formaction="${pageContext.request.contextPath}/testing/subjects">
+                        <fmt:message key="app.common.save_changes" />
                     </button>
                     <a class="btn btn-dark m-1 mt-4" role="button"
-                       href="${pageContext.request.contextPath}/testboard/subjects" >
-                        Cancel
+                       href="${pageContext.request.contextPath}/testing/subjects" >
+                        <fmt:message key="app.common.cancel" />
                     </a>
                 </div>
 
             </div>
+        </div>
+        <div class="form-row">
+            <input hidden name="_FID" type="text" value="${FID}">
         </div>
     </form>
 <%@ include file="../common/JSlibs.jsp" %>

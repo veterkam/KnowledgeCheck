@@ -14,7 +14,7 @@ public class SessionLocaleFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-
+        // Read locale code (ru/en/etc.) from URL end save into session
         HttpServletRequest req = (HttpServletRequest) request;
         HttpSession session = req.getSession();
 

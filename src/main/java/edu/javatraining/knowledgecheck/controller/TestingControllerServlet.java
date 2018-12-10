@@ -146,10 +146,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         // Scan parameters
         // Current page of test list
-        String pageNoStr = request.getParameter("pageNo");
         int pageNo;
         try {
-            pageNo = Integer.parseInt(pageNoStr);
+            pageNo = Integer.parseInt( request.getParameter("pageNo") );
         } catch (NumberFormatException e) {
             pageNo = 1;
         }
@@ -215,7 +214,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     private void showTests(HttpServletRequest request, HttpServletResponse response,
                            String view, boolean onlyTest, boolean filterByTutor)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         User user = (User) request.getSession().getAttribute("user");
 
         if(filterByTutor && (user == null || user.getRole() != User.Role.TUTOR)) {
@@ -255,19 +254,19 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     private void showSimpleListOfTests(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         // Show all tests without question data and answer data
         showTests(request, response, VIEW_TEST_BOARD, true, false);
     }
 
     private void showTutorMyTests(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         // Show all current user's tests with question data and answer data
         showTests(request, response, VIEW_MY_TESTS, false, true);
     }
 
     private void removeTest(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -276,10 +275,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        String testId = request.getParameter("testId");
         long id;
         try {
-            id = Long.parseLong(testId);
+            id = Long.parseLong( request.getParameter("testId") );
         } catch (NumberFormatException e) {
             pageNotFound(request, response);
             return;
@@ -288,20 +286,21 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         AlertManager alertManager = getAlertManager(request);
         Test test = new Test();
         test.setId(id);
+        // Set tutor for safe removing
         test.setTutor(new Tutor(user));
         TestService testService = testServiceProvider.get();
         if(testService.delete(test)) {
-            alertManager.success("The test was successfully removed.");
+            alertManager.success("app.testing.test_removing_success");
         } else {
-            alertManager.danger("The test was not removed. Maybe you don't have permission to removed it.");
+            alertManager.danger("app.testing.test_removing_failed");
         }
 
-        response.sendRedirect(request.getContextPath() + "/testing/mytests");
+        redirect(request, response, "/testing/mytests");
 
     }
 
     private void editTest(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -474,7 +473,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     public void runTest(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException, DAOException {
+        throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -506,7 +505,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     public void processTestResult(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException, DAOException {
+        throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("user");
 
@@ -604,7 +603,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     public void studentsResults(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         User user = (User) request.getSession().getAttribute("user");
 
         if(user == null || user.getRole() != User.Role.TUTOR) {
@@ -643,7 +642,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     public void testStatistics(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         User user = (User) request.getSession().getAttribute("user");
 
         if(user == null || user.getRole() != User.Role.TUTOR) {
@@ -717,7 +716,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
 
     public void showSubjectsForm(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
         User user = (User) request.getSession().getAttribute("user");
 
         if (user == null || user.getRole() != User.Role.TUTOR) {
@@ -733,7 +732,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     }
 
     public void saveSubjects(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException, DAOException {
+            throws IOException, ServletException {
 
         if(!checkFormId(request)) {
             pageNotFound(request, response);

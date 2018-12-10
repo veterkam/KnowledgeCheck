@@ -2,11 +2,11 @@
 
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">My tests</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing.my_tests" /></h1>
         </div>
         <div class="col text-right">
             <a href="${pageContext.request.contextPath}/testing/edit"
-               class="btn btn-info btn-dark" role="button">New test</a>
+               class="btn btn-info btn-dark" role="button"><fmt:message key="app.testing.new_test" /></a>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
         <div class="row">
             <div class="col">
                 <h3 class="h5 mb-3 font-weight-normal">
-                    You don't have any test.&nbsp;<a href="${pageContext.request.contextPath}/testing/edit">New test</a>
+                    <fmt:message key="app.testing.you_do_not_have_any_test" />&nbsp;<a href="${pageContext.request.contextPath}/testing/edit"><fmt:message key="app.testing.new_test" /></a>
                 </h3>
             </div>
         </div>
@@ -41,12 +41,12 @@
                             <div class="row">
                                 <div class="col text-left">
                                     <c:if test="${test.subject != null}">
-                                        <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
+                                        <strong><fmt:message key="app.testing.subject" /></strong>: <c:out value="${test.subject.name}"/>
                                     </c:if>
                                 </div>
                                 <div class="col text-right">
                                     <c:if test="${test.tutor != null}">
-                                        <strong>Author</strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
+                                        <strong><fmt:message key="app.testing.author" /></strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
                                     </c:if>
                                 </div>
                             </div>
@@ -81,17 +81,17 @@
                                 <div class="col text-right">
                                     <a href="${pageContext.request.contextPath}/testing/edit?testId=${test.id}"
                                        class="btn btn-sm btn-dark m-1" role="button">
-                                        Edit test
+                                        <fmt:message key="app.testing.edit_test" />
                                     </a>
                                     <a href="${pageContext.request.contextPath}/testing/remove?testId=${test.id}"
                                        class="btn btn-sm btn-dark m-1" role="button"
-                                       onclick="return confirm('Are you sure you want to remove the test?')">
-                                        Remove test
+                                       onclick="return confirm('<fmt:message key="app.testing.test_removing_confirmation" />')">
+                                        <fmt:message key="app.testing.remove_test" />
                                     </a>
                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                             data-target="#desc${testLoop.index}"
                                             <c:if test="${fn:length(test.questions) == 0}">disabled</c:if>>
-                                        Details
+                                        <fmt:message key="app.common.details" />
                                     </button>
                                 </div>
                             </div>

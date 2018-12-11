@@ -125,7 +125,8 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
                     statement -> {
                         statement.setString(1, answer.getDescription());
                         statement.setBoolean(2, answer.isCorrect());
-                        statement.setLong(3, answer.getId());
+                        // we do not want throw NullPointer exception if answer does not exist
+                        statement.setObject(3, answer.getId(), Types.BIGINT);
                         statement.setLong(4, answer.getQuestionId());
                     });
     }

@@ -116,7 +116,8 @@ public class SubjectDaoJdbc extends BasicDaoJdbc implements SubjectDao {
         return update(sql,
                 (statement -> {
                     statement.setString(1, subject.getName());
-                    statement.setLong(2, subject.getId());
+                    // we do not want throw NullPointer exception if subject does not exist
+                    statement.setObject(2, subject.getId(), Types.BIGINT);
                 }));
     }
 

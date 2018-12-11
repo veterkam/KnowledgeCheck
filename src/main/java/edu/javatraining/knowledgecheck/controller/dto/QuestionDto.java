@@ -18,11 +18,10 @@ public class QuestionDto implements DtoWithErrors {
     @Pattern(regexp = "\\d*", message = "app.testing.validation.question.wrong")
     private String questionId;
 
-    @NotBlank(message="app.testing.validation.test.description.not_empty")
-    @Size(min=3, max=500, message="app.testing.validation.test.description.size")
+    @NotBlank(message="app.testing.validation.question.not_empty")
+    @Size(min=3, max=500, message="app.testing.validation.question.size")
     private String description;
 
-    @Pattern(regexp = "0|1", message = "app.testing.validation.answer.wrong")
     private String isRemoved = "0";
 
     private List<AnswerDto> answers;
@@ -108,7 +107,9 @@ public class QuestionDto implements DtoWithErrors {
             out.setAnswers(new ArrayList<>());
             for(AnswerDto a : answers) {
                 if(!a.isRemoved()) {
-                    out.getAnswers().add( a.toAnswer() );
+                    Answer answer = a.toAnswer();
+                    answer.setQuestionId(out.getId());
+                    out.getAnswers().add(answer);
                 }
             }
         }

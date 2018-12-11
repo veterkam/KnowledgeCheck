@@ -377,10 +377,10 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     private TestDto extractTestDto(HttpServletRequest request) {
         TestDto testDto = new TestDto();
 
+        testDto.setTestId( request.getParameter("testId") );
         testDto.setSubjectId( request.getParameter("subjectId") );
         testDto.setTitle( request.getParameter("title") );
         testDto.setDescription( request.getParameter("description") );
-        testDto.setDescription( request.getParameter("testId") );
 
         testDto.setQuestions( extractQuestionsDto(request) );
 
@@ -403,6 +403,8 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             questionDto.setRemoved( paramQuestionRemFlags[i] );
             questionDto.setDescription( paramQuestionDescs[i] );
             questionDto.setAnswers( extractAnswersDto(request, i) );
+
+            questions.add(questionDto);
         }
 
         return questions;

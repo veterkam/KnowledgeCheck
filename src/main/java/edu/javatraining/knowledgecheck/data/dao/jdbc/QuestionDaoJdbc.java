@@ -162,7 +162,8 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
         return update(sql,
                 statement -> {
                     statement.setString(1, question.getDescription());
-                    statement.setLong(2, question.getId());
+                    // we do not want throw NullPointer exception if question does not exist
+                    statement.setObject(2, question.getId(), Types.BIGINT);
                 });
     }
 

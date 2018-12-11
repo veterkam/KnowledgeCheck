@@ -21,7 +21,7 @@ public class TestDto implements DtoWithErrors {
     private String title;
 
     @NotBlank(message="app.testing.validation.test.description.not_empty")
-    @Size(min=3, max=500, message="app.testing.validation.description.test.size")
+    @Size(min=3, max=500, message="app.testing.validation.test.description.size")
     private String description;
 
     @NotBlank(message= "app.testing.validation.test.subject.not_empty")
@@ -120,7 +120,9 @@ public class TestDto implements DtoWithErrors {
             out.setQuestions(new ArrayList<>());
             for(QuestionDto q : questions) {
                 if(!q.isRemoved()) {
-                    out.getQuestions().add( q.toQuestion() );
+                    Question question = q.toQuestion();
+                    question.setTestId(out.getId());
+                    out.getQuestions().add(question);
                 }
             }
         }

@@ -169,7 +169,8 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
                     statement.setString(5, user.getUsername());
                     statement.setString(6, user.getPassword());
                     statement.setBoolean(7, user.isVerified());
-                    statement.setLong(8, user.getId());
+                    // we do not want throw NullPointer exception if user does not exist
+                    statement.setObject(8, user.getId(), Types.BIGINT);
                 });
     }
 

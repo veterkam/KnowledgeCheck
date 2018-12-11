@@ -246,7 +246,8 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
                     statement.setLong(1, test.getSubjectId());
                     statement.setString(2, test.getTitle());
                     statement.setString(3, test.getDescription());
-                    statement.setLong(4, test.getId());
+                    // we do not want throw NullPointer exception if test does not exist
+                    statement.setObject(4, test.getId(), Types.BIGINT);
                     statement.setLong(5, test.getTutorId());
                 }));
     }

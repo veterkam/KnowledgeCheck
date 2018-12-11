@@ -14,11 +14,10 @@ public class AnswerDto implements DtoWithErrors {
     @Pattern(regexp = "\\d*", message = "app.testing.validation.answer.wrong")
     private String answerId;
 
-    @NotBlank(message="app.testing.validation.test.description.not_empty")
-    @Size(min=3, max=500, message="app.testing.validation.description.test.size")
+    @NotBlank(message="app.testing.validation.answer.not_empty")
+    @Size(min=3, max=500, message="app.testing.validation.answer.size")
     private String description;
 
-    @Pattern(regexp = "0|1", message = "app.testing.validation.answer.wrong")
     private String isRemoved = "0";
 
     private boolean isCorrect = false;

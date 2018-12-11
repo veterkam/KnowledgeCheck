@@ -33,8 +33,10 @@ $( document ).ready(
                 var curAnswerContainer = $(this).closest('[data-role="answer-container"]');
                 var newAnswerContainer = curAnswerContainer.clone();
                 newAnswerContainer.find('input').val('');
+                newAnswerContainer.find('input').removeClass( "is-invalid" );
                 //newAnswerContainer.find('input').attr('value', '');
                 newAnswerContainer.find(':checkbox').prop( "checked", false );
+                newAnswerContainer.find('[data-role="field-error"]').remove();
                 curAnswerContainer.after(newAnswerContainer);
             }
         );
@@ -77,11 +79,69 @@ $( document ).ready(
                 var newQuestionContainer = curQuestionContainer.clone();
                 //newQuestionContainer.find('input, textarea').attr('value', '');
                 newQuestionContainer.find('input, textarea').val('');
+                newQuestionContainer.find('input, textarea').removeClass( "is-invalid" );
                 newQuestionContainer.find(':checkbox').prop( "checked", false );
+                newQuestionContainer.find('[data-role="field-error"]').remove();
                 curQuestionContainer.after(newQuestionContainer);
                 newQuestionContainer.find('[data-role="answer-container"]:hidden').remove();
             }
         );
+
+        $(document).on(
+            'keydown, keyup, change',
+            'input, textarea, select',
+            function(e) {
+                $(this).removeClass( "is-invalid" );
+
+                // clear field error
+                // get all field-error
+                var errors = $('[data-role="field-error"]');
+
+                // search errors for one that comes after current input/textarea
+                for (var i = 0; i < errors.length; i++) {
+                    if (isAfter(errors[i], $(this))) {
+                        errors[i].innerHTML = "";
+                        break;
+                    }
+                }
+            }
+        );
+
+        $(document).on(
+            'keydown',
+            'input, textarea',
+            function(e) {
+                clearErrors($(this));
+            }
+        );
+
+        $(document).on(
+            'change',
+            'select',
+            function(e) {
+                clearErrors($(this));
+            }
+        );
+
+        function clearErrors(el) {
+            el.removeClass( "is-invalid" );
+
+            // clear field error
+            // get all field-error
+            var errors = $('[data-role="field-error"]');
+
+            // search errors for one that comes after current input/textarea
+            for (var i = 0; i < errors.length; i++) {
+                if (isAfter(errors[i], el)) {
+                    errors[i].innerHTML = "";
+                    break;
+                }
+            }
+        }
+
+        function isAfter(elA, elB) {
+            return ($('*').index($(elA).last()) > $('*').index($(elB).first()));
+        }
 
         $(document).on(
             'click',

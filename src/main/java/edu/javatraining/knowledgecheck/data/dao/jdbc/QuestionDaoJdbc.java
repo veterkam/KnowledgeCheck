@@ -107,11 +107,16 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
 
     @Override
     public boolean delete(Question question) {
+        return deleteById(question.getId());
+    }
+
+    @Override
+    public boolean deleteById(Long id) {
         String sql = "DELETE FROM questions WHERE id = ?";
 
         return delete(sql,
                 (statement -> {
-                    statement.setLong(1, question.getId());
+                    statement.setLong(1, id);
                 }));
     }
 

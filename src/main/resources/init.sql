@@ -72,14 +72,14 @@ create table IF NOT EXISTS `tests` (
   `subject_id` int(11),
   `tutor_id` int(11),
   `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `title` varchar(100),
-  `description` varchar(1000)
+  `title` varchar(100) NOT NULL,
+  `description` varchar(500) NOT NULL
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
 create table IF NOT EXISTS `questions` (
   `id` bigint(11) not null auto_increment primary key,
   `test_id` bigint(11) not null,
-  `description` varchar(1000) not null,
+  `description` varchar(500) not null,
   FOREIGN KEY (`test_id`)
     REFERENCES `tests` (`id`)
       ON DELETE CASCADE
@@ -88,7 +88,7 @@ create table IF NOT EXISTS `questions` (
 create table IF NOT EXISTS `answers` (
   `id` bigint(11) not null auto_increment primary key,
   `question_id` bigint(11) not null,
-  `description` varchar(1000) not null,
+  `description` varchar(500) not null,
   `correct` boolean not null,
   FOREIGN KEY (`question_id`)
     REFERENCES `questions` (`id`)

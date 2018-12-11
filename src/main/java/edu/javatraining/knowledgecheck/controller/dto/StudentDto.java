@@ -1,7 +1,5 @@
 package edu.javatraining.knowledgecheck.controller.dto;
 
-//import org.hibernate.validator.constraints.ScriptAssert;
-
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;

@@ -29,8 +29,6 @@ public class BasicDaoJdbc {
         connectionPool = pool;
         isSingleConnOwner = false;
         singleConn = null;
-
-        logger.trace("BasicDaoJdbc constructor: ConnectionPool " + pool);
     }
 
     public BasicDaoJdbc(Connection connection) {

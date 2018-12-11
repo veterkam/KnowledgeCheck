@@ -3,6 +3,7 @@ package edu.javatraining.knowledgecheck.controller;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.service.*;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
@@ -327,7 +328,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             TestService testService = testServiceProvider.get();
             Test test = testService.findComplexOneById(testId);
             if(test != null && test.getTutorId().equals( user.getId() )) {
-                request.setAttribute("test", test );
+                request.setAttribute("test", new TestDto(test) );
             } else {
                 getAlertManager(request).danger("app.testing.you_do_not_have_permission_to_change_this_test");
                 redirect(request, response, "/testing/mytests");
@@ -352,146 +353,146 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         AlertManager alertManager = getAlertManager(request);
-        Test test = new Test();
-        test.setTutor(new Tutor(user));
+        TestDto testDto = extractTestDto(request);
 
-        String paramSubject = request.getParameter("subject");
-        String paramTitle = request.getParameter("title");
-        String paramDescription = request.getParameter("description");
-        String paramTestId = request.getParameter("testId");
-        try {
-            long testId = Long.parseLong(paramTestId);
-            test.setId(testId);
-        } catch (NumberFormatException e) {
-            // it is new test, do nothing
-        }
-
-        TestService testService = testServiceProvider.get();
-        SubjectService subjectService = subjectServiceProvider.get();
-
-        Subject subject = null;
-
-        try {
-            Long subjectId = Long.parseLong(paramSubject);
-            subject = subjectService.findOneById(subjectId);
-        } catch (NumberFormatException e) {
-            alertManager.danger("app.testing.subject_is_wrong");
-        }
-
-        test.setSubject(subject);
-        test.setTitle(paramTitle);
-        test.setDescription(paramDescription);
-
-        Validator validator = new Validator();
-        validator.validate(test);
-
-        // Fill test object with the data from request parameters
-        String[] paramQuestionDescs = request.getParameterValues("questions");
-        String[] paramQuestionIds = request.getParameterValues("questionIds");
-        String[] paramQuestionRemFlags = request.getParameterValues("questionRemovingFlags");
-
-
-        List<Question> questionList = new ArrayList<>();
-        List<Question> remQuestionList = new ArrayList<>();
-        List<Answer> remAnswerList = new ArrayList<>();
-
-        for(int i = 0; i < paramQuestionDescs.length; i++) {
-            Question question = new Question();
-            question.setTestId(test.getId());
-
-            try {
-                long id = Long.parseLong(paramQuestionIds[i]);
-                question.setId(id);
-
-                try {
-                    int isRemoved = Integer.parseInt(paramQuestionRemFlags[i]);
-                    if( isRemoved == 1 ) {
-                        // Add question to list for removing
-                        remQuestionList.add(question);
-                        continue;
-                    }
-                } catch (NumberFormatException e) {
-                    // it's not removed, do nothing
-                }
-            } catch (NumberFormatException e) {
-                // it's new question, do nothing
-            }
-
-            // question object with the data from request parameters
-            question.setDescription(paramQuestionDescs[i]);
-            validator.validate(question);
-            List<Answer> answerList = new ArrayList<>();
-
-            String[] paramAnswers = request.getParameterValues("answers["+i+"]");
-            String[] paramAnswerIds = request.getParameterValues("answerIds["+i+"]");
-            String[] paramAnswerRemFlags = request.getParameterValues("answerRemovingFlags["+i+"]");
-            for(int j = 0; j < paramAnswers.length; j++) {
-                Answer answer = new Answer();
-                answer.setQuestionId(question.getId());
-                try {
-                    long id = Long.parseLong(paramAnswerIds[j]);
-                    answer.setId(id);
-                    try {
-                        int isRemoved = Integer.parseInt(paramAnswerRemFlags[j]);
-                        if(isRemoved == 1) {
-                            // Add answer to list for removing
-                            remAnswerList.add(answer);
-                            continue;
-                        }
-                    } catch (NumberFormatException e) {
-                        // it's not removed, do nothing
-                    }
-                } catch (NumberFormatException e) {
-                    // it's new answer, do nothing
-                }
-
-                answer.setDescription(paramAnswers[j]);
-
-                String paramCorrect = request.getParameter("corrects["+i+"]["+j+"]");
-                boolean correct = (paramCorrect != null);
-                answer.setCorrect(correct);
-                answerList.add(answer);
-
-                validator.validate(answer);
-            }
-
-            question.setAnswers(answerList);
-            questionList.add(question);
-        }
-        test.setQuestions(questionList);
-
-        if (validator.isFailed()) {
-            // We have errors
-            alertManager.danger(validator.getErrors());
-            // Read subject list for subject filter in presentation
-            request.setAttribute("subjects",  subjectService.findAll() );
-            // Send test data for auto filing
-            request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_EDIT_TEST);
-            dispatcher.forward(request, response);
+        if( !validateTestDto(testDto) ) {
+            // Return test to edit
+            alertManager.danger("app.testing.test_saving_failed");
+            request.setAttribute("test", testDto );
+            forwardEditTestForm(request, response);
             return;
         }
 
-        if(!remAnswerList.isEmpty()) {
-            AnswerService service = answerServiceProvider.get();
-            for(Answer answer : remAnswerList) {
-                service.delete(answer);
-            }
-        }
-
-        if(!remQuestionList.isEmpty()) {
-            QuestionService service = questionServiceProvider.get();
-            for(Question question : remQuestionList) {
-                service.delete(question);
-            }
-        }
-
-        if( !testService.updateComplex(test) ) {
-            testService.insertComplex(test);
-        }
+        // Drop removed questions or answers from DB
+        dropRemovedElementsFromDataSource(testDto);
+        // Save test's changes
+        Test test = testDto.toTest();
+        test.setTutor(new Tutor(user));
+        testServiceProvider.get().save(test);
 
         alertManager.success("app.testing.test_saving_success");
         redirect(request, response, "/testing/mytests");
+    }
+
+    private TestDto extractTestDto(HttpServletRequest request) {
+        TestDto testDto = new TestDto();
+
+        testDto.setSubjectId( request.getParameter("subjectId") );
+        testDto.setTitle( request.getParameter("title") );
+        testDto.setDescription( request.getParameter("description") );
+        testDto.setDescription( request.getParameter("testId") );
+
+        testDto.setQuestions( extractQuestionsDto(request) );
+
+        return testDto;
+    }
+
+    private List<QuestionDto> extractQuestionsDto(HttpServletRequest request) {
+        // Extract question DTO from request parameters
+
+        List<QuestionDto> questions = new ArrayList<>();
+
+        String[] paramQuestionDescs = request.getParameterValues("questionDescriptions");
+        String[] paramQuestionIds = request.getParameterValues("questionIds");
+        String[] paramQuestionRemFlags = request.getParameterValues("questionRemovingFlags");
+
+        for(int i = 0; i < paramQuestionDescs.length; i++) {
+
+            QuestionDto questionDto = new QuestionDto();
+            questionDto.setQuestionId( paramQuestionIds[i] );
+            questionDto.setRemoved( paramQuestionRemFlags[i] );
+            questionDto.setDescription( paramQuestionDescs[i] );
+            questionDto.setAnswers( extractAnswersDto(request, i) );
+        }
+
+        return questions;
+    }
+
+    private List<AnswerDto> extractAnswersDto(HttpServletRequest request, int offset) {
+        // Extract answer DTO from request parameters
+
+        List<AnswerDto> answers = new ArrayList<>();
+
+        String[] paramAnswerDescs = request.getParameterValues("answerDescriptions["+ offset +"]");
+        String[] paramAnswerIds = request.getParameterValues("answerIds["+ offset +"]");
+        String[] paramAnswerRemFlags = request.getParameterValues("answerRemovingFlags["+ offset +"]");
+
+        for(int j = 0; j < paramAnswerDescs.length; j++) {
+            AnswerDto answerDto = new AnswerDto();
+            answerDto.setAnswerId( paramAnswerIds[j] );
+            answerDto.setRemoved( paramAnswerRemFlags[j] );
+            answerDto.setDescription( paramAnswerDescs[j] );
+            answerDto.setCorrect( request.getParameter("corrects["+offset+"]["+j+"]") != null );
+
+            answers.add(answerDto);
+        }
+
+        return answers;
+    }
+
+    private <T extends DtoWithErrors> boolean validateTestingDto(T dto) {
+
+        boolean isValid = true;
+
+        Map<String, List<String>> errors = DtoValidator.validate(dto);
+
+        if(!errors.isEmpty()) {
+            isValid = false;
+            dto.setErrors(errors);
+        }
+
+        return isValid;
+    }
+
+    private boolean validateTestDto(TestDto testDto) {
+
+        boolean isValid = validateTestingDto(testDto);
+
+        for(QuestionDto q : testDto.getQuestions()) {
+
+            if(q.isRemoved()) {
+                continue;
+            }
+
+            isValid &= validateTestingDto(q);
+
+            for(AnswerDto a : q.getAnswers()) {
+
+                if(a.isRemoved()) {
+                    continue;
+                }
+
+                isValid &= validateTestingDto(a);
+            }
+        }
+
+        return isValid;
+    }
+
+    private void dropRemovedElementsFromDataSource(TestDto testDto) {
+
+        for(QuestionDto q : testDto.getQuestions()) {
+
+            if(q.isRemoved()) {
+                try {
+                    questionServiceProvider.get().deleteById(
+                            Long.parseLong(q.getQuestionId()));
+                } catch (NumberFormatException e) {
+                    // do nothing
+                }
+            } else {
+                for(AnswerDto a : q.getAnswers()) {
+                    if(a.isRemoved()) {
+                        try {
+                            answerServiceProvider.get().deleteById(
+                                    Long.parseLong(a.getAnswerId()));
+                        } catch (NumberFormatException e) {
+                            // do nothing
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void runTest(HttpServletRequest request, HttpServletResponse response)

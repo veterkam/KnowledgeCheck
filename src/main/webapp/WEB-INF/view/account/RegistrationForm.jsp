@@ -121,10 +121,10 @@
         <c:set value='${errors != null && errors.get("role") != null}' var="isInvalid" />
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="selectRole" ><fmt:message key="app.account.role" /></label>
-            <select id="selectRole" name="role"
+            <select id="selectRole" name="role" required=""
                     class="custom-select form-control col-sm-8 mb-1 ${(isInvalid) ? 'is-invalid' : ''}"
                     <c:if test="${verifyEmail != null}">disabled</c:if>>
-                <option disabled><fmt:message key="app.account.choose_a_role" /></option>
+                <option disabled <c:if test="${userDto == null || userDto.role == null}">selected</c:if>><fmt:message key="app.account.choose_a_role" /></option>
                 <c:forEach var="role" items="${roles}">
                     <option <c:if test="${role.caption == userDto.role}">selected</c:if>  value="${role.caption}">
                         <fmt:message key="${role.caption}" />

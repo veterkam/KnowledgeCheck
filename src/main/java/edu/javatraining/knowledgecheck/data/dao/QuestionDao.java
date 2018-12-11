@@ -11,6 +11,7 @@ public interface QuestionDao{
     List<Question> findComplexAll(Long testId);
     List<Question> findPlainAll(Long testId);
     boolean delete(Question question);
+    boolean deleteById(Long id);
     boolean updateComplex(Question question);
     boolean updatePlain(Question question);
     Question findComplexById(Long id);

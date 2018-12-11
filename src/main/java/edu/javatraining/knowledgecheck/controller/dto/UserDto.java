@@ -1,7 +1,5 @@
 package edu.javatraining.knowledgecheck.controller.dto;
 
-//import org.hibernate.validator.constraints.ScriptAssert;
-
 import edu.javatraining.knowledgecheck.domain.User;
 import org.apache.logging.log4j.util.Strings;
 import org.hibernate.validator.constraints.ScriptAssert;

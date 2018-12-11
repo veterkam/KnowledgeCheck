@@ -3,7 +3,7 @@
     <select id="subjectFilter" name="presentationSubjectId" class="custom-select form-control mr-4">
         <option value="0"><fmt:message key="app.presentation.all_subjects" /></option>
         <c:forEach var="subject" items="${presentationSubjects}">
-            <option <c:if test="${subject.id == presentationSubjectId}">selected</c:if>  value="${subject.id}">
+            <option <c:if test="${subject.id == presentationSubjectId}">selected</c:if> value="${subject.id}">
                 <c:out value="${subject.name}"/>
             </option>
         </c:forEach>

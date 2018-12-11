@@ -46,6 +46,11 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    public boolean deleteById(Long id) {
+        return dao.deleteById(id);
+    }
+
+    @Override
     public boolean updateComplex(Question question) {
         return dao.updateComplex(question);
     }

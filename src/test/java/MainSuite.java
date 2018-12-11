@@ -1,7 +1,4 @@
-import edu.javatraining.knowledgecheck.controller.dto.DtoValidator;
-import edu.javatraining.knowledgecheck.controller.dto.StudentDto;
-import edu.javatraining.knowledgecheck.controller.dto.TutorDto;
-import edu.javatraining.knowledgecheck.controller.dto.UserDto;
+import edu.javatraining.knowledgecheck.controller.dto.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.validator.constraints.ScriptAssert;
@@ -93,6 +90,50 @@ public class MainSuite {
         Map<String, List<String>> errors = DtoValidator.validate(studentDto);
 
         Assert.assertEquals( 1, errors.size() );
+    }
+
+    @Test
+    public void testDtoTest() {
+
+        TestDto testDto = new TestDto();
+        testDto.setDescription("desc");
+        testDto.setTitle("Title");
+        testDto.setSubjectId("1");
+        testDto.setTestId("12");
+
+        Map<String, List<String>> errors = DtoValidator.validate(testDto);
+
+        Assert.assertEquals( 1, errors.size() );
+    }
+
+    @Test
+    public void answerDtoTest() {
+
+        AnswerDto answer = new AnswerDto();
+        answer.setDescription("desc");
+        answer.setAnswerId("12");
+
+        Map<String, List<String>> errors = DtoValidator.validate(answer);
+        answer.setRemoved(false);
+
+        errors = DtoValidator.validate(answer);
+
+        Assert.assertEquals( 1, errors.size() );
+    }
+
+    @Test
+    public void andBoolTest() {
+
+       boolean verdad = true;
+       boolean mentira = false;
+
+       verdad |= true;
+       verdad |= false;
+
+       mentira |= true;
+       mentira |= false;
+
+        Assert.assertEquals( 1, 1 );
     }
 
 

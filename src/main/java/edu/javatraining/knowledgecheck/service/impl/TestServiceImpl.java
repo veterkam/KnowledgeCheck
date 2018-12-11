@@ -47,6 +47,13 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    public void save(Test test) {
+        if( !updateComplex(test) ) {
+            insertComplex(test);
+        }
+    }
+
+    @Override
     public boolean updateComplex(Test test) {
         return dao.updateComplex(test);
     }

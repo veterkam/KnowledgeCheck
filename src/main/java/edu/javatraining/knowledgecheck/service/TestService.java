@@ -13,6 +13,7 @@ public interface TestService {
     List<Test> findComplexAll(Long offset, Long count);
     List<Test> findPlainAll(Long offset, Long count);
     boolean delete(Test test);
+    void save(Test test);
     boolean updateComplex(Test test);
     boolean updatePlain(Test test);
     Test findComplexOneById(Long id);

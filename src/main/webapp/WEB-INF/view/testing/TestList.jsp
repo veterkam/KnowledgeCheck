@@ -19,12 +19,12 @@
                     <div class="row">
                         <div class="col text-left">
                             <c:if test="${test.subject != null}">
-                                <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
+                                <strong><fmt:message key="app.testing.subject" /></strong>: <c:out value="${test.subject.name}"/>
                             </c:if>
                         </div>
                         <div class="col text-right">
                             <c:if test="${test.tutor != null}">
-                                <strong>Author</strong>:
+                                <strong><fmt:message key="app.testing.author" /></strong>:
                                 <a href="${pageContext.request.contextPath}/account/profile/${test.tutor.username}">
                                     <c:out value="${test.tutor.fullname}"/>
                                 </a>
@@ -39,18 +39,18 @@
                 <div class="card-footer text-muted">
                     <div class="row">
                         <div class="col text-left">
-                            <p class="card-text small">Update: <fmt:formatDate type = "date" value = "${test.updateTime}" /></p>
+                            <p class="card-text small"><fmt:message key="app.testing.update" />: <fmt:formatDate type = "date" value = "${test.updateTime}" /></p>
                         </div>
                         <c:if test="${user != null && user.role=='STUDENT'}">
                             <c:if test="${scores[loop.index] >= 0}">
                                 <div class="col text-left">
-                                    <p class="card-text small">My result: ${scores[loop.index]}%</p>
+                                    <p class="card-text small"><fmt:message key="app.testing.my_result" />: ${scores[loop.index]}%</p>
                                 </div>
                             </c:if>
                             <div class="col text-right">
                                 <a href="${pageContext.request.contextPath}/testing/testing?testId=${test.id}"
                                    class="btn btn-sm btn-dark m-1" role="button">
-                                    Run testing
+                                    <fmt:message key="app.testing.run_testing" />
                                 </a>
                             </div>
                         </c:if>

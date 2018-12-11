@@ -68,6 +68,9 @@ public class StudentDto extends UserDto{
         fromUser(s);
         setGroup(s.getGroup());
         setSpecialty(s.getSpecialty());
-        setYear("" + s.getYear());
+
+        if(s.getYear() != 0) {
+            setYear("" + s.getYear());
+        }
     }
 }

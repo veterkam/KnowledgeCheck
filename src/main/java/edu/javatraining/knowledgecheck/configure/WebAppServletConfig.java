@@ -57,8 +57,8 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/testing/mytests",
                         "/testing/edit",
                         "/testing/remove",
-                        "/testing/testing",
-                        "/testing/testing/result",
+                        "/testing/test",
+                        "/testing/test/result",
                         "/testing/studentsresults",
                         "/testing/teststatistics",
                         "/testing/subjects"

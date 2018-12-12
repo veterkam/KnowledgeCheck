@@ -15,7 +15,7 @@ public class AnswerDto implements DtoWithErrors {
     private String answerId;
 
     @NotBlank(message="app.testing.validation.answer.not_empty")
-    @Size(min=3, max=500, message="app.testing.validation.answer.size")
+    @Size(min=1, max=500, message="app.testing.validation.answer.size")
     private String description;
 
     private String isRemoved = "0";

@@ -1,4 +1,5 @@
 import edu.javatraining.knowledgecheck.controller.dto.*;
+import edu.javatraining.knowledgecheck.service.tools.LocaleMsgReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.validator.constraints.ScriptAssert;
@@ -23,23 +24,6 @@ public class MainSuite {
     private static final Logger logger = LogManager.getLogger("MainSuite");
     @Test
     public void main() {
-
-        Validator validator;
-
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-
-        Car car = new Car( "hello", "hello", "DD-AB-123", 4 );
-
-        Set<ConstraintViolation<Car>> constraintViolations =
-                validator.validate( car );
-
-
-        Assert.assertEquals( 1, constraintViolations.size() );
-        Assert.assertEquals(
-                "may not be null",
-                constraintViolations.iterator().next().getMessage()
-        );
     }
 
     @Test
@@ -55,7 +39,7 @@ public class MainSuite {
 
         Map<String, List<String>> errors = DtoValidator.validate(userDto);
 
-        Assert.assertEquals( 1, errors.size() );
+        Assert.assertEquals( errors.size(), 4 );
     }
 
     @Test
@@ -72,79 +56,60 @@ public class MainSuite {
 
         Map<String, List<String>> errors = DtoValidator.validate(tutorDto);
 
-        Assert.assertEquals( 1, errors.size() );
+        Assert.assertEquals( errors.size(), 8 );
     }
 
     @Test
     public void studentDtoTest() {
 
         StudentDto studentDto = new StudentDto();
-        studentDto.setFirstName("Ft");
+        studentDto.setFirstName("");
         studentDto.setLastName("LastName");
         studentDto.setPassword("123");
         studentDto.setConfirmPassword("1423");
         studentDto.setEmail("mailcom");
-        //tutorDto.setRole("Tutor");
         studentDto.setYear(" dsfdsf ");
 
         Map<String, List<String>> errors = DtoValidator.validate(studentDto);
 
-        Assert.assertEquals( 1, errors.size() );
+        Assert.assertEquals( errors.size(), 8 );
     }
 
     @Test
     public void testDtoTest() {
 
         TestDto testDto = new TestDto();
-        testDto.setDescription("desc");
+        testDto.setDescription("de");
         testDto.setTitle("Title");
         testDto.setSubjectId("1");
         testDto.setTestId("12");
 
         Map<String, List<String>> errors = DtoValidator.validate(testDto);
 
-        Assert.assertEquals( 1, errors.size() );
+        Assert.assertEquals( errors.size(), 1);
     }
 
     @Test
     public void answerDtoTest() {
 
         AnswerDto answer = new AnswerDto();
-        answer.setDescription("desc");
+        answer.setDescription("");
         answer.setAnswerId("12");
 
         Map<String, List<String>> errors = DtoValidator.validate(answer);
-        answer.setRemoved(false);
 
-        errors = DtoValidator.validate(answer);
-
-        Assert.assertEquals( 1, errors.size() );
+        Assert.assertEquals(errors.size(), 1 );
     }
 
     @Test
-    public void andBoolTest() {
+    public void localeMsgReaderTest() {
 
-       boolean verdad = true;
-       boolean mentira = false;
+        String message = LocaleMsgReader.message("ru", "app.testing.your_result_is", 30);
+        String expect = "Ваш результат 30% правильных ответов!";
 
-       verdad |= true;
-       verdad |= false;
-
-       mentira |= true;
-       mentira |= false;
-
-        Assert.assertEquals( 1, 1 );
+        Assert.assertEquals( message, expect );
     }
 
-
-    @Test
-    public void genCSFK() {
-        logger.trace("" + Math.random());
-        logger.trace("" + Math.random());
-        logger.trace("" + Math.random());
-        logger.trace("" + Math.random());
-        logger.trace("" + Math.random());
-    }
 
 
 }

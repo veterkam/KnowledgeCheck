@@ -5,7 +5,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <fmt:setLocale value="${sessionScope.lang}"/>
-<fmt:setBundle basename="local/messages"/>
+<fmt:setBundle basename="locale/messages"/>
 
 <!DOCTYPE html>
 <html lang="${sessionScope.lang}">

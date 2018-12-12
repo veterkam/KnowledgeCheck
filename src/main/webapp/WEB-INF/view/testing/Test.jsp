@@ -1,26 +1,28 @@
 <%@ include file = "../common/Header.jsp" %>
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Run test</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing" /></h1>
         </div>
     </div>
 
-    <%@ include file="../common/Alert.jsp" %>
+    <div class="row">
+        <%@ include file="../common/Alert.jsp" %>
+    </div>
     <div class="row">
         <div class="col">
-            <form class="form-text-edit text-left" data-role="test-container" id="test-carousel-container" method="get">
+            <form class="form-text-edit text-left" data-role="test-container" id="test-carousel-container" method="post">
                 <input type="text" name="testId" value="${test.id}" hidden>
                 <div class="card mb-4">
                     <div class="card-header">
                         <div class="row">
                             <div class="col text-left">
                                 <c:if test="${test.subject != null}">
-                                    <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
+                                    <strong><fmt:message key="app.testing.subject" /></strong>: <c:out value="${test.subject.name}"/>
                                 </c:if>
                             </div>
                             <div class="col text-right">
                                 <c:if test="${test.tutor != null}">
-                                    <strong>Author</strong>: <c:out value="${test.tutor.fullname}"/>
+                                    <strong><fmt:message key="app.testing.author" /></strong>: <c:out value="${test.tutor.fullname}"/>
                                 </c:if>
                             </div>
                         </div>
@@ -74,8 +76,8 @@
                             </div>
                             <div class="col text-center">
                                 <button class="btn btn-dark m-1" type="submit" name="btnResult" data-role="indexing"
-                                        formaction="${pageContext.request.contextPath}/testboard/testing/result">
-                                    Result
+                                        formaction="${pageContext.request.contextPath}/testing/test">
+                                    <fmt:message key="app.testing.result" />
                                 </button>
                             </div>
                             <div class="col text-right">

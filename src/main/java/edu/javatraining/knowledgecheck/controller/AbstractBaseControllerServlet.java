@@ -25,7 +25,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_TEST_BOARD = "/WEB-INF/view/testing/TestList.jsp";
     protected final String VIEW_MY_TESTS = "/WEB-INF/view/testing/MyTests.jsp";
     protected final String VIEW_EDIT_TEST = "/WEB-INF/view/testing/EditTest.jsp";
-    protected final String VIEW_TESTING = "/WEB-INF/view/testing/Testing.jsp";
+    protected final String VIEW_TEST = "/WEB-INF/view/testing/Test.jsp";
     protected final String VIEW_STUDENTS_RESULTS = "/WEB-INF/view/testing/StudentsResults.jsp";
     protected final String VIEW_TEST_STATISTICS = "/WEB-INF/view/testing/TestStatistics.jsp";
     protected final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/account/MyProfileForm.jsp";

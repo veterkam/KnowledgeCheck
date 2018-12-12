@@ -23,6 +23,16 @@ public class AlertManager {
         alerts.clear();
     }
 
+    public void push(String type, String message, boolean isKeyi18n) {
+        alerts.add(new Alert(type, message, isKeyi18n));
+    }
+
+    public  void push(String type, List<String> messages, boolean isKeyi18n) {
+        for( String message : messages ) {
+            push(type, message, isKeyi18n);
+        }
+    }
+
     public void push(String type, String message) {
         alerts.add(new Alert(type, message));
     }
@@ -63,5 +73,37 @@ public class AlertManager {
 
     public  void success(List<String> messages) {
         push("success", messages);
+    }
+
+    public  void danger(String message, boolean isKeyi18n) {
+        push("danger", message, isKeyi18n);
+    }
+
+    public  void danger(List<String> messages, boolean isKeyi18n) {
+        push("danger", messages, isKeyi18n);
+    }
+
+    public  void warning(String message, boolean isKeyi18n) {
+        push("warning", message, isKeyi18n);
+    }
+
+    public  void warning(List<String> messages, boolean isKeyi18n) {
+        push("warning", messages, isKeyi18n);
+    }
+
+    public  void info(String message, boolean isKeyi18n) {
+        push("info", message, isKeyi18n);
+    }
+
+    public  void info(List<String> messages, boolean isKeyi18n) {
+        push("info", messages, isKeyi18n);
+    }
+
+    public  void success(String message, boolean isKeyi18n) {
+        push("success", message, isKeyi18n);
+    }
+
+    public  void success(List<String> messages, boolean isKeyi18n) {
+        push("success", messages, isKeyi18n);
     }
 }

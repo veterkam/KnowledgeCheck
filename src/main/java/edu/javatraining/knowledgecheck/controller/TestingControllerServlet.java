@@ -5,11 +5,12 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
+import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.service.*;
 import edu.javatraining.knowledgecheck.service.tools.AlertManager;
+import edu.javatraining.knowledgecheck.service.tools.LocaleMsgReader;
 import edu.javatraining.knowledgecheck.service.tools.Pagination;
 import edu.javatraining.knowledgecheck.service.tools.Presentation;
-import edu.javatraining.knowledgecheck.service.tools.Validator;
 import edu.javatraining.knowledgecheck.domain.*;
 import org.apache.logging.log4j.util.Strings;
 
@@ -31,8 +32,8 @@ import java.util.Map;
         "/testing/mytests",
         "/testing/edit",
         "/testing/remove",
-        "/testing/testing",
-        "/testing/testing/result",
+        "/testing/test",
+        "/testing/test/result",
         "/testing/studentsresults",
         "/testing/teststatistics",
         "/testing/subjects"
@@ -70,6 +71,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                 case "/testing/edit":
                     editTestProcessing(request, response);
                     break;
+                case "/testing/test":
+                    testProcessing(request, response);
+                    break;
                 default:
                     pageNotFound(request, response);
                     break;
@@ -106,11 +110,8 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                 case "/testing/remove":
                     removeTest(request, response);
                     break;
-                case "/testing/testing":
+                case "/testing/test":
                     runTest(request, response);
-                    break;
-                case "/testing/testing/result":
-                    processTestResult(request, response);
                     break;
                 case "/testing/studentsresults":
                     studentsResults(request, response);
@@ -241,6 +242,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
+            // if student, than add scores(results) to the page
             List<Integer> scores = new ArrayList<>();
             TestingResultsService testingResultsService = testingResultServiceProvider.get();
             for (Test test : tests) {
@@ -253,8 +255,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         // Store data in request and session
         storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(view);
-        dispatcher.forward(request, response);
+        forward(request, response, view);
     }
 
     private void showSimpleListOfTests(HttpServletRequest request, HttpServletResponse response)
@@ -500,61 +501,119 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     public void runTest(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
 
-        User user = (User) request.getSession().getAttribute("user");
-
-        if(user == null || user.getRole() != User.Role.STUDENT) {
+        if(checkPermit(request, User.Role.STUDENT) == null) {
             pageNotFound(request, response);
             return;
         }
 
-        String strTestId = request.getParameter("testId");
         long testId;
         try {
-            testId = Long.parseLong(strTestId);
+            testId = Long.parseLong( request.getParameter("id") );
         } catch (NumberFormatException e) {
             pageNotFound(request, response);
             return;
         }
 
-        TestService testService = testServiceProvider.get();
-        Test test = testService.findComplexOneById(testId);
+        Test test = testServiceProvider.get().findComplexOneById(testId);
 
         if(test == null) {
-            getAlertManager(request).danger("Can't find the test. Please, try again!");
-            response.sendRedirect(request.getContextPath() + "/" );
+            getAlertManager(request).danger("app.testing.can_not_find_test");
+            redirect(request, response, "/" );
         } else {
             request.setAttribute("test", test);
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TESTING);
-            dispatcher.forward(request, response);
+            forward(request, response, VIEW_TEST);
         }
     }
 
-    public void processTestResult(HttpServletRequest request, HttpServletResponse response)
+    public void testProcessing(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
 
-        User user = (User) request.getSession().getAttribute("user");
+        // Process results of test
+        User user = checkPermit(request, User.Role.STUDENT);
 
-        if(user == null || user.getRole() != User.Role.STUDENT) {
+        if(user == null ) {
             pageNotFound(request, response);
             return;
         }
 
-        String strTestId = request.getParameter("testId");
         Long testId;
         try {
-            testId = Long.parseLong(strTestId);
+            testId = Long.parseLong( request.getParameter("testId") );
         } catch (NumberFormatException e) {
             pageNotFound(request, response);
             return;
         }
 
         // Read from DB Lists correct answers for each question
-        TestService testService = testServiceProvider.get();
-        Map<Long, List<Long>> correctAnswerMap = testService.findCorrectAnswerIdsByTestId(testId);
+        // Map<Long questionId, List<Long answerId>>
+        Map<Long, List<Long>> correctAnswersMap = testServiceProvider.get().findCorrectAnswerIdsByTestId(testId);
+        // Extract checked answers from request
+        Map<Long, List<Long>> checkedAnswersMap = extractCheckedAnswerMap(request);
+        // Calculate correctly checked answers
+        // Map<Long questionId, boolean>
+        Map<Long, Boolean> answerResults = calcCorrectlyCheckedAnswers(correctAnswersMap, checkedAnswersMap);
+        // Save results in DB
+        TestingResults testingResults = new TestingResults(user.getId(), testId, answerResults);
+        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
+        testingResultsDao.update(testingResults);
 
-        Map<Long, List<Long>> selectedAnswerMap = new HashMap<>();
+        // Prepare message with results
+        int correctlyCheckedAnswersCount = 0;
+        for(Boolean correct : answerResults.values()) {
+            if(correct) {
+                correctlyCheckedAnswersCount++;
+            }
+        }
+        int score = Math.round(100.0f * ((float)correctlyCheckedAnswersCount) / ((float) correctAnswersMap.size()));
 
-        // Build from request lists of checked answers for each question
+        String message = LocaleMsgReader.message(request, "app.testing.your_result_is",score);
+        if (score > 50) {
+            getAlertManager(request).success(message, false);
+        } else {
+            getAlertManager(request).warning(message, false);
+        }
+
+        redirect(request, response, "/");
+    }
+
+    private Map<Long, Boolean> calcCorrectlyCheckedAnswers(
+                                            Map<Long, List<Long>> correctAnswersMap,
+                                            Map<Long, List<Long>> checkedAnswersMap) {
+        // Calculate correctly checked answers
+        // Map<Long questionId, boolean>
+        Map<Long, Boolean> answerResults = new HashMap<>();
+
+        for (Long questionId : correctAnswersMap.keySet()) {
+            answerResults.put(questionId, false);
+
+            if (checkedAnswersMap.containsKey(questionId)) {
+                List<Long> checkedAnswers = checkedAnswersMap.get(questionId);
+                List<Long> correctAnswers = correctAnswersMap.get(questionId);
+
+                if (checkedAnswers.size() == correctAnswers.size()) {
+
+                    boolean isListEq = true;
+                    for (Long val : correctAnswers) {
+                        if (!checkedAnswers.contains(val)) {
+                            isListEq = false;
+                            break;
+                        }
+                    }
+
+                    answerResults.put(questionId, isListEq);
+                }
+            }
+        }
+
+        return answerResults;
+    }
+
+    private Map<Long, List<Long>> extractCheckedAnswerMap(HttpServletRequest request)
+        throws RequestException {
+
+        // Extract from request lists of checked answers for each question
+        // Map<Long questionId, List<Long correct answerId>>
+        Map<Long, List<Long>> checkedAnswerMap = new HashMap<>();
         String[] paramQuestions = request.getParameterValues("questionIds");
         for (int i = 0; i < paramQuestions.length; i++) {
             try {
@@ -567,64 +626,22 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                     String paramCheckedAnswers = request.getParameter("checkedAnswers[" + i + "][" + j + "]");
                     if (paramCheckedAnswers != null) {
                         // add checked answer to map
-                        if (!selectedAnswerMap.containsKey(questionId)) {
+                        if (!checkedAnswerMap.containsKey(questionId)) {
                             // create list of answers for each new question
-                            selectedAnswerMap.put(questionId, new ArrayList<>());
+                            checkedAnswerMap.put(questionId, new ArrayList<>());
                         }
 
-                        selectedAnswerMap.get(questionId).add(answerId);
+                        checkedAnswerMap.get(questionId).add(answerId);
                     }
 
                 }
             } catch (NumberFormatException e) {
-                pageNotFound(request, response);
-                return;
+                logger.error(e.getMessage(), e);
+                throw new RequestException(e.getMessage(), e);
             }
         }
 
-        Map<Long, Boolean> answerResults = new HashMap<>();
-        int correctlySelAnswerCount = 0;
-
-        for (Long questionId : correctAnswerMap.keySet()) {
-            answerResults.put(questionId, false);
-
-            if (selectedAnswerMap.containsKey(questionId)) {
-                List<Long> selectedAnswers = selectedAnswerMap.get(questionId);
-                List<Long> correctAnswers = correctAnswerMap.get(questionId);
-
-                if (selectedAnswers.size() == correctAnswers.size()) {
-
-                    boolean isListEq = true;
-                    for (Long val : correctAnswers) {
-                        if (!selectedAnswers.contains(val)) {
-                            isListEq = false;
-                            break;
-                        }
-                    }
-
-                    if (isListEq) {
-                        answerResults.put(questionId, true);
-                        correctlySelAnswerCount++;
-                    }
-                }
-            }
-        }
-
-        // Save results in DB
-        TestingResults testingResults = new TestingResults(user.getId(), testId, answerResults);
-        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
-        testingResultsDao.update(testingResults);
-
-        // Show results
-        int score = Math.round(100.0f * ((float)correctlySelAnswerCount) / ((float) correctAnswerMap.size()));
-        String message = "Your result is " + score + "% correct answers!";
-        if (score > 50) {
-            getAlertManager(request).success(message);
-        } else {
-            getAlertManager(request).danger(message);
-        }
-
-        response.sendRedirect(request.getContextPath() + "/");
+        return checkedAnswerMap;
     }
 
     public void studentsResults(HttpServletRequest request, HttpServletResponse response)

@@ -13,7 +13,8 @@ import java.util.List;
 
 public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
 
-    private final static String BASIC_SELECT = "SELECT users.`id` as `id`, " +
+    private final static String USER_JOIN_STUDENT =
+            "users.`id` as `id`, " +
             " `firstname`, " +
             " `lastname`, " +
             " `email`, " +
@@ -25,7 +26,9 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
             " `group`, " +
             " `year` " +
             " from users" +
-            " left join student_profiles on users.id = student_profiles.id";
+            " left join student_profiles on users.id = student_profiles.id ";
+
+    private final static String BASIC_SELECT = "SELECT " + USER_JOIN_STUDENT;
 
     public StudentDaoJdbc(ConnectionPool pool) {
         super(pool);
@@ -234,11 +237,11 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
     }
 
     public List<Student> getStudentsTookTest(long testId)  {
-
+        // Select all students who pass test with id = testId
         final int role = User.Role.STUDENT.ordinal();
         List<Student> students = new ArrayList<>();
 
-        String sql = BASIC_SELECT +
+        String sql = "SELECT DISTINCT " + USER_JOIN_STUDENT +
                 "INNER JOIN testing_results ON users.id = testing_results.student_id " +
                 "INNER JOIN questions ON questions.id = testing_results.question_id " +
                 "WHERE questions.test_id = ? AND users.role = ? " +

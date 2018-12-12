@@ -44,8 +44,6 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     final int COUNT_TEST_ON_PAGE = 10;
     final int PAGINATION_LIMIT = 5;
 
-
-
     @Inject
     private Provider<TestService> testServiceProvider;
     @Inject
@@ -235,10 +233,10 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         List<Test> tests;
         if(onlyTest) {
             // without question and answers
-            tests = testService.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
+            tests = testService.findPlainTests(offset, (long) COUNT_TEST_ON_PAGE);
         } else {
             // with question and answers
-            tests = testService.findComplexAll(offset, (long) COUNT_TEST_ON_PAGE);
+            tests = testService.findAllTestsWithQuestionsAndAnswers(offset, (long) COUNT_TEST_ON_PAGE);
         }
 
         if(user != null && user.getRole() == User.Role.STUDENT) {
@@ -548,7 +546,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         // Map<Long questionId, List<Long answerId>>
         Map<Long, List<Long>> correctAnswersMap = testServiceProvider.get().findCorrectAnswerIdsByTestId(testId);
         // Extract checked answers from request
-        Map<Long, List<Long>> checkedAnswersMap = extractCheckedAnswerMap(request);
+        Map<Long, List<Long>> checkedAnswersMap = extractCheckedAnswersMap(request);
         // Calculate correctly checked answers
         // Map<Long questionId, boolean>
         Map<Long, Boolean> answerResults = calcCorrectlyCheckedAnswers(correctAnswersMap, checkedAnswersMap);
@@ -558,15 +556,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         testingResultsDao.update(testingResults);
 
         // Prepare message with results
-        int correctlyCheckedAnswersCount = 0;
-        for(Boolean correct : answerResults.values()) {
-            if(correct) {
-                correctlyCheckedAnswersCount++;
-            }
-        }
-        int score = Math.round(100.0f * ((float)correctlyCheckedAnswersCount) / ((float) correctAnswersMap.size()));
-
-        String message = LocaleMsgReader.message(request, "app.testing.your_result_is",score);
+        int score = testingResults.getScore();
+        String message = LocaleMsgReader.message(request,
+                "app.testing.your_result_is", score);
         if (score > 50) {
             getAlertManager(request).success(message, false);
         } else {
@@ -608,7 +600,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         return answerResults;
     }
 
-    private Map<Long, List<Long>> extractCheckedAnswerMap(HttpServletRequest request)
+    private Map<Long, List<Long>> extractCheckedAnswersMap(HttpServletRequest request)
         throws RequestException {
 
         // Extract from request lists of checked answers for each question
@@ -646,32 +638,24 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     public void studentsResults(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        User user = (User) request.getSession().getAttribute("user");
 
-        if(user == null || user.getRole() != User.Role.TUTOR) {
+        if(checkPermit(request, User.Role.TUTOR) == null ) {
             pageNotFound(request, response);
             return;
         }
 
         TestService testService = testServiceProvider.get();
         ViewOptions vo = initViewOptions(request, testService, true);
-
-        // Read test list
         Long offset = (long) (vo.pagination.getCurrent() - 1) * COUNT_TEST_ON_PAGE;
-        List<Test> tests;
 
-        // single test list, without question and answers
-        tests = testService.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
-        QuestionService questionDao = questionServiceProvider.get();
-        // Results of testing for each test and student
+        List<Test> tests = testService.findAllTestsWithQuestions(offset, (long) COUNT_TEST_ON_PAGE);
+
+        // Prepare results of testing for each test and student
         List< List<TestingResults> > testingResultsList = new ArrayList<>();
-        TestingResultsService testingResultsDao = testingResultServiceProvider.get();
+        TestingResultsService testingResultsService = testingResultServiceProvider.get();
         for(Test test : tests) {
-            // attach simple question list without answers
-            List<Question> questions =  questionDao.findPlainAll(test.getId());
-            test.setQuestions(questions);
-            // read students's results of testing
-            List<TestingResults> testingResults = testingResultsDao.find(test.getId());
+            // Read students's results of testing for current test
+            List<TestingResults> testingResults = testingResultsService.find(test.getId());
             testingResultsList.add(testingResults);
         }
 
@@ -679,72 +663,31 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("testingResultsList", testingResultsList);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_STUDENTS_RESULTS);
-        dispatcher.forward(request, response);
+        forward(request, response, VIEW_STUDENTS_RESULTS);
     }
 
     public void testStatistics(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        User user = (User) request.getSession().getAttribute("user");
 
-        if(user == null || user.getRole() != User.Role.TUTOR) {
+        User user = checkPermit(request, User.Role.TUTOR);
+
+        if(user == null ) {
             pageNotFound(request, response);
             return;
         }
 
-        TestService testService = testServiceProvider.get();
-        ViewOptions vo = initViewOptions(request, testService, true);
-
-        // Read test list
+        ViewOptions vo = initViewOptions(request, testServiceProvider.get(), true);
         Long offset = (long) (vo.pagination.getCurrent() - 1) * COUNT_TEST_ON_PAGE;
-        List<Test> tests;
 
-        // single test list, without question and answers
-        tests = testService.findPlainAll(offset, (long) COUNT_TEST_ON_PAGE);
-        QuestionService questionDao = questionServiceProvider.get();
+        List<Test> tests = testServiceProvider.get()
+                .findAllTestsWithQuestions(offset, (long) COUNT_TEST_ON_PAGE);
         TestingResultsService testingResultsDao = testingResultServiceProvider.get();
         List<TestStatistics> statisticsList = new ArrayList<>();
         for(Test test : tests) {
-            // attach simple question list without answers
-            List<Question> questions =  questionDao.findPlainAll(test.getId());
-            test.setQuestions(questions);
             // read students's results of testing
+            // and calc statistics
             List<TestingResults> testingResultsList = testingResultsDao.find(test.getId());
-
-            // Calculate statistics
-            TestStatistics statistics = new TestStatistics();
-            int studentCount = testingResultsList.size();
-            statistics.setStudentCount(studentCount);
-            // Calculate scores. First calc how many students
-            // answered correct for each question
-            Map<Long, Integer> scores = new HashMap<>();
-            // results for each student for current test
-            for(TestingResults results : testingResultsList) {
-
-                for (long questionId : results.getAnswerResults().keySet()) {
-
-                    if (!scores.containsKey(questionId)) {
-                        scores.put(questionId, 0);
-                    }
-
-                    // answer is(not) correct for each question?
-                    boolean correct = results.getAnswerResults().get(questionId);
-                    if (correct) {
-                        int correctAnswerCount = scores.get(questionId) + 1;
-                        scores.put(questionId, correctAnswerCount);
-                    }
-                }
-            }
-
-            // Second calc scores: divided count of correct student's answers
-            // by count of students
-            for (long questionId : scores.keySet()) {
-                int correctAnswerCount = scores.get(questionId);
-                int score = Math.round(100.0f * ((float)correctAnswerCount) / ((float) statistics.getStudentCount()));
-                scores.put(questionId, score);
-            }
-
-            statistics.setScores(scores);
+            TestStatistics statistics = calcStatistics(testingResultsList);
             statisticsList.add(statistics);
         }
 
@@ -752,16 +695,56 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         storeViewOptions(vo, request);
         request.setAttribute("tests", tests);
         request.setAttribute("statisticsList", statisticsList);
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(VIEW_TEST_STATISTICS);
-        dispatcher.forward(request, response);
+        forward(request, response, VIEW_TEST_STATISTICS);
+    }
+
+    private TestStatistics calcStatistics(List<TestingResults> testingResultsList) {
+        // Get student testing results list for one test
+        // Calculate statistics correct and incorrect
+        // answers for each question of current test
+        TestStatistics statistics = new TestStatistics();
+        int studentCount = testingResultsList.size();
+        statistics.setStudentCount(studentCount);
+
+        // First calc how many students
+        // answered correct for each question
+        Map<Long, Integer> scores = new HashMap<>();
+        // results for each student for current test
+        for(TestingResults results : testingResultsList) {
+
+            for (long questionId : results.getAnswerResults().keySet()) {
+
+                if (!scores.containsKey(questionId)) {
+                    scores.put(questionId, 0);
+                }
+
+                // answer is correct?
+                boolean correct = results.getAnswerResults().get(questionId);
+                if (correct) {
+                    int correctAnswerCount = scores.get(questionId) + 1;
+                    scores.put(questionId, correctAnswerCount);
+                }
+            }
+        }
+
+        // Second calc scores: divided count of correct student's answers
+        // by count of students
+        for (long questionId : scores.keySet()) {
+            int correctAnswerCount = scores.get(questionId);
+            int score = Math.round(100.0f * ((float)correctAnswerCount) / ((float) statistics.getStudentCount()));
+            scores.put(questionId, score);
+        }
+
+        statistics.setScores(scores);
+
+        return statistics;
     }
 
 
     public void showSubjectsForm(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        User user = (User) request.getSession().getAttribute("user");
 
-        if (user == null || user.getRole() != User.Role.TUTOR) {
+        if (checkPermit(request, User.Role.TUTOR) == null) {
             pageNotFound(request, response);
             return;
         }

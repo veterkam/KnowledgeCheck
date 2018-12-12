@@ -30,13 +30,18 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
-    public List<Test> findComplexAll(Long offset, Long count) {
-        return dao.findComplexAll(offset, count);
+    public List<Test> findAllTestsWithQuestionsAndAnswers(Long offset, Long count) {
+        return dao.findAllTestsWithQuestionsAndAnswers(offset, count);
     }
 
     @Override
-    public List<Test> findPlainAll(Long offset, Long count) {
-        return dao.findPlainAll(offset, count);
+    public List<Test> findAllTestsWithQuestions(Long offset, Long count) {
+        return dao.findAllTestsWithQuestions(offset, count);
+    }
+
+    @Override
+    public List<Test> findPlainTests(Long offset, Long count) {
+        return dao.findAllPlainTests(offset, count);
     }
 
     @Override

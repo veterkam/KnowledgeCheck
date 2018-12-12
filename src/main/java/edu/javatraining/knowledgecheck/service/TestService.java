@@ -10,8 +10,9 @@ public interface TestService {
     Long count();
     Long insertComplex(Test test);
     Long insertPlain(Test test);
-    List<Test> findComplexAll(Long offset, Long count);
-    List<Test> findPlainAll(Long offset, Long count);
+    List<Test> findAllTestsWithQuestionsAndAnswers(Long offset, Long count);
+    List<Test> findAllTestsWithQuestions(Long offset, Long count);
+    List<Test> findPlainTests(Long offset, Long count);
     boolean delete(Test test);
     void save(Test test);
     boolean updateComplex(Test test);

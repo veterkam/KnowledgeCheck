@@ -81,16 +81,30 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
         return resultId;
     }
 
-    private void attachQuestions(Test test)  {
+    private void attachComplexQuestions(Test test)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
         List<Question> questionList = dao.findComplexAll(test.getId());
         test.setQuestions(questionList);
     }
 
-    private void attachQuestions(List<Test> testList)  {
+    private void attachComplexQuestions(List<Test> testList)  {
         QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
         for(Test test : testList) {
             List<Question> questionList = dao.findComplexAll(test.getId());
+            test.setQuestions(questionList);
+        }
+    }
+
+    private void attachPlainQuestions(Test test)  {
+        QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
+        List<Question> questionList = dao.findPlainAll(test.getId());
+        test.setQuestions(questionList);
+    }
+
+    private void attachPlainQuestions(List<Test> testList)  {
+        QuestionDaoJdbc dao = new QuestionDaoJdbc(connectionPool);
+        for(Test test : testList) {
+            List<Question> questionList = dao.findPlainAll(test.getId());
             test.setQuestions(questionList);
         }
     }
@@ -154,14 +168,21 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     }
 
     @Override
-    public List<Test> findComplexAll(Long offset, Long count)  {
-        List<Test> testList = findPlainAll(offset, count);
-        attachQuestions(testList);
+    public List<Test> findAllTestsWithQuestionsAndAnswers(Long offset, Long count)  {
+        List<Test> testList = findAllPlainTests(offset, count);
+        attachComplexQuestions(testList);
         return testList;
     }
 
     @Override
-    public List<Test> findPlainAll(Long offset, Long count) {
+    public List<Test> findAllTestsWithQuestions(Long offset, Long count) {
+        List<Test> testList = findAllPlainTests(offset, count);
+        attachPlainQuestions(testList);
+        return testList;
+    }
+
+    @Override
+    public List<Test> findAllPlainTests(Long offset, Long count) {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests " +
                 "WHERE " +
@@ -258,7 +279,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
 
         if(test != null) {
             // attach questions
-            attachQuestions(test);
+            attachComplexQuestions(test);
         }
 
         return test;

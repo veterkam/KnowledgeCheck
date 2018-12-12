@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class TestStatistics {
     int studentCount;
+    // <questionId, score>
     Map<Long, Integer> scores;
 
     public TestStatistics() {}

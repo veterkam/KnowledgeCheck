@@ -69,7 +69,7 @@ public class TestingResultsDaoJdbc extends BasicDaoJdbc implements TestingResult
             boolean correct = resultOfAnswers.get(questionId);
 
             if( !updateResultOfAnswer(testingResults.getStudentId(), questionId, correct) ) {
-                if(insertResultOfAnswer(testingResults.getStudentId(), questionId, correct)) {
+                if(!insertResultOfAnswer(testingResults.getStudentId(), questionId, correct)) {
                     return false;
                 }
 
@@ -109,6 +109,8 @@ public class TestingResultsDaoJdbc extends BasicDaoJdbc implements TestingResult
 
     @Override
     public List<TestingResults> find(Long testId) {
+        // Find all students who passed current test
+        // with their results
         List<TestingResults> testingResultsList = new ArrayList<>();
 
         StudentDaoJdbc studentDao = new StudentDaoJdbc(connectionPool);

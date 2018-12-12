@@ -10,8 +10,9 @@ public interface TestDao {
     Long count();
     Long insertComplex(Test test);
     Long insertPlain(Test test);
-    List<Test> findComplexAll(Long offset, Long count);
-    List<Test> findPlainAll(Long offset, Long count);
+    List<Test> findAllTestsWithQuestionsAndAnswers(Long offset, Long count);
+    List<Test> findAllTestsWithQuestions(Long offset, Long count);
+    List<Test> findAllPlainTests(Long offset, Long count);
     boolean delete(Test test);
     boolean updateComplex(Test test);
     boolean updatePlain(Test test);

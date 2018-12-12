@@ -16,8 +16,6 @@ public class SubjectServiceImpl implements SubjectService {
 
     public SubjectServiceImpl(SubjectDao dao) {
         this.dao = dao;
-
-        logger.trace("SubjectServiceImpl constructor: dao " + this.dao);
     }
 
     @Override

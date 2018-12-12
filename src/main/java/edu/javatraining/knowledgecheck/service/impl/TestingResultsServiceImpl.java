@@ -16,8 +16,6 @@ public class TestingResultsServiceImpl implements TestingResultsService {
 
     public TestingResultsServiceImpl(TestingResultsDao dao) {
         this.dao = dao;
-
-        logger.trace("TestingResultsServiceImpl constructor: subjectDao " + this.dao);
     }
 
     @Override

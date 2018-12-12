@@ -17,8 +17,6 @@ public class TutorServiceImpl implements TutorService {
 
     public TutorServiceImpl(TutorDao tutorDao) {
         this.tutorDao = tutorDao;
-
-        logger.trace("TutorServiceImpl constructor: tutorDao " + this.tutorDao);
     }
 
     @Override

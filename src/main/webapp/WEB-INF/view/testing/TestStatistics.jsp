@@ -1,7 +1,7 @@
 <%@ include file = "../common/Header.jsp" %>
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Test statistics</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing.test_statistics" /></h1>
         </div>
     </div>
 
@@ -11,7 +11,7 @@
         <div class="row">
             <div class="col">
                 <h3 class="h5 mb-3 font-weight-normal">
-                    You don't have any test.&nbsp;<a href="${pageContext.request.contextPath}/testing/edit">New test</a>
+                    <fmt:message key="app.testing.you_do_not_have_any_test" />&nbsp;<a href="${pageContext.request.contextPath}/testing/edit"><fmt:message key="app.testing.new_test" /></a>
                 </h3>
             </div>
         </div>
@@ -36,12 +36,12 @@
                             <div class="row">
                                 <div class="col text-left">
                                     <c:if test="${test.subject != null}">
-                                        <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
+                                        <strong><fmt:message key="app.testing.subject" /></strong>: <c:out value="${test.subject.name}"/>
                                     </c:if>
                                 </div>
                                 <div class="col text-right">
                                     <c:if test="${test.tutor != null}">
-                                        <strong>Author</strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
+                                        <strong><fmt:message key="app.testing.author" /></strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
                                     </c:if>
                                 </div>
                             </div>
@@ -49,7 +49,7 @@
                         <div class="card-body">
                             <h5 class="card-title"><c:out value="${test.title}"/></h5>
                             <p class="card-text"><c:out value="${test.description}"/></p>
-                            <p class="card-text">${statisticsList[testLoop.index].studentCount} students passed the test</p>
+                            <p class="card-text">${statisticsList[testLoop.index].studentCount} <fmt:message key="app.testing.students_passed_the_test" /></p>
                             <div id="desc${testLoop.index}" class="collapse">
                                 <c:forEach var="question" items="${test.questions}" varStatus="questionLoop">
                                     <div class="row">
@@ -64,7 +64,7 @@
                                                     <div id="test-progress-bar"
                                                          class="progress-bar bg-dark progress-bar-striped text-center"
                                                          style="width:${statisticsList[testLoop.index].scores[question.id]}%">
-                                                        ${statisticsList[testLoop.index].scores[question.id]}% correct answers
+                                                        ${statisticsList[testLoop.index].scores[question.id]}% <fmt:message key="app.testing.correct_answers" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -81,7 +81,7 @@
                                 <div class="col text-right">
                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                             data-target="#desc${testLoop.index}">
-                                        Details
+                                        <fmt:message key="app.common.details" />
                                     </button>
                                 </div>
                             </div>

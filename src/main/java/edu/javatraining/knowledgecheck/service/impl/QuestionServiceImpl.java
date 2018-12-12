@@ -16,8 +16,6 @@ public class QuestionServiceImpl implements QuestionService {
 
     public QuestionServiceImpl(QuestionDao dao) {
         this.dao = dao;
-
-        logger.trace("QuestionServiceImpl constructor: dao " + this.dao);
     }
 
     @Override

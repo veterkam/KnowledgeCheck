@@ -1,7 +1,7 @@
 <%@ include file = "../common/Header.jsp" %>
     <div class="row">
         <div class="col">
-            <h1 class="h3 mb-3 font-weight-normal">Students results</h1>
+            <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing.students_results" /></h1>
         </div>
     </div>
 
@@ -11,7 +11,7 @@
         <div class="row">
             <div class="col">
                 <h3 class="h5 mb-3 font-weight-normal">
-                    You don't have any test.&nbsp;<a href="${pageContext.request.contextPath}/testing/edit">New test</a>
+                    <fmt:message key="app.testing.you_do_not_have_any_test" />&nbsp;<a href="${pageContext.request.contextPath}/testing/edit"><fmt:message key="app.testing.new_test" /></a>
                 </h3>
             </div>
         </div>
@@ -36,12 +36,12 @@
                             <div class="row">
                                 <div class="col text-left">
                                     <c:if test="${test.subject != null}">
-                                        <strong>Subject</strong>: <c:out value="${test.subject.name}"/>
+                                        <strong><fmt:message key="app.testing.subject" /></strong>: <c:out value="${test.subject.name}"/>
                                     </c:if>
                                 </div>
                                 <div class="col text-right">
                                     <c:if test="${test.tutor != null}">
-                                        <strong>Author</strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
+                                        <strong><fmt:message key="app.testing.author" /></strong>: <c:out value="${test.tutor.firstName} ${test.tutor.lastName}"/>
                                     </c:if>
                                 </div>
                             </div>
@@ -57,16 +57,16 @@
                                                 <div class="col text-left">
                                                     <p class="card-text">
                                                         <strong>${studentTestingResultsLoop.count}.
-                                                            <a href="${pageContext.request.contextPath}/account/profile?id=${studentTestingResults.student.id}">
+                                                            <a href="${pageContext.request.contextPath}/account/profile/${studentTestingResults.student.username}">
                                                                 <c:out value="${studentTestingResults.student.fullname}"/></a>
                                                         </strong>
-                                                        ${studentTestingResults.score}% correct answers
+                                                        ${studentTestingResults.score}% <fmt:message key="app.testing.correct_answers" />
                                                     </p>
                                                 </div>
                                                 <div class="col text-right">
                                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                                             data-target="#testingResults${testLoop.index}_${studentTestingResultsLoop.index}">
-                                                        Results
+                                                        <fmt:message key="app.testing.results" />
                                                     </button>
                                                 </div>
                                             </div>
@@ -104,7 +104,7 @@
                                     <button type="button" class="btn btn-dark btn-sm m-1" data-toggle="collapse"
                                             data-target="#desc${testLoop.index}"
                                             <c:if test="${fn:length(testingResultsList[testLoop.index]) == 0}">disabled</c:if>>
-                                        Details
+                                        <fmt:message key="app.common.details" />
                                     </button>
                                 </div>
                             </div>

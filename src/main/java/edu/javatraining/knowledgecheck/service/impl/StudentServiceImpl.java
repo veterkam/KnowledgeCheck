@@ -17,8 +17,6 @@ public class StudentServiceImpl implements StudentService {
 
     public StudentServiceImpl(StudentDao studentDao) {
         this.studentDao = studentDao;
-
-        logger.trace("StudentServiceImpl constructor: studentDao " + this.studentDao);
     }
 
     @Override

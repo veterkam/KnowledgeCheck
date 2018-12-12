@@ -17,8 +17,6 @@ public class TestServiceImpl implements TestService {
 
     public TestServiceImpl(TestDao dao) {
         this.dao = dao;
-
-        logger.trace("TestServiceImpl constructor: TestDao " + this.dao);
     }
 
     @Override

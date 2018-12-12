@@ -16,8 +16,6 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(UserDao userDao) {
         this.userDao = userDao;
-
-        logger.trace("UserServiceImpl constructor: userDao " + this.userDao);
     }
 
     @Override

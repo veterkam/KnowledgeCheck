@@ -16,8 +16,6 @@ public class AnswerServiceImpl implements AnswerService {
 
     public AnswerServiceImpl(AnswerDao dao) {
         this.dao = dao;
-
-        logger.trace("AnswerServiceImpl constructor: dao " + this.dao);
     }
 
     @Override

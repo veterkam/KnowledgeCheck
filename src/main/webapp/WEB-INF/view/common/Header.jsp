@@ -18,9 +18,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/main.css">
 </head>
 <body>
-    <div>
-        <%@ include file="../common/NavBar.jsp" %>
-    </div>
+    <%@ include file="../common/NavBar.jsp" %>
     <div class="container text-left">
         <div class="row">
             <div class="col">

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +31,10 @@ import java.util.Map;
         "/testing",
         "/testing/mytests",
         "/testing/edit",
+        "/testing/edit/*",
         "/testing/remove",
         "/testing/test",
+        "/testing/test/*",
         "/testing/test/result",
         "/testing/studentsresults",
         "/testing/teststatistics",
@@ -321,7 +324,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         try {
-            Long testId = Long.parseLong( request.getParameter("testId") );
+            Long testId = Long.parseLong( request.getPathInfo().substring(1) );
             // Read test info from Data Base
             TestService testService = testServiceProvider.get();
             Test test = testService.findComplexOneById(testId);
@@ -379,6 +382,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         testDto.setSubjectId( request.getParameter("subjectId") );
         testDto.setTitle( request.getParameter("title") );
         testDto.setDescription( request.getParameter("description") );
+        testDto.setDuration( request.getParameter("duration") );
 
         testDto.setQuestions( extractQuestionsDto(request) );
 
@@ -505,7 +509,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
         long testId;
         try {
-            testId = Long.parseLong( request.getParameter("id") );
+            testId = Long.parseLong( request.getPathInfo().substring(1) );
         } catch (NumberFormatException e) {
             pageNotFound(request, response);
             return;
@@ -517,6 +521,13 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             getAlertManager(request).danger("app.testing.can_not_find_test");
             redirect(request, response, "/" );
         } else {
+
+            if(test.getDuration() > 0) {
+                Clock clock = Clock.systemDefaultZone();
+                request.getSession().setAttribute("startTime", clock.millis());
+                request.getSession().setAttribute("duration", test.getDuration());
+            }
+
             request.setAttribute("test", test);
             forward(request, response, VIEW_TEST);
         }
@@ -531,6 +542,24 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         if(user == null ) {
             pageNotFound(request, response);
             return;
+        }
+
+
+        if( request.getSession().getAttribute("duration") != null ) {
+            // We are in time?
+            int duration = (int) request.getSession().getAttribute("duration");
+            Long startTime = (Long) request.getSession().getAttribute("startTime");
+            Long now = Clock.systemDefaultZone().millis();
+            Long elapsedTime = (now - startTime) / 1000;
+
+            final int lag = 3;
+
+            if(elapsedTime > duration + lag) {
+                // Time out
+                getAlertManager(request).danger("app.testing.timeout");
+                redirect(request, response, "/");
+                return;
+            }
         }
 
         Long testId;

@@ -80,7 +80,8 @@ create table IF NOT EXISTS `tests` (
   `tutor_id` int(11),
   `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `title` varchar(100) NOT NULL,
-  `description` varchar(500) NOT NULL
+  `description` varchar(500) NOT NULL,
+  `duration` int
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
 create table IF NOT EXISTS `questions` (
@@ -102,12 +103,12 @@ create table IF NOT EXISTS `answers` (
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
-insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `update_time`)
+insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `duration`, `update_time`)
 SELECT t.* FROM (
-      (SELECT 7, 2, 'Biology Practice Test', 'Check you knowledge in biology!',  '2018-10-24 12:00:00') UNION ALL
-      (SELECT 2, 1, 'TEst teST', 'Check you knowledge, be smart!', '2018-10-25 14:40:00') UNION ALL
-			(SELECT 8, 1, 'Geography test', 'Check you knowledge in World Geography!', '2018-10-26 10:15:00') UNION ALL
-			(SELECT 1, 3, 'Основы конструкции ЭВМ', 'Проверь свои знания в основах конструкции ЭВМ', '2018-11-26 15:25:00')) t
+      (SELECT 7, 2, 'Biology Practice Test', 'Check you knowledge in biology!', 3600, '2018-10-24 12:00:00') UNION ALL
+      (SELECT 2, 1, 'TEst teST', 'Check you knowledge, be smart!', 3600, '2018-10-25 14:40:00') UNION ALL
+			(SELECT 8, 1, 'Geography test', 'Check you knowledge in World Geography!', 3600, '2018-10-26 10:15:00') UNION ALL
+			(SELECT 1, 3, 'Основы конструкции ЭВМ', 'Проверь свои знания в основах конструкции ЭВМ', 3600, '2018-11-26 15:25:00')) t
 WHERE NOT EXISTS (SELECT * FROM `tests`);
 
 insert into `questions`(`test_id`, `description`)

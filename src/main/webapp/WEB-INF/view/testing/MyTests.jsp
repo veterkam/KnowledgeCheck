@@ -54,6 +54,14 @@
                         <div class="card-body">
                             <h5 class="card-title"><c:out value="${test.title}"/></h5>
                             <p class="card-text"><c:out value="${test.description}"/></p>
+                            <p class="card-text"><strong><fmt:message key="app.testing.time_limitation" />:</strong>
+                                <c:if test="${test.duration == 0}">
+                                    <fmt:message key="app.testing.is_absent"/>
+                                </c:if>
+                                <c:if test="${test.duration != 0}">
+                                    <c:out value="${test.durationAsTimePeriod}"/>
+                                </c:if>
+                            </p>
                             <div id="desc${testLoop.index}" class="collapse">
                                 <c:forEach var="question" items="${test.questions}" varStatus="questionLoop">
                                     <div class="card mb-1">
@@ -79,7 +87,7 @@
                                     <fmt:formatDate type = "both" timeStyle = "short" value = "${test.updateTime}" />
                                 </div>
                                 <div class="col text-right">
-                                    <a href="${pageContext.request.contextPath}/testing/edit?testId=${test.id}"
+                                    <a href="${pageContext.request.contextPath}/testing/edit/${test.id}"
                                        class="btn btn-sm btn-dark m-1" role="button">
                                         <fmt:message key="app.testing.edit_test" />
                                     </a>

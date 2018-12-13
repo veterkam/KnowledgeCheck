@@ -64,6 +64,12 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/testing/subjects"
                 ).with(TestingControllerServlet.class);
 
+                // Add URL /testing/edit/{testId}
+                serveRegex("/testing/edit/.+").with(TestingControllerServlet.class);
+                // Add URL /testing/test/{testId}
+                serveRegex("/testing/test/.+").with(TestingControllerServlet.class);
+
+
                 bind(ConnectionPool.class).toProvider(ConnectionPoolProvider.class).in(Singleton.class);
 
                 bind(UserDao.class).toProvider(UserDaoProvider.class).in(RequestScoped.class);

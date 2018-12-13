@@ -12,6 +12,7 @@ public class Test {
     private String title;
     private String description;
     private Timestamp updateTime;
+    private int duration = 0;
     private List<Question> questions = new ArrayList<>();
 
     public Test() {
@@ -95,4 +96,23 @@ public class Test {
         return (tutor == null) ? 0 : tutor.getId();
     }
 
+    public int getDuration() {
+        return duration;
+    }
+
+    public String getDurationAsTimePeriod() {
+
+        int seconds = duration;
+        int hh = Math.floorDiv(seconds, 3600 );
+        seconds -= hh * 3600;
+        int mm = Math.floorDiv(seconds, 60);
+        seconds -= mm * 60;
+        int ss = seconds;
+
+        return String.format("%02d:%02d:%02d", hh, mm, ss);
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
 }

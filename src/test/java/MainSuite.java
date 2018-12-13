@@ -79,6 +79,22 @@ public class MainSuite {
     }
 
     @Test
+    public void testDtoDurationTest() {
+
+        TestDto testDto = new TestDto();
+        testDto.setDescription("Description of the test");
+        testDto.setTitle("Title");
+        testDto.setSubjectId("1");
+        testDto.setTestId("12");
+        testDto.setDuration("99:10:71");
+        Map<String, List<String>> errors = DtoValidator.validate(testDto);
+
+        Assert.assertEquals( errors.size(), 1);
+    }
+
+
+
+    @Test
     public void answerDtoTest() {
 
         AnswerDto answer = new AnswerDto();

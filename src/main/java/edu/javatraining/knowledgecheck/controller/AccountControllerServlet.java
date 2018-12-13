@@ -47,7 +47,7 @@ import java.util.Properties;
         "/account/users",
         "/account/users/remove",
         "/account/profile/*"
-}, loadOnStartup = 1)
+})
 
 @Singleton
 public class AccountControllerServlet extends AbstractBaseControllerServlet {

@@ -48,7 +48,7 @@
                                 </div>
                             </c:if>
                             <div class="col text-right">
-                                <a href="${pageContext.request.contextPath}/testing/test?id=${test.id}"
+                                <a href="${pageContext.request.contextPath}/testing/test/${test.id}"
                                    class="btn btn-sm btn-dark m-1" role="button">
                                     <fmt:message key="app.testing.run_testing" />
                                 </a>

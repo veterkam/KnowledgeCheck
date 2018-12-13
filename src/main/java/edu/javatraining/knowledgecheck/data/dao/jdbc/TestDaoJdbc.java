@@ -61,8 +61,8 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     @Override
     public Long insertPlain(Test test)  {
         // Insert update_time as default TIMESTAMP
-        String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`) " +
-                "VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO tests (`subject_id`, `tutor_id`, `title`, `description`, `duration`) " +
+                "VALUES(?, ?, ?, ?, ?)";
 
         Long resultId = insert(sql,
                 (statement -> {
@@ -70,6 +70,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
                     statement.setLong(2, test.getTutorId());
                     statement.setString(3, test.getTitle());
                     statement.setString(4, test.getDescription());
+                    statement.setInt(5, test.getDuration());
                 }));
 
         test.setId(resultId);
@@ -152,6 +153,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
         Long tutorId = resultSet.getLong("tutor_id");
         String title = resultSet.getString("title");
         String description = resultSet.getString("description");
+        int duration = resultSet.getInt("duration");
         Timestamp updateTime = resultSet.getTimestamp("update_time");
 
         Subject subject = new SubjectDaoJdbc(connectionPool).findOneById(subjectId);
@@ -162,6 +164,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
         test.setTutor(tutor);
         test.setTitle(title);
         test.setDescription(description);
+        test.setDuration(duration);
         test.setUpdateTime(updateTime);
 
         return test;
@@ -259,7 +262,7 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     @Override
     public boolean updatePlain(Test test)  {
 
-        String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, update_time = NOW() " +
+        String sql = "UPDATE tests SET subject_id = ?, title = ?, description = ?, duration = ?, update_time = NOW() " +
                 " WHERE id = ? AND tutor_id = ?";
 
         return update(sql,
@@ -267,9 +270,10 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
                     statement.setLong(1, test.getSubjectId());
                     statement.setString(2, test.getTitle());
                     statement.setString(3, test.getDescription());
+                    statement.setInt(4, test.getDuration());
                     // we do not want throw NullPointer exception if test does not exist
-                    statement.setObject(4, test.getId(), Types.BIGINT);
-                    statement.setLong(5, test.getTutorId());
+                    statement.setObject(5, test.getId(), Types.BIGINT);
+                    statement.setLong(6, test.getTutorId());
                 }));
     }
 

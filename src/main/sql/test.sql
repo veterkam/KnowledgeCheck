@@ -1,3 +1,5 @@
+-- export: mysqldump --user=wikiadmin --password=wikipw --host=db.mywiki.com wikidb > wikidb.sql
+-- import: mysql --user=wikiadmin --password=wikipw wikidb < wikidb.sql
 CREATE USER 'jeffrey'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL ON db1.* TO 'jeffrey'@'localhost';
 

@@ -28,6 +28,9 @@ public class TestDto implements DtoWithErrors {
     @Pattern(regexp = "\\d+", message = "app.testing.validation.test.subject.failed")
     private String subjectId;
 
+    @Pattern(regexp = "^(?:(?:(\\d?\\d):)?([0-5]?\\d):)?([0-5]?\\d)$", message = "app.testing.validation.duration.wrong")
+    private String duration;
+
     private List<QuestionDto> questions;
 
     private Map<String, List<String>> errors;
@@ -80,6 +83,14 @@ public class TestDto implements DtoWithErrors {
         this.questions = questions;
     }
 
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
     public Map<String, List<String>> getErrors() {
         return errors;
     }
@@ -100,6 +111,7 @@ public class TestDto implements DtoWithErrors {
 
         out.setTitle(title);
         out.setDescription(description);
+        out.setDuration(convertToSeconds(duration));
 
         Subject s = new Subject();
         try {
@@ -126,12 +138,15 @@ public class TestDto implements DtoWithErrors {
                 }
             }
         }
+
     }
+
 
     public void fromTest(Test t) {
 
         title = t.getTitle();
         description = t.getDescription();
+        duration = t.getDurationAsTimePeriod();
 
         if(t.getSubject() != null) {
             subjectId = "" + t.getSubject().getId();
@@ -151,4 +166,34 @@ public class TestDto implements DtoWithErrors {
             }
         }
     }
+
+    private int convertToSeconds(String timePeriod) {
+
+        int hh = 0;
+        int mm = 0;
+        int ss = 0;
+
+        String[] times = timePeriod.split(":");
+        try {
+            switch (times.length) {
+                case 1:
+                    ss = Integer.parseInt(times[0]);
+                    break;
+                case 2:
+                    mm = Integer.parseInt(times[0]);
+                    ss = Integer.parseInt(times[1]);
+                    break;
+                case 3:
+                    hh = Integer.parseInt(times[0]);
+                    mm = Integer.parseInt(times[1]);
+                    ss = Integer.parseInt(times[2]);
+                    break;
+            }
+        } catch(NumberFormatException e) {
+            // do nothing
+        }
+
+        return (hh * 60 + mm) * 60 + ss;
+    }
+
 }

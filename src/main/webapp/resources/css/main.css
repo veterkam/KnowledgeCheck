@@ -73,6 +73,7 @@ body {
     margin-right: 1em !important;
     padding-left: 3px;
     padding-right: 3px;
+    font-size: 1.1rem;
 }
 
 .navbar-brand:hover {

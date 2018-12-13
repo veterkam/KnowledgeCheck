@@ -39,14 +39,21 @@ insert into `users`(`firstName`, `lastName`, `email`, `role`, `username`, `passw
 SELECT t.* FROM (
   (SELECT 'Bob' as a, 'Smith' as b, 'bob@gmail.com' as c, 1, 'bob' as d, '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36' as e, true as f) UNION ALL
   (SELECT 'Alex', 'McDonald', 'alex@gmail.com', 1, 'alex', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true) UNION ALL
+  (SELECT 'Пётр', 'Петрович', 'piter@gmail.com', 1, 'piter', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true) UNION ALL
+  (SELECT 'Robert', 'Freeman', 'rob@gmail.com', 2, 'rob', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true) UNION ALL
   (SELECT 'Mary', 'Peak', 'mary@gmail.com', 0, 'mary', '1000:786d40c39bac1d22d8226b5bf8e85237:f5fa5407b575911a2e0a99362f1c015b2ea033dac835883dd378c3fafde09b0baefced99993e92bb6b37d6174a95ac4a5ffaf8344a082863b61633632b526c36', true)) t
    WHERE NOT EXISTS (SELECT * FROM `users`);
 
 insert into `tutor_profiles`(`id`, `position`, `scientific_degree`, `academic_title`)
 SELECT t.* FROM (
   (SELECT 1, 'Teacher of Geography', 'Bachelor of Science',  'Bachelor of Geography') UNION ALL
-  (SELECT 2, 'Senior lecturer of Biology', 'Master of Science',  'Master of Biology')) t
+  (SELECT 2, 'Senior lecturer of Biology', 'Master of Science',  'Master of Biology') UNION ALL
+  (SELECT 3, 'Старший преподаватель информатики', 'Кандидат технических наук',  'Доцент')) t
    WHERE NOT EXISTS (SELECT * FROM `tutor_profiles`);
+
+insert into `student_profiles`(`id`, `specialty`, `group`, `year`)
+SELECT t.* FROM (SELECT 4, 'Mathematics', 'M-2016-A',  '2016') t
+WHERE NOT EXISTS (SELECT * FROM `student_profiles`);
 
 create table IF NOT EXISTS `subjects` (
   `id` bigint(11) not null auto_increment,
@@ -99,7 +106,8 @@ insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `update_ti
 SELECT t.* FROM (
       (SELECT 7, 2, 'Biology Practice Test', 'Check you knowledge in biology!',  '2018-10-24 12:00:00') UNION ALL
       (SELECT 2, 1, 'TEst teST', 'Check you knowledge, be smart!', '2018-10-25 14:40:00') UNION ALL
-      (SELECT 8, 1, 'Geography test', 'Check you knowledge in World Geography!', '2018-10-26 10:15:00')) t
+			(SELECT 8, 1, 'Geography test', 'Check you knowledge in World Geography!', '2018-10-26 10:15:00') UNION ALL
+			(SELECT 1, 3, 'Основы конструкции ЭВМ', 'Проверь свои знания в основах конструкции ЭВМ', '2018-11-26 15:25:00')) t
 WHERE NOT EXISTS (SELECT * FROM `tests`);
 
 insert into `questions`(`test_id`, `description`)
@@ -139,7 +147,17 @@ SELECT t.* FROM (
 	(SELECT 3, 'What is the capital of Tajikistan?') UNION ALL
 	(SELECT 3, 'The highest mountain in Iran is:') UNION ALL
 	(SELECT 3, 'Which of these seas does Iran border?') UNION ALL
-	(SELECT 3, 'On what ocean does Oman lie?')) t
+	(SELECT 3, 'On what ocean does Oman lie?') UNION ALL
+  (SELECT 4, 'Структура компьютера — это') UNION ALL
+  (SELECT 4, 'Основная функция ЭВМ') UNION ALL
+  (SELECT 4, 'Персональный компьютер состоит из') UNION ALL
+  (SELECT 4, 'Системный блок включает в себя') UNION ALL
+  (SELECT 4, 'Микропроцессор предназначен для') UNION ALL
+  (SELECT 4, 'Разрядность микропроцессора — это') UNION ALL
+  (SELECT 4, 'От разрядности микропроцессора зависит') UNION ALL
+  (SELECT 4, 'Тактовая частота микропроцессора измеряется в') UNION ALL
+  (SELECT 4, 'Функции процессора состоят в') UNION ALL
+  (SELECT 4, 'Микропроцессоры различаются между собой')) t
   WHERE NOT EXISTS (SELECT * FROM `questions`);
 
 insert into `answers` (`question_id`, `description`, `correct`)
@@ -323,7 +341,52 @@ SELECT t.* FROM (
 	(SELECT 36, 'Atlantic', false) UNION ALL
 	(SELECT 36, 'Indian', true) UNION ALL
 	(SELECT 36, 'Southern', false) UNION ALL
-	(SELECT 36, 'Pacific', false)) t
+	(SELECT 36, 'Pacific', false) UNION ALL
+
+  (SELECT 37, 'комплекс электронных устройств, осуществляющих обработку информации', false) UNION ALL
+  (SELECT 37, 'некоторая модель, устанавливающая состав, порядок и принципы взаимодействия входящих в нее компонентов', true) UNION ALL
+  (SELECT 37, 'комплекс программных и аппаратных средств.', false) UNION ALL
+
+  (SELECT 38, 'общение человека и машины', false) UNION ALL
+  (SELECT 38, 'разработка задач', false) UNION ALL
+  (SELECT 38, 'принцип программного управления', true) UNION ALL
+
+  (SELECT 39, 'системного блока', true) UNION ALL
+  (SELECT 39, 'монитора', true) UNION ALL
+  (SELECT 39, 'клавиатуры', true) UNION ALL
+  (SELECT 39, 'дополнительных устройств', false) UNION ALL
+	(SELECT 39, 'комплекса мультимедиа', false) UNION ALL
+
+  (SELECT 40, 'системную плату', true) UNION ALL
+  (SELECT 40, 'блок питания', true) UNION ALL
+  (SELECT 40, 'модулятор-демодулятор', false) UNION ALL
+  (SELECT 40, 'накопители на дисках', true) UNION ALL
+	(SELECT 40, 'платы расширений', true) UNION ALL
+	(SELECT 40, 'средства связи и коммуникаций', false) UNION ALL
+
+  (SELECT 41, 'управления работой компьютера и обработки данных', true) UNION ALL
+  (SELECT 41, 'ввода информации в ЭВМ и вывода ее на принтер', false) UNION ALL
+  (SELECT 41, 'обработки текстовых данных.', false) UNION ALL
+
+  (SELECT 42, 'наибольшая единица информации', false) UNION ALL
+  (SELECT 42, 'количество битов, которое воспринимается микропроцессором как единое целое', true) UNION ALL
+  (SELECT 42, 'наименьшая единица информации.', false) UNION ALL
+
+  (SELECT 43, 'количество используемых внешних устройств', false) UNION ALL
+  (SELECT 43, 'возможность подключения к сети', false) UNION ALL
+  (SELECT 43, 'максимальный объем внутренней памяти и производительность компьютера', true) UNION ALL
+
+  (SELECT 44, 'мегагерцах', true) UNION ALL
+  (SELECT 44, 'кодах таблицы символов', false) UNION ALL
+  (SELECT 44, 'байтах и битах', false) UNION ALL
+
+  (SELECT 45, 'подключении ЭВМ к электронной сети', false) UNION ALL
+  (SELECT 45, 'обработке данных, вводимых в ЭВМ', true) UNION ALL
+  (SELECT 45, 'выводе данных на печать', false) UNION ALL
+
+  (SELECT 46, 'устройствами ввода и вывода', false) UNION ALL
+  (SELECT 46, 'разрядностью и тактовой частотой', true) UNION ALL
+  (SELECT 46, 'счетчиками времени', false)) t
 WHERE NOT EXISTS (SELECT * FROM `answers`);
 
 create table IF NOT EXISTS `testing_results` (

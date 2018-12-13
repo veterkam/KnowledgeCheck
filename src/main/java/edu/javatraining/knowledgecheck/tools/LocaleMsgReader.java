@@ -1,22 +1,20 @@
-package edu.javatraining.knowledgecheck.service.tools;
+package edu.javatraining.knowledgecheck.tools;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class LocaleMsgReader {
-    private static final String FILE_BASE = "/locale/messages";
-    private static final String FILE_EXTENSION = ".properties";
+    private static final String RESOURCE_BASE = "/locale/messages";
+    private static final String RESOURCE_EXTENSION = ".properties";
 
     public static String message(String lang, String key) {
 
         lang = (lang != null && lang.length() != 0) ? "_" + lang : "";
-        String filename = LocaleMsgReader.class
-                .getResource(FILE_BASE + lang + FILE_EXTENSION)
-                .getFile();
-        String msg = PropertyFileReader.read(filename, key);
+        String resource = RESOURCE_BASE + lang + RESOURCE_EXTENSION;
+        String msg = PropertyFileReader.read(resource, key);
 
         if(msg == null) {
-            filename = FILE_BASE + FILE_EXTENSION;
-            msg = PropertyFileReader.read(filename, key);
+            resource = RESOURCE_BASE + RESOURCE_EXTENSION;
+            msg = PropertyFileReader.read(resource, key);
         }
 
         if(msg == null) {
@@ -35,13 +33,13 @@ public class LocaleMsgReader {
 
     public static String message(String lang, String key, Object... args) {
 
-        String messge = message(lang, key);
-        return String.format(messge, args);
+        String msg = message(lang, key);
+        return String.format(msg, args);
     }
 
     public static String message(HttpServletRequest request, String key, Object... args) {
 
-        String messge = message(request, key);
-        return String.format(messge, args);
+        String msg = message(request, key);
+        return String.format(msg, args);
     }
 }

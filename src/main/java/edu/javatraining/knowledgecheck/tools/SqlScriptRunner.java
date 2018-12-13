@@ -1,7 +1,6 @@
-package edu.javatraining.knowledgecheck.data;
+package edu.javatraining.knowledgecheck.tools;
 
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
-import edu.javatraining.knowledgecheck.data.connection.impl.ConnectionPoolJdbc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

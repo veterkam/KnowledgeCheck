@@ -1,23 +1,12 @@
 import edu.javatraining.knowledgecheck.controller.dto.*;
-import edu.javatraining.knowledgecheck.service.tools.LocaleMsgReader;
+import edu.javatraining.knowledgecheck.tools.LocaleMsgReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.validator.constraints.ScriptAssert;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import org.hibernate.validator.*;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class MainSuite {

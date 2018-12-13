@@ -27,6 +27,9 @@
     </Appenders>
 
     <Loggers>
+        <Logger name="Configure" level="trace" additivity="false">
+            <AppenderRef ref="Console" />
+        </Logger>
         <Logger name="controller" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>

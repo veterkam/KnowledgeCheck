@@ -1,7 +1,6 @@
 package edu.javatraining.knowledgecheck.controller;
 
-import edu.javatraining.knowledgecheck.data.SqlScriptRunner;
-import edu.javatraining.knowledgecheck.service.tools.AlertManager;
+import edu.javatraining.knowledgecheck.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,8 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.net.URL;
-import java.sql.SQLException;
 
 
 public class AbstractBaseControllerServlet extends HttpServlet {
@@ -34,31 +31,6 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_PROFILE = "/WEB-INF/view/account/Profile.jsp";
 
     protected static final Logger logger = LogManager.getLogger("controller");
-
-
-    @Override
-    public void init() throws ServletException {
-        try {
-            // TODO prepare db
-           // prepareDataBase();
-        } catch(Exception e) {
-            logger.error(e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    private void prepareDataBase() throws ServletException {
-        try {
-            URL resource = getClass().getResource("/init.sql");
-            File file = new File(resource.getFile());
-            Reader reader = new FileReader( file );
-
-            SqlScriptRunner runner = new SqlScriptRunner(null);
-            runner.runScript(reader);
-        } catch(SQLException | IOException e) {
-            throw new ServletException(e);
-        }
-    }
 
     protected AlertManager getAlertManager(HttpServletRequest request) {
         HttpSession session = request.getSession();

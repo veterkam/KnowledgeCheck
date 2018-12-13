@@ -5,30 +5,6 @@
 <web-app>
   <display-name>Knowledge Check Web Application</display-name>
 
-
-  <context-param>
-    <param-name>dbUrl</param-name><!--&useUnicode=true&characterEncoding=utf8-->
-    <param-value><![CDATA[jdbc:mysql://localhost:3306/quiz?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false]]></param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>dbUsername</param-name>
-    <param-value>veterkam</param-value>
-  </context-param>
-  <context-param>
-    <param-name>dbPassword</param-name>
-    <param-value>15648977</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>emailUsername</param-name>
-    <param-value>grodnojavatraining@gmail.com</param-value>
-  </context-param>
-  <context-param>
-    <param-name>emailPassword</param-name>
-    <param-value>J@v@15648977</param-value>
-  </context-param>
-
   <context-param>
     <param-name>initSqlScript</param-name>
     <param-value>/WEB-INF/view/common/Error.jsp</param-value>

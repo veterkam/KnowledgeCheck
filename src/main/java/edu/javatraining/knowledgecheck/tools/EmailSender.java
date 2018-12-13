@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck.service.tools;
+package edu.javatraining.knowledgecheck.tools;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

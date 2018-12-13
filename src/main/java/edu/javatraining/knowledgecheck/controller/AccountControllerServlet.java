@@ -3,6 +3,7 @@ package edu.javatraining.knowledgecheck.controller;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import edu.javatraining.knowledgecheck.controller.dto.*;
+import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;
@@ -12,18 +13,24 @@ import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import edu.javatraining.knowledgecheck.service.StudentService;
 import edu.javatraining.knowledgecheck.service.TutorService;
 import edu.javatraining.knowledgecheck.service.UserService;
-import edu.javatraining.knowledgecheck.service.tools.*;
+import edu.javatraining.knowledgecheck.tools.*;
 
 import javax.mail.MessagingException;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @WebServlet(urlPatterns = {
         "/account/login",
@@ -40,7 +47,7 @@ import java.util.Map;
         "/account/users",
         "/account/users/remove",
         "/account/profile/*"
-})
+}, loadOnStartup = 1)
 
 @Singleton
 public class AccountControllerServlet extends AbstractBaseControllerServlet {
@@ -53,7 +60,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private Provider<TutorService> tutorServiceProvider;
     @Inject
     private Provider<StudentService> studentServiceProvider;
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -789,9 +795,15 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
     private String sendVerificationCodeByEmail(String email, String msg)
             throws MessagingException {
-        if(true) return "123";
-        String username = getServletContext().getInitParameter("emailUsername");
-        String password = getServletContext().getInitParameter("emailPassword");
+
+        Properties props = PropertyFileReader.read("/configure.properties");
+
+        if("false".equals(props.getProperty("email.active"))) {
+            return "123";
+        }
+
+        String username = props.getProperty("email.user");
+        String password = props.getProperty("email.password");
 
         EmailSender sender = new EmailSender(username, password);
 

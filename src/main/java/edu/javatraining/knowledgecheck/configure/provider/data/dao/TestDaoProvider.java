@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck.configure.provider.dao;
+package edu.javatraining.knowledgecheck.configure.provider.data.dao;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

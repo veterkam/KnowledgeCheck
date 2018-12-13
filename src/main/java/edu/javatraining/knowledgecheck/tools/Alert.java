@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck.service.tools;
+package edu.javatraining.knowledgecheck.tools;
 
 public class Alert {
     private String type;

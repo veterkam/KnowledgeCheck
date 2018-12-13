@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck.service.tools;
+package edu.javatraining.knowledgecheck.tools;
 
 import java.util.ArrayList;
 import java.util.List;

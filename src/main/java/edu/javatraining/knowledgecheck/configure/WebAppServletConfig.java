@@ -2,8 +2,8 @@ package edu.javatraining.knowledgecheck.configure;
 
 import com.google.inject.*;
 import com.google.inject.servlet.RequestScoped;
-import edu.javatraining.knowledgecheck.configure.provider.ConnectionPoolProvider;
-import edu.javatraining.knowledgecheck.configure.provider.dao.*;
+import edu.javatraining.knowledgecheck.configure.provider.data.ConnectionPoolProvider;
+import edu.javatraining.knowledgecheck.configure.provider.data.dao.*;
 import edu.javatraining.knowledgecheck.configure.provider.service.*;
 import edu.javatraining.knowledgecheck.controller.AccountControllerServlet;
 import edu.javatraining.knowledgecheck.controller.EncodeFilter;
@@ -63,8 +63,6 @@ public class WebAppServletConfig extends GuiceServletContextListener {
                         "/testing/teststatistics",
                         "/testing/subjects"
                 ).with(TestingControllerServlet.class);
-
-
 
                 bind(ConnectionPool.class).toProvider(ConnectionPoolProvider.class).in(Singleton.class);
 

@@ -7,14 +7,13 @@ import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.exception.RequestException;
 import edu.javatraining.knowledgecheck.service.*;
-import edu.javatraining.knowledgecheck.service.tools.AlertManager;
-import edu.javatraining.knowledgecheck.service.tools.LocaleMsgReader;
-import edu.javatraining.knowledgecheck.service.tools.Pagination;
-import edu.javatraining.knowledgecheck.service.tools.Presentation;
+import edu.javatraining.knowledgecheck.tools.AlertManager;
+import edu.javatraining.knowledgecheck.tools.LocaleMsgReader;
+import edu.javatraining.knowledgecheck.tools.Pagination;
+import edu.javatraining.knowledgecheck.tools.Presentation;
 import edu.javatraining.knowledgecheck.domain.*;
 import org.apache.logging.log4j.util.Strings;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;

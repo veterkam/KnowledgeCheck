@@ -35,6 +35,14 @@
                 <div class="card-body">
                     <h5 class="card-title"><c:out value="${test.title}"/></h5>
                     <p class="card-text"><c:out value="${test.description}"/></p>
+                    <p class="card-text"><strong><fmt:message key="app.testing.time_limitation" />:</strong>
+                        <c:if test="${test.timeLimitation == 0}">
+                            <fmt:message key="app.testing.is_absent"/>
+                        </c:if>
+                        <c:if test="${test.timeLimitation != 0}">
+                            <c:out value="${test.timeLimitationAsTimePeriod}"/>
+                        </c:if>
+                    </p>
                 </div>
                 <div class="card-footer text-muted">
                     <div class="row">

@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertyFileReader {
-    private static final Logger logger = LogManager.getLogger("service");
+    private static final Logger logger = LogManager.getLogger("Service");
 
     public static String read(String resource, String property) {
 

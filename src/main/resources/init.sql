@@ -81,7 +81,7 @@ create table IF NOT EXISTS `tests` (
   `update_time` datetime  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `title` varchar(100) NOT NULL,
   `description` varchar(500) NOT NULL,
-  `duration` int
+  `timeLimitation` int
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
 create table IF NOT EXISTS `questions` (
@@ -103,7 +103,7 @@ create table IF NOT EXISTS `answers` (
       ON DELETE CASCADE
 ) ENGINE=InnoDB default charset=utf8mb4 collate = utf8mb4_general_ci;
 
-insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `duration`, `update_time`)
+insert into `tests`(`subject_id`, `tutor_id`, `title`, `description`, `timeLimitation`, `update_time`)
 SELECT t.* FROM (
       (SELECT 7, 2, 'Biology Practice Test', 'Check you knowledge in biology!', 3600, '2018-10-24 12:00:00') UNION ALL
       (SELECT 2, 1, 'TEst teST', 'Check you knowledge, be smart!', 3600, '2018-10-25 14:40:00') UNION ALL

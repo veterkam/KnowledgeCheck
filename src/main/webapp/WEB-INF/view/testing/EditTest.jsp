@@ -51,17 +51,19 @@
             </div>
         </c:if>
 
-        <c:set value='${test.errors != null && test.errors.get("duration") != null}' var="isInvalid" />
+        <c:set value='${test.errors != null && test.errors.get("timeLimitation") != null}' var="isInvalid" />
         <div class="form-group">
-            <label for="inputDuration"><fmt:message key="app.testing.time_limitation"/>:</label>
-            <input id="inputDuration"
-                   name="duration"
+            <label for="inputTimeLimitation"><fmt:message key="app.testing.time_limitation"/>:</label>
+            <input id="inputTimeLimitation"
+                   name="timeLimitation"
                    class="form-control ${(isInvalid) ? 'is-invalid' : ''}"
-                   placeholder='__:__:__' required="" autofocus="" type="text"
-                   value="<c:out value="${test.duration}"/>">
+                   placeholder='__:__:__ <fmt:message key="app.testing.use_null_for_unlimit"/>'
+                   pattern="^(?:(?:(\d?\d):)?([0-5]?\d):)?([0-5]?\d)$"
+                   required="" autofocus="" type="text"
+                   value="<c:out value="${test.timeLimitation}"/>">
         </div>
         <c:if test="${isInvalid}">
-            <c:set value='${test.errors.get("duration")}' var="fieldErrors" />
+            <c:set value='${test.errors.get("timeLimitation")}' var="fieldErrors" />
             <div class="form-group text-right" data-role="field-error">
                 <c:forEach var="error" items="${fieldErrors}">
                     <small class="help-block text-danger text-right"><fmt:message key="${error}" /><br/></small>
@@ -109,7 +111,7 @@
                 <fmt:message key="app.common.cancel"/>
             </a>
             <button class="btn btn-dark m-1" type="submit" name="btnSave" data-role="indexing"
-                    formaction="${pageContext.request.contextPath}/testing/edit">
+                    formaction="${pageContext.request.contextPath}/testing/edit/${test.testId}">
                 <fmt:message key="app.testing.save_test"/>
             </button>
         </div>

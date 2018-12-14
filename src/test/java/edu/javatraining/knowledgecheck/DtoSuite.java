@@ -1,3 +1,5 @@
+package edu.javatraining.knowledgecheck;
+
 import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.tools.LocaleMsgReader;
 import org.apache.logging.log4j.LogManager;
@@ -5,18 +7,23 @@ import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceUnitInfo;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 
-public class MainSuite {
-    private static final Logger logger = LogManager.getLogger("MainSuite");
+public class DtoSuite {
+    private static final Logger logger = LogManager.getLogger("Test");
     @Test
     public void main() {
     }
 
     @Test
-    public void userDtoTest() {
+    public void userDtoValidationTest() {
 
         UserDto userDto = new UserDto();
         userDto.setFirstName("First");
@@ -32,7 +39,7 @@ public class MainSuite {
     }
 
     @Test
-    public void tutorDtoTest() {
+    public void tutorDtoValidationTest() {
 
         TutorDto tutorDto = new TutorDto();
         tutorDto.setFirstName("Ft");
@@ -40,7 +47,6 @@ public class MainSuite {
         tutorDto.setPassword("123");
         tutorDto.setConfirmPassword("1423");
         tutorDto.setEmail("mailcom");
-        //tutorDto.setRole("Tutor");
         tutorDto.setPosition("  ");
 
         Map<String, List<String>> errors = DtoValidator.validate(tutorDto);
@@ -49,7 +55,7 @@ public class MainSuite {
     }
 
     @Test
-    public void studentDtoTest() {
+    public void studentDtoValidationTest() {
 
         StudentDto studentDto = new StudentDto();
         studentDto.setFirstName("");
@@ -65,7 +71,7 @@ public class MainSuite {
     }
 
     @Test
-    public void testDtoTest() {
+    public void testDtoValidationTest() {
 
         TestDto testDto = new TestDto();
         testDto.setDescription("de");
@@ -79,14 +85,14 @@ public class MainSuite {
     }
 
     @Test
-    public void testDtoDurationTest() {
+    public void testDtoTimeLimitationValidationTest() {
 
         TestDto testDto = new TestDto();
         testDto.setDescription("Description of the test");
         testDto.setTitle("Title");
         testDto.setSubjectId("1");
         testDto.setTestId("12");
-        testDto.setDuration("99:10:71");
+        testDto.setTimeLimitation("99:10:71");
         Map<String, List<String>> errors = DtoValidator.validate(testDto);
 
         Assert.assertEquals( errors.size(), 1);
@@ -95,8 +101,9 @@ public class MainSuite {
 
 
     @Test
-    public void answerDtoTest() {
+    public void answerDtoValidationTest() {
 
+        javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(null);
         AnswerDto answer = new AnswerDto();
         answer.setDescription("");
         answer.setAnswerId("12");
@@ -107,7 +114,7 @@ public class MainSuite {
     }
 
     @Test
-    public void localeMsgReaderTest() {
+    public void localeMsgReaderValidationTest() {
 
         String message = LocaleMsgReader.message("ru", "app.testing.your_result_is", 30);
         String expect = "Ваш результат 30% правильных ответов!";

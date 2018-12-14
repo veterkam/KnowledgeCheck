@@ -30,7 +30,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
     protected final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/testing/SubjectsForm.jsp";
     protected final String VIEW_PROFILE = "/WEB-INF/view/account/Profile.jsp";
 
-    protected static final Logger logger = LogManager.getLogger("controller");
+    protected static final Logger logger = LogManager.getLogger("Controller");
 
     protected AlertManager getAlertManager(HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -58,7 +58,7 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected void pageNotFound(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         forward(request, response, VIEW_PAGE_NOT_FOUND);
     }
 

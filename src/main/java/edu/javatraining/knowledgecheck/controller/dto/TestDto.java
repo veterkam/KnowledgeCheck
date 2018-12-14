@@ -28,8 +28,8 @@ public class TestDto implements DtoWithErrors {
     @Pattern(regexp = "\\d+", message = "app.testing.validation.test.subject.failed")
     private String subjectId;
 
-    @Pattern(regexp = "^(?:(?:(\\d?\\d):)?([0-5]?\\d):)?([0-5]?\\d)$", message = "app.testing.validation.duration.wrong")
-    private String duration;
+    @Pattern(regexp = "^(?:(?:(\\d?\\d):)?([0-5]?\\d):)?([0-5]?\\d)$", message = "app.testing.validation.timeLimitation.wrong")
+    private String timeLimitation;
 
     private List<QuestionDto> questions;
 
@@ -83,12 +83,12 @@ public class TestDto implements DtoWithErrors {
         this.questions = questions;
     }
 
-    public String getDuration() {
-        return duration;
+    public String getTimeLimitation() {
+        return timeLimitation;
     }
 
-    public void setDuration(String duration) {
-        this.duration = duration;
+    public void setTimeLimitation(String timeLimitation) {
+        this.timeLimitation = timeLimitation;
     }
 
     public Map<String, List<String>> getErrors() {
@@ -111,7 +111,7 @@ public class TestDto implements DtoWithErrors {
 
         out.setTitle(title);
         out.setDescription(description);
-        out.setDuration(convertToSeconds(duration));
+        out.setTimeLimitation(convertToSeconds(timeLimitation));
 
         Subject s = new Subject();
         try {
@@ -146,7 +146,7 @@ public class TestDto implements DtoWithErrors {
 
         title = t.getTitle();
         description = t.getDescription();
-        duration = t.getDurationAsTimePeriod();
+        timeLimitation = t.getTimeLimitationAsTimePeriod();
 
         if(t.getSubject() != null) {
             subjectId = "" + t.getSubject().getId();

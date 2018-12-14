@@ -4,7 +4,7 @@
             <h1 class="h3 mb-3 font-weight-normal"><fmt:message key="app.testing" /></h1>
         </div>
         <div class="col text-right">
-            <h1 hidden class="h3 mb-3 font-weight-normal text-danger" data-role="test-remaining-time"><c:out value="${test.duration}"/></h1>
+            <h1 hidden class="h3 mb-3 font-weight-normal text-danger" data-role="test-remaining-time"><c:out value="${test.timeLimitation}"/></h1>
         </div>
     </div>
 

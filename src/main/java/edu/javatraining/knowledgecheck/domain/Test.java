@@ -12,7 +12,7 @@ public class Test {
     private String title;
     private String description;
     private Timestamp updateTime;
-    private int duration = 0;
+    private int timeLimitation = 0;
     private List<Question> questions = new ArrayList<>();
 
     public Test() {
@@ -96,13 +96,13 @@ public class Test {
         return (tutor == null) ? 0 : tutor.getId();
     }
 
-    public int getDuration() {
-        return duration;
+    public int getTimeLimitation() {
+        return timeLimitation;
     }
 
-    public String getDurationAsTimePeriod() {
+    public String getTimeLimitationAsTimePeriod() {
 
-        int seconds = duration;
+        int seconds = timeLimitation;
         int hh = Math.floorDiv(seconds, 3600 );
         seconds -= hh * 3600;
         int mm = Math.floorDiv(seconds, 60);
@@ -112,7 +112,7 @@ public class Test {
         return String.format("%02d:%02d:%02d", hh, mm, ss);
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setTimeLimitation(int timeLimitation) {
+        this.timeLimitation = timeLimitation;
     }
 }

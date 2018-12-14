@@ -11,7 +11,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 public class Cipher {
-    private static final Logger logger = LogManager.getLogger("service");
+    private static final Logger logger = LogManager.getLogger("Service");
 
     public static String encode(String password) throws Exception {
         final int iterations = 1000;

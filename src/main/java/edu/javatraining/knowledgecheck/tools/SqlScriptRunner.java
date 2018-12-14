@@ -10,7 +10,7 @@ import java.io.Reader;
 import java.sql.*;
 
 public class SqlScriptRunner {
-    private static final Logger logger = LogManager.getLogger(SqlScriptRunner.class);
+    private static final Logger logger = LogManager.getLogger("Tools");
     private static final String DEFAULT_DELIMITER = ";";
 
     private ConnectionPool connectionPool;

@@ -17,7 +17,7 @@ import java.sql.*;
 
 @Singleton
 public class BasicDaoJdbc {
-    protected static final Logger logger = LogManager.getLogger("DAO");
+    protected static final Logger logger = LogManager.getLogger("Data");
 
 
     protected ConnectionPool connectionPool;

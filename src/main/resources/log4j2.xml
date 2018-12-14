@@ -30,22 +30,19 @@
         <Logger name="Configure" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="controller" level="trace" additivity="false">
-            <AppenderRef ref="Console" />
-        </Logger>
-        <Logger name="filter" level="trace" additivity="false">
+        <Logger name="Controller" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
         <Logger name="Service" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="DAO" level="trace" additivity="false">
+        <Logger name="Data" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="SqlScriptRunner" level="trace" additivity="false">
+        <Logger name="Tools" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Logger name="MainSuite" level="trace" additivity="false">
+        <Logger name="Test" level="trace" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
         <!-- Root Logger -->

@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPoolJdbc implements ConnectionPool {
 
-    private static final Logger logger = LogManager.getLogger("connection");
+    private static final Logger logger = LogManager.getLogger("Connection");
 
     private final int INITIAL_RESERVE_SIZE = 5;
 

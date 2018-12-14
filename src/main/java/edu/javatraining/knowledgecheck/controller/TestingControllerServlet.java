@@ -90,8 +90,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException {
-
+            throws ServletException, IOException {
 
         String action = request.getServletPath();
 
@@ -324,16 +323,19 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         try {
-            Long testId = Long.parseLong( request.getPathInfo().substring(1) );
-            // Read test info from Data Base
-            TestService testService = testServiceProvider.get();
-            Test test = testService.findComplexOneById(testId);
-            if(test != null && test.getTutorId().equals( user.getId() )) {
-                request.setAttribute("test", new TestDto(test) );
-            } else {
-                getAlertManager(request).danger("app.testing.you_do_not_have_permission_to_change_this_test");
-                redirect(request, response, "/testing/mytests");
-                return;
+            if(request.getPathInfo() != null) {
+                Long testId = Long.parseLong(request.getPathInfo().substring(1));
+                // Read test info from Data Base
+                TestService testService = testServiceProvider.get();
+                Test test = testService.findComplexOneById(testId);
+
+                if (test != null && test.getTutorId().equals(user.getId())) {
+                    request.setAttribute("test", new TestDto(test));
+                } else {
+                    getAlertManager(request).danger("app.testing.you_do_not_have_permission_to_change_this_test");
+                    redirect(request, response, "/testing/mytests");
+                    return;
+                }
             }
         } catch(NumberFormatException e) {
             // It is new test
@@ -382,7 +384,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         testDto.setSubjectId( request.getParameter("subjectId") );
         testDto.setTitle( request.getParameter("title") );
         testDto.setDescription( request.getParameter("description") );
-        testDto.setDuration( request.getParameter("duration") );
+        testDto.setTimeLimitation( request.getParameter("timeLimitation") );
 
         testDto.setQuestions( extractQuestionsDto(request) );
 
@@ -522,11 +524,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             redirect(request, response, "/" );
         } else {
 
-            if(test.getDuration() > 0) {
-                Clock clock = Clock.systemDefaultZone();
-                request.getSession().setAttribute("startTime", clock.millis());
-                request.getSession().setAttribute("duration", test.getDuration());
-            }
+            prepareTestTimeLimitation(request.getSession(), test.getTimeLimitation());
 
             request.setAttribute("test", test);
             forward(request, response, VIEW_TEST);
@@ -544,23 +542,14 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-
-        if( request.getSession().getAttribute("duration") != null ) {
-            // We are in time?
-            int duration = (int) request.getSession().getAttribute("duration");
-            Long startTime = (Long) request.getSession().getAttribute("startTime");
-            Long now = Clock.systemDefaultZone().millis();
-            Long elapsedTime = (now - startTime) / 1000;
-
-            final int lag = 3;
-
-            if(elapsedTime > duration + lag) {
-                // Time out
-                getAlertManager(request).danger("app.testing.timeout");
-                redirect(request, response, "/");
-                return;
-            }
+        HttpSession session = request.getSession();
+        if(!checkTestPassedInTime(session)) {
+            // Time out
+            getAlertManager(request).danger("app.testing.timeout");
+            redirect(request, response, "/");
+            return;
         }
+
 
         Long testId;
         try {
@@ -594,6 +583,54 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         redirect(request, response, "/");
+    }
+
+    private void prepareTestTimeLimitation(HttpSession session, int timeLimitation) {
+
+        // Test has time limitation?
+        if(timeLimitation > 0) {
+            // Save start time of test beginning
+            Clock clock = Clock.systemDefaultZone();
+
+            session.setAttribute("startTime", clock.millis());
+            session.setAttribute("timeLimitation", timeLimitation);
+
+            // Update session timeout if need
+            if(timeLimitation > session.getMaxInactiveInterval()) {
+                session.setAttribute("maxInactiveInterval", session.getMaxInactiveInterval());
+                // one minute time lag
+                final int lag = 60;
+                session.setMaxInactiveInterval(timeLimitation + lag);
+            }
+        }
+    }
+
+    private boolean checkTestPassedInTime(HttpSession session) {
+
+        if( session.getAttribute("startTime") != null ) {
+
+            // Restore session timeout
+            if(session.getAttribute("maxInactiveInterval") != null) {
+                int timeOut = (int) session.getAttribute("maxInactiveInterval");
+                session.setMaxInactiveInterval(timeOut);
+                session.removeAttribute("maxInactiveInterval");
+            }
+
+            int timeLimitation = (int) session.getAttribute("timeLimitation");
+            Long startTime = (Long) session.getAttribute("startTime");
+            session.removeAttribute("timeLimitation");
+            session.removeAttribute("startTime");
+
+            Long now = Clock.systemDefaultZone().millis();
+            Long elapsedTime = (now - startTime) / 1000;
+
+            // 10 seconds time lag
+            final int lag = 10;
+
+            return(elapsedTime < timeLimitation + lag);
+        }
+
+        return true;
     }
 
     private Map<Long, Boolean> calcCorrectlyCheckedAnswers(

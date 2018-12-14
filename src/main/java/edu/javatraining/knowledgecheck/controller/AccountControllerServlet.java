@@ -62,7 +62,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private Provider<StudentService> studentServiceProvider;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
 
         String action = request.getServletPath();
@@ -115,7 +115,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
 
         String action = request.getServletPath();

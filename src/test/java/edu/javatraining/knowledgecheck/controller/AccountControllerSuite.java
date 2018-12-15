@@ -1,19 +1,17 @@
 package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Provider;
-import com.sun.deploy.net.HttpResponse;
 import edu.javatraining.knowledgecheck.UserFactory;
 import edu.javatraining.knowledgecheck.configure.WebAppServletModule;
-import edu.javatraining.knowledgecheck.controller.AccountControllerServlet;
+import edu.javatraining.knowledgecheck.controller.dto.UserDto;
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;
 import edu.javatraining.knowledgecheck.service.StudentService;
 import edu.javatraining.knowledgecheck.service.TutorService;
 import edu.javatraining.knowledgecheck.service.UserService;
-import edu.javatraining.knowledgecheck.tools.AlertManager;
+import edu.javatraining.knowledgecheck.tools.Cipher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mockito.ArgumentCaptor;
@@ -45,19 +43,12 @@ public class AccountControllerSuite {
     private final String VIEW_REGISTRATION_FORM = "/WEB-INF/view/account/RegistrationForm.jsp";
     private final String VIEW_PASSWORD_RECOVERY_FORM = "/WEB-INF/view/account/PasswordRecoveryForm.jsp";
     private final String VIEW_PAGE_NOT_FOUND = "/WEB-INF/view/common/PageNotFound.jsp";
-    private final String VIEW_TEST_BOARD = "/WEB-INF/view/testing/TestList.jsp";
-    private final String VIEW_MY_TESTS = "/WEB-INF/view/testing/MyTests.jsp";
-    private final String VIEW_EDIT_TEST = "/WEB-INF/view/testing/EditTest.jsp";
-    private final String VIEW_TEST = "/WEB-INF/view/testing/Test.jsp";
-    private final String VIEW_STUDENTS_RESULTS = "/WEB-INF/view/testing/StudentsResults.jsp";
-    private final String VIEW_TEST_STATISTICS = "/WEB-INF/view/testing/TestStatistics.jsp";
     private final String VIEW_MY_PROFILE_FORM = "/WEB-INF/view/account/MyProfileForm.jsp";
     private final String VIEW_USER_LIST = "/WEB-INF/view/account/UserList.jsp";
-    private final String VIEW_SUBJECTS_FORM = "/WEB-INF/view/testing/SubjectsForm.jsp";
     private final String VIEW_PROFILE = "/WEB-INF/view/account/Profile.jsp";
 
     @Inject
-    AccountControllerServlet servlet;
+    private AccountControllerServlet servlet;
 
     @Mock
     private HttpServletRequest request;
@@ -313,6 +304,91 @@ public class AccountControllerSuite {
         Assert.assertEquals(dispatcherArgument.getValue(), VIEW_PAGE_NOT_FOUND);
     }
 
+    @Test
+    public void postWrongVerificationCodeToRegistrationShouldReturnToRegistrationForm() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/registration/confirm");
+
+        when(session.getAttribute("FID")).thenReturn("abc");
+        when(request.getParameter("_FID")).thenReturn("abc");
+
+        when(request.getParameter("verificationCode")).thenReturn("123456");
+        when(session.getAttribute("verificationCode")).thenReturn("WRONG");
+
+        servlet.doPost(request, response);
+
+        ArgumentCaptor<String> attr = ArgumentCaptor.forClass(String.class);
+        verify(request, atLeastOnce()).setAttribute(attr.capture(), any());
+        Assert.assertTrue(attr.getAllValues().contains("verifyEmail"));
+
+        ArgumentCaptor<String> dispatcherArgument = ArgumentCaptor.forClass(String.class);
+        verify(context).getRequestDispatcher( dispatcherArgument.capture());
+        verify(dispatcher, only()).forward(request, response);
+        Assert.assertEquals(dispatcherArgument.getValue(), VIEW_REGISTRATION_FORM);
+    }
+
+    @Test
+    public void postCorrectVerificationCodeToRegistrationShouldInsertUserToDB() throws Exception {
+
+        UserDto u = postCorrectVerificationCodeToRegistration();
+
+        ArgumentCaptor<User> attr = ArgumentCaptor.forClass(User.class);
+        verify(userService, only()).insert(attr.capture());
+        Assert.assertTrue( attr.getValue().getUsername().equals( u.getUsername() ) );
+    }
+
+    @Test
+    public void postCorrectVerificationCodeToRegistrationShouldEncodePassword() throws Exception {
+
+        UserDto u = postCorrectVerificationCodeToRegistration();
+
+        ArgumentCaptor<User> attr = ArgumentCaptor.forClass(User.class);
+        verify(userService, only()).insert(attr.capture());
+
+        Assert.assertTrue( Cipher.validate(u.getPassword(), attr.getValue().getPassword()) );
+    }
+
+    @Test
+    public void postCorrectVerificationCodeToRegistrationShouldRedirectHome() throws Exception {
+
+        UserDto u = postCorrectVerificationCodeToRegistration();
+
+        ArgumentCaptor<User> attr = ArgumentCaptor.forClass(User.class);
+        verify(userService, only()).insert(attr.capture());
+
+        Assert.assertTrue( Cipher.validate(u.getPassword(), attr.getValue().getPassword()) );
+
+        ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(arg.capture());
+        Assert.assertEquals(arg.getValue(), "/");
+    }
+
+
+    public UserDto postCorrectVerificationCodeToRegistration() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/registration/confirm");
+
+        when(session.getAttribute("FID")).thenReturn("abc");
+        when(request.getParameter("_FID")).thenReturn("abc");
+
+        when(request.getParameter("verificationCode")).thenReturn("123456");
+        when(session.getAttribute("verificationCode")).thenReturn("123456");
+
+        UserDto u = new UserDto();
+        u.setFirstName("John");
+        u.setLastName("Smith");
+        u.setUsername("john");
+        u.setEmail("john@mail.edu");
+        u.setRole(User.Role.TUTOR.getCaption());
+        u.setPassword("123");
+        u.setConfirmPassword("123");
+
+        when(session.getAttribute("userDto")).thenReturn(u);
+
+        servlet.doPost(request, response);
+
+        return u;
+    }
 
 
     @Test

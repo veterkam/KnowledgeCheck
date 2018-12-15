@@ -46,16 +46,40 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     final int COUNT_TEST_ON_PAGE = 10;
     final int PAGINATION_LIMIT = 5;
 
-    @Inject
     private Provider<TestService> testServiceProvider;
-    @Inject
+
     private Provider<QuestionService> questionServiceProvider;
-    @Inject
+
     private Provider<AnswerService> answerServiceProvider;
-    @Inject
+
     private Provider<TestingResultsService> testingResultServiceProvider;
-    @Inject
+
     private Provider<SubjectService> subjectServiceProvider;
+
+    @Inject
+    public void setTestServiceProvider(Provider<TestService> testServiceProvider) {
+        this.testServiceProvider = testServiceProvider;
+    }
+
+    @Inject
+    public void setQuestionServiceProvider(Provider<QuestionService> questionServiceProvider) {
+        this.questionServiceProvider = questionServiceProvider;
+    }
+
+    @Inject
+    public void setAnswerServiceProvider(Provider<AnswerService> answerServiceProvider) {
+        this.answerServiceProvider = answerServiceProvider;
+    }
+
+    @Inject
+    public void setTestingResultServiceProvider(Provider<TestingResultsService> testingResultServiceProvider) {
+        this.testingResultServiceProvider = testingResultServiceProvider;
+    }
+
+    @Inject
+    public void setSubjectServiceProvider(Provider<SubjectService> subjectServiceProvider) {
+        this.subjectServiceProvider = subjectServiceProvider;
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

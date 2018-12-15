@@ -119,8 +119,22 @@ public class User {
         this.verified = verified;
     }
 
+    @Override
     public String toString() {
         String format = "User { id : %d, firstName : %s, lastName : %s, username : %s, password : %s, email : %s, role : %s, verified : %s }";
         return String.format(format, id, firstName, lastName, username, password, email, role.toString(), verified ? "true" : "false");
+    }
+
+    @Override
+    public boolean equals(Object other) {
+
+        if(other == null) {
+            return false;
+        }
+
+        return (! (other instanceof User)) ? false
+                    : (id != null) ? id == ((User) other).getId()
+                        : (username != null) ? username.equals(((User) other).getUsername())
+                            : false;
     }
 }

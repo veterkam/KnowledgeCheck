@@ -54,12 +54,26 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private final int COUNT_USER_ON_PAGE = 10;
     private final int PAGINATION_LIMIT = 5;
 
-    @Inject
     private Provider<UserService> userServiceProvider;
-    @Inject
+
     private Provider<TutorService> tutorServiceProvider;
-    @Inject
+
     private Provider<StudentService> studentServiceProvider;
+
+    @Inject
+    public void setUserServiceProvider(Provider<UserService> userServiceProvider) {
+        this.userServiceProvider = userServiceProvider;
+    }
+
+    @Inject
+    public void setTutorServiceProvider(Provider<TutorService> tutorServiceProvider) {
+        this.tutorServiceProvider = tutorServiceProvider;
+    }
+
+    @Inject
+    public void setStudentServiceProvider(Provider<StudentService> studentServiceProvider) {
+        this.studentServiceProvider = studentServiceProvider;
+    }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -125,21 +139,18 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                     loginProcessing(request, response);
                     break;
                 case "/account/registration":
-                    // User click button Next, verify the fields
                     registrationProcessing(request, response);
                     break;
                 case "/account/registration/confirm":
                     registrationConfirmEmail(request, response);
                     break;
                 case "/account/recovery":
-                    // User click button Next, verify the fields
                     recoveryProcessing(request, response);
                     break;
                 case "/account/recovery/confirm":
                     recoveryConfirmEmail(request, response);
                     break;
                 case "/account/myprofile":
-                    // User click button Next, verify the fields
                     myProfileProcessing(request, response);
                     break;
                 case "/account/myprofile/confirm":
@@ -301,7 +312,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             }
 
             // Success!
-            session.setAttribute("userDto", null);
+            session.removeAttribute("userDto");
             alertManager.success("app.account.registration_success");
 
             if(user.isVerified()) {
@@ -402,7 +413,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 user.setPassword(password);
                 if ( userService.updatePassword(user) ) {
                     session.setAttribute("user", user);
-                    session.setAttribute("userDto", null);
+                    session.removeAttribute("userDto");
                     alertManager.success("app.account.recovery_password_success");
                     redirect(request, response, "/");
                     return;
@@ -426,7 +437,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void logout(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         // remove user data from session
-        request.getSession().setAttribute("user", null);
+        request.getSession().removeAttribute("user");
         AlertManager alertManager = getAlertManager(request);
         alertManager.success("app.account.logout_success");
         redirect(request, response, "/");
@@ -542,6 +553,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             modifedUser.setVerified(user.isVerified());
             String password = Cipher.encode(modifedUser.getPassword());
             modifedUser.setPassword(password);
+            session.removeAttribute("userDto");
             saveMyProfile(modifedUser, request, response);
         } else {
             // Verification code is wrong. Come back to edit verification code
@@ -568,7 +580,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         // Current page of test list
         int pageNo = getPageNo(request);
 
-        // Calc test count
+        // Calc user count
         Long count = userService.count();
 
         // Init pagination

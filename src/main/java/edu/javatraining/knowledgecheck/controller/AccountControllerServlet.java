@@ -212,7 +212,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException, IOException {
 
         if( request.getParameter("back") == null ) {
-            request.getSession().setAttribute("userDto", null);
+            request.getSession().removeAttribute("userDto");
         }
 
         forwardRegistrationForm(request, response);
@@ -339,7 +339,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws ServletException, IOException {
 
         if(request.getParameter("back") == null) {
-            request.getSession().setAttribute("userDto", null);
+            request.getSession().removeAttribute("userDto");
         }
 
         forwardRecoveryForm(request, response);
@@ -438,8 +438,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             throws IOException {
         // remove user data from session
         request.getSession().removeAttribute("user");
-        AlertManager alertManager = getAlertManager(request);
-        alertManager.success("app.account.logout_success");
+        getAlertManager(request).success("app.account.logout_success");
         redirect(request, response, "/");
     }
 

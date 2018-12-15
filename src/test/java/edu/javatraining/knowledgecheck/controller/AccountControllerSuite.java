@@ -13,6 +13,7 @@ import edu.javatraining.knowledgecheck.domain.User;
 import edu.javatraining.knowledgecheck.service.StudentService;
 import edu.javatraining.knowledgecheck.service.TutorService;
 import edu.javatraining.knowledgecheck.service.UserService;
+import edu.javatraining.knowledgecheck.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mockito.ArgumentCaptor;
@@ -197,6 +198,28 @@ public class AccountControllerSuite {
     }
 
     @Test
+    public void getLogoutShouldRedirectHome() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/logout");
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(response, only()).sendRedirect( argumentCaptor.capture());
+        Assert.assertEquals(argumentCaptor.getValue(), "/");
+    }
+
+    @Test
+    public void getLogoutShouldRemoveUserAttrFromSession() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/logout");
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(session, atLeastOnce()).removeAttribute( argumentCaptor.capture());
+        Assert.assertTrue(argumentCaptor.getAllValues().contains("user"));
+    }
+
+    @Test
     public void getRegistrationShouldShowRegistrationForm() throws Exception {
         shouldShowView("/account/registration", VIEW_REGISTRATION_FORM);
     }
@@ -206,13 +229,91 @@ public class AccountControllerSuite {
 
         when(request.getServletPath()).thenReturn("/account/registration");
         servlet.doGet(request, response);
+
         ArgumentCaptor<String> sessionAttrName = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> sessionAttrVal = ArgumentCaptor.forClass(String.class);
-        verify(session, times(2)).setAttribute( sessionAttrName.capture(), sessionAttrVal.capture());
-        Assert.assertEquals(sessionAttrName.getAllValues().get(0), "userDto");
-        Assert.assertEquals(sessionAttrVal.getAllValues().get(0), null);
-        Assert.assertEquals(sessionAttrName.getAllValues().get(1), "FID");
+        verify(session, times(1)).setAttribute( sessionAttrName.capture(), sessionAttrVal.capture());
+        Assert.assertEquals(sessionAttrName.getValue(), "FID");
+
+        verify(session, times(1)).removeAttribute("userDto");
     }
+
+    @Test
+    public void postWrongUserDataToRegistrationShouldReturnToRegistrationFormWithError() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/registration");
+
+        when(request.getParameter("email")).thenReturn("email@mail.box");
+        when(request.getParameter("username")).thenReturn("robert");
+        when(request.getParameter("password")).thenReturn("123");
+        when(request.getParameter("confirmPassword")).thenReturn("WRONG PASSWORD CONFIRM");
+        when(request.getParameter("firstName")).thenReturn("Robert");
+        when(request.getParameter("lastName")).thenReturn("Black");
+        when(request.getParameter("role")).thenReturn(User.Role.TUTOR.getCaption());
+
+        when(session.getAttribute("FID")).thenReturn("abc");
+        when(request.getParameter("_FID")).thenReturn("abc");
+
+        servlet.doPost(request, response);
+
+        ArgumentCaptor<String> reqAttr = ArgumentCaptor.forClass(String.class);
+        verify(request, atLeastOnce()).setAttribute(reqAttr.capture(), any());
+        Assert.assertTrue(reqAttr.getAllValues().contains("errors"));
+
+        ArgumentCaptor<String> dispatcherArgument = ArgumentCaptor.forClass(String.class);
+        verify(context).getRequestDispatcher( dispatcherArgument.capture());
+        verify(dispatcher, only()).forward(request, response);
+        Assert.assertEquals(dispatcherArgument.getValue(), VIEW_REGISTRATION_FORM);
+    }
+
+    @Test
+    public void postCorrectUserDataToRegistrationShouldReturnToEmailConfirm() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/registration");
+
+        when(request.getParameter("email")).thenReturn("email@mail.box");
+        when(request.getParameter("username")).thenReturn("robert");
+        when(request.getParameter("password")).thenReturn("123");
+        when(request.getParameter("confirmPassword")).thenReturn("123");
+        when(request.getParameter("firstName")).thenReturn("Robert");
+        when(request.getParameter("lastName")).thenReturn("Black");
+        when(request.getParameter("role")).thenReturn(User.Role.TUTOR.getCaption());
+
+        when(session.getAttribute("FID")).thenReturn("abc");
+        when(request.getParameter("_FID")).thenReturn("abc");
+
+        servlet.doPost(request, response);
+
+        ArgumentCaptor<String> attr = ArgumentCaptor.forClass(String.class);
+        verify(request, atLeastOnce()).setAttribute(attr.capture(), any());
+        Assert.assertTrue(attr.getAllValues().contains("verifyEmail"));
+
+        verify(session, atLeastOnce()).setAttribute(attr.capture(), any());
+        Assert.assertTrue(attr.getAllValues().contains("verificationCode"));
+
+        ArgumentCaptor<String> dispatcherArgument = ArgumentCaptor.forClass(String.class);
+        verify(context).getRequestDispatcher( dispatcherArgument.capture());
+        verify(dispatcher, only()).forward(request, response);
+        Assert.assertEquals(dispatcherArgument.getValue(), VIEW_REGISTRATION_FORM);
+    }
+
+    @Test
+    public void postWrongFidToRegistrationShouldShowPageNotFound() throws Exception {
+
+        when(request.getServletPath()).thenReturn("/account/registration");
+
+        when(session.getAttribute("FID")).thenReturn("abcd");
+        when(request.getParameter("_FID")).thenReturn("abc");
+
+        servlet.doPost(request, response);
+
+        ArgumentCaptor<String> dispatcherArgument = ArgumentCaptor.forClass(String.class);
+        verify(context).getRequestDispatcher( dispatcherArgument.capture());
+        verify(dispatcher, only()).forward(request, response);
+        Assert.assertEquals(dispatcherArgument.getValue(), VIEW_PAGE_NOT_FOUND);
+    }
+
+
 
     @Test
     public void getRecoveryShouldShowRecoveryForm() throws Exception {
@@ -224,12 +325,12 @@ public class AccountControllerSuite {
 
         when(request.getServletPath()).thenReturn("/account/recovery");
         servlet.doGet(request, response);
+
+        verify(session).removeAttribute("userDto");
         ArgumentCaptor<String> sessionAttrName = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> sessionAttrVal = ArgumentCaptor.forClass(String.class);
-        verify(session, times(2)).setAttribute( sessionAttrName.capture(), sessionAttrVal.capture());
-        Assert.assertEquals(sessionAttrName.getAllValues().get(0), "userDto");
-        Assert.assertEquals(sessionAttrVal.getAllValues().get(0), null);
-        Assert.assertEquals(sessionAttrName.getAllValues().get(1), "FID");
+        verify(session).setAttribute( sessionAttrName.capture(), sessionAttrVal.capture());
+        Assert.assertTrue(sessionAttrName.getAllValues().contains("FID"));
     }
 
     @Test

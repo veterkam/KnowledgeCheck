@@ -36,8 +36,8 @@ import java.util.Map;
         "/testing/test",
         "/testing/test/*",
         "/testing/test/result",
-        "/testing/studentsresults",
-        "/testing/teststatistics",
+        "/testing/results",
+        "/testing/statistics",
         "/testing/subjects"
 })
 @Singleton
@@ -55,31 +55,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     private Provider<TestingResultsService> testingResultServiceProvider;
 
     private Provider<SubjectService> subjectServiceProvider;
-
-    @Inject
-    public void setTestServiceProvider(Provider<TestService> testServiceProvider) {
-        this.testServiceProvider = testServiceProvider;
-    }
-
-    @Inject
-    public void setQuestionServiceProvider(Provider<QuestionService> questionServiceProvider) {
-        this.questionServiceProvider = questionServiceProvider;
-    }
-
-    @Inject
-    public void setAnswerServiceProvider(Provider<AnswerService> answerServiceProvider) {
-        this.answerServiceProvider = answerServiceProvider;
-    }
-
-    @Inject
-    public void setTestingResultServiceProvider(Provider<TestingResultsService> testingResultServiceProvider) {
-        this.testingResultServiceProvider = testingResultServiceProvider;
-    }
-
-    @Inject
-    public void setSubjectServiceProvider(Provider<SubjectService> subjectServiceProvider) {
-        this.subjectServiceProvider = subjectServiceProvider;
-    }
+    
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -136,10 +112,10 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
                 case "/testing/test":
                     runTest(request, response);
                     break;
-                case "/testing/studentsresults":
+                case "/testing/results":
                     studentsResults(request, response);
                     break;
-                case "/testing/teststatistics":
+                case "/testing/statistics":
                     testStatistics(request, response);
                     break;
                 case "/testing/subjects":
@@ -296,9 +272,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
     private void removeTest(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        User user = (User) request.getSession().getAttribute("user");
+        User user = checkPermit(request, User.Role.TUTOR);
 
-        if(user == null || user.getRole() != User.Role.TUTOR) {
+        if(user == null) {
             pageNotFound(request, response);
             return;
         }
@@ -914,6 +890,32 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         return user;
+    }
+
+
+    @Inject
+    public void setTestServiceProvider(Provider<TestService> testServiceProvider) {
+        this.testServiceProvider = testServiceProvider;
+    }
+
+    @Inject
+    public void setQuestionServiceProvider(Provider<QuestionService> questionServiceProvider) {
+        this.questionServiceProvider = questionServiceProvider;
+    }
+
+    @Inject
+    public void setAnswerServiceProvider(Provider<AnswerService> answerServiceProvider) {
+        this.answerServiceProvider = answerServiceProvider;
+    }
+
+    @Inject
+    public void setTestingResultServiceProvider(Provider<TestingResultsService> testingResultServiceProvider) {
+        this.testingResultServiceProvider = testingResultServiceProvider;
+    }
+
+    @Inject
+    public void setSubjectServiceProvider(Provider<SubjectService> subjectServiceProvider) {
+        this.subjectServiceProvider = subjectServiceProvider;
     }
 
 }

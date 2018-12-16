@@ -96,7 +96,7 @@ public class AccountControllerSuite {
     }
 
     @Test
-    public void getWrongPageShouldShowPageNotFound() throws Exception {
+    public void getWrongUrlShouldShowPageNotFound() throws Exception {
         shouldShowView("/account/absdef", VIEW_PAGE_NOT_FOUND);
     }
 

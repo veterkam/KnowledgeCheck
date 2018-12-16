@@ -115,4 +115,17 @@ public class Test {
     public void setTimeLimitation(int timeLimitation) {
         this.timeLimitation = timeLimitation;
     }
+
+    @Override
+    public boolean equals(Object other) {
+
+        if(other == null) {
+            return false;
+        }
+
+        return (other == null) ? false
+                :(! (other instanceof Test)) ? false
+                    : (id != null) ? id == ((Test) other).getId()
+                        : false;
+    }
 }

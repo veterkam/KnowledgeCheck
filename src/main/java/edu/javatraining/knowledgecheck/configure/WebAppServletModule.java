@@ -50,8 +50,8 @@ public class WebAppServletModule extends ServletModule {
                 "/testing/remove",
                 "/testing/test",
                 "/testing/test/result",
-                "/testing/studentsresults",
-                "/testing/teststatistics",
+                "/testing/results",
+                "/testing/statistics",
                 "/testing/subjects"
         ).with(TestingControllerServlet.class);
 

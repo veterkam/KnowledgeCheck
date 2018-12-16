@@ -10,8 +10,8 @@
 
         <c:if test="${user.role=='TUTOR'}">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/mytests"><fmt:message key="app.menu.my_tests" /></a>
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/studentsresults"><fmt:message key="app.menu.students_results" /></a>
-            <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/teststatistics"><fmt:message key="app.menu.test_statistics" /></a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/results"><fmt:message key="app.menu.students_results" /></a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/statistics"><fmt:message key="app.menu.test_statistics" /></a>
             <a class="navbar-brand" href="${pageContext.request.contextPath}/testing/subjects"><fmt:message key="app.menu.subjects" /></a>
         </c:if>
     </c:if>

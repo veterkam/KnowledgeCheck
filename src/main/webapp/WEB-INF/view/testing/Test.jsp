@@ -92,6 +92,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <input hidden name="_FID" type="text" value="${FID}">
+                </div>
             </form>
         </div>
     </div>

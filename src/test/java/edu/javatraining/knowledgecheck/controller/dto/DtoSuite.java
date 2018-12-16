@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck;
+package edu.javatraining.knowledgecheck.controller.dto;
 
 import edu.javatraining.knowledgecheck.controller.dto.*;
 import edu.javatraining.knowledgecheck.tools.LocaleMsgReader;

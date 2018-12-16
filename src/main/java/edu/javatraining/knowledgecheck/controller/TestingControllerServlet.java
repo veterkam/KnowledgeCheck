@@ -323,8 +323,9 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         }
 
         try {
-            if(request.getPathInfo() != null) {
-                Long testId = Long.parseLong(request.getPathInfo().substring(1));
+            String path = request.getPathInfo();
+            if(path != null) {
+                Long testId = Long.parseLong(path.substring(1));
                 // Read test info from Data Base
                 TestService testService = testServiceProvider.get();
                 Test test = testService.findComplexOneById(testId);
@@ -509,10 +510,17 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
-        long testId;
+        Long testId = null;
         try {
-            testId = Long.parseLong( request.getPathInfo().substring(1) );
+            String path = request.getPathInfo();
+            if(path != null) {
+                testId = Long.parseLong( path.substring(1) );
+            }
         } catch (NumberFormatException e) {
+            // do nothing
+        }
+
+        if(testId == null) {
             pageNotFound(request, response);
             return;
         }
@@ -526,6 +534,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
             prepareTestTimeLimitation(request.getSession(), test.getTimeLimitation());
 
+            genFormId(request.getSession());
             request.setAttribute("test", test);
             forward(request, response, VIEW_TEST);
         }
@@ -537,7 +546,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
         // Process results of test
         User user = checkPermit(request, User.Role.STUDENT);
 
-        if(user == null ) {
+        if(user == null || !checkFormId(request)) {
             pageNotFound(request, response);
             return;
         }

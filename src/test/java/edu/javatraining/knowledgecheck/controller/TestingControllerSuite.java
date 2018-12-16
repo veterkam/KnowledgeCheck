@@ -5,7 +5,6 @@ import com.google.inject.Provider;
 import edu.javatraining.knowledgecheck.UserFactory;
 import edu.javatraining.knowledgecheck.configure.WebAppServletModule;
 import edu.javatraining.knowledgecheck.controller.dto.TestDto;
-import edu.javatraining.knowledgecheck.domain.Subject;
 import edu.javatraining.knowledgecheck.domain.Tutor;
 import edu.javatraining.knowledgecheck.domain.User;
 import edu.javatraining.knowledgecheck.service.*;
@@ -101,7 +100,7 @@ public class TestingControllerSuite {
 
     @Test
     public void getWrongUrlShouldShowPageNotFound() throws Exception {
-        shouldShowView("/anypath/absdef", VIEW_PAGE_NOT_FOUND);
+        shouldShowView("/anypath/WRONG_URL", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
@@ -130,24 +129,24 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getSubjectsAnonymShouldShowPageNotFound() throws Exception {
+    public void getSubjectsByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/subjects", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getSubjectsNotTutorShouldShowPageNotFound() throws Exception {
+    public void getSubjectsByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/subjects", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getSubjectsTutorShouldShowSubjectsForm() throws Exception {
+    public void getSubjectsByTutorShouldShowSubjectsForm() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/subjects", VIEW_SUBJECTS_FORM);
     }
 
     @Test
-    public void getSubjectsTutorShouldSetAttr() throws Exception {
+    public void getSubjectsByTutorShouldSetAttr() throws Exception {
 
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/subjects", VIEW_SUBJECTS_FORM);
@@ -162,24 +161,24 @@ public class TestingControllerSuite {
 
 
     @Test
-    public void getResultsAnonymShouldShowPageNotFound() throws Exception {
+    public void getResultsByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/results", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getResultsNotTutorShouldShowPageNotFound() throws Exception {
+    public void getResultsByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/results", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getResultsTutorShouldShowStudentsResults() throws Exception {
+    public void getResultsByTutorShouldShowStudentsResults() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/results", VIEW_STUDENTS_RESULTS);
     }
 
     @Test
-    public void getResultsTutorShouldSetAttr() throws Exception {
+    public void getResultsByTutorShouldSetAttr() throws Exception {
 
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/results", VIEW_STUDENTS_RESULTS);
@@ -191,24 +190,24 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getMyTestsAnonymShouldShowPageNotFound() throws Exception {
+    public void getMyTestsByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/mytests", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getMyTestsNotTutorShouldShowPageNotFound() throws Exception {
+    public void getMyTestsByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/mytests", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getMyTestsTutorShouldShowStudentsResults() throws Exception {
+    public void getMyTestsByTutorShouldShowStudentsResults() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/mytests", VIEW_MY_TESTS);
     }
 
     @Test
-    public void getMyTestsTutorShouldSetAttr() throws Exception {
+    public void getMyTestsByTutorShouldSetAttr() throws Exception {
 
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/mytests", VIEW_MY_TESTS);
@@ -219,24 +218,24 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getTestStatisticsAnonymShouldShowPageNotFound() throws Exception {
+    public void getTestStatisticsByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/statistics", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getTestStatisticsNotTutorShouldShowPageNotFound() throws Exception {
+    public void getTestStatisticsByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/statistics", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getTestStatisticsTutorShouldShowStatistics() throws Exception {
+    public void getTestStatisticsByTutorShouldShowStatistics() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/statistics", VIEW_TEST_STATISTICS);
     }
 
     @Test
-    public void getTestStatisticsTutorShouldSetAttr() throws Exception {
+    public void getTestStatisticsByTutorShouldSetAttr() throws Exception {
 
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/statistics", VIEW_TEST_STATISTICS);
@@ -248,24 +247,24 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getEditTestAnonymShouldShowPageNotFound() throws Exception {
+    public void getEditTestByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/edit", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getEditTestNotTutorShouldShowPageNotFound() throws Exception {
+    public void getEditTestByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/edit", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getEditTestTutorShouldShowEditTestForm() throws Exception {
+    public void getEditTestByTutorShouldShowEditTestForm() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/edit", VIEW_EDIT_TEST);
     }
 
     @Test
-    public void getEditTestTutorShouldSetAttrSubjects() throws Exception {
+    public void getEditTestByTutorShouldSetAttrSubjects() throws Exception {
 
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/edit", VIEW_EDIT_TEST);
@@ -276,7 +275,7 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getEditCreatedTestTutorShouldSetAttrTest() throws Exception {
+    public void getEditCreatedTestByTutorShouldSetAttrTest() throws Exception {
 
         User user = UserFactory.getTutor();
         edu.javatraining.knowledgecheck.domain.Test test = new edu.javatraining.knowledgecheck.domain.Test();
@@ -296,7 +295,7 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getEditCreatedTestTutorNotOwnerShouldRedirectMyTests() throws Exception {
+    public void getEditCreatedTestByTutorNotOwnerShouldRedirectMyTests() throws Exception {
 
         User owner = UserFactory.getTutor();
         User notOwner = UserFactory.getTutor();
@@ -318,20 +317,105 @@ public class TestingControllerSuite {
     }
 
     @Test
-    public void getRemoveTestAnonymShouldShowPageNotFound() throws Exception {
+    public void getRemoveTestByAnonymShouldShowPageNotFound() throws Exception {
         shouldShowView("/testing/remove", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getRemoveTestNotTutorShouldShowPageNotFound() throws Exception {
+    public void getRemoveTestByNotTutorShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
         shouldShowView("/testing/remove", VIEW_PAGE_NOT_FOUND);
     }
 
     @Test
-    public void getRemoveTestTutorWithOutTestIdShouldShowPageNotFound() throws Exception {
+    public void getRemoveTestByTutorWithOutTestIdShouldShowPageNotFound() throws Exception {
         when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
         shouldShowView("/testing/remove", VIEW_PAGE_NOT_FOUND);
+    }
+
+    @Test
+    public void getRemoveTestByTutorWithTestIdShouldCallDel() throws Exception {
+
+        final Long testId = 1L;
+        when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
+        when(request.getServletPath()).thenReturn("/testing/remove");
+        when(request.getParameter("testId")).thenReturn("" + testId);
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<edu.javatraining.knowledgecheck.domain.Test> arg =
+                ArgumentCaptor.forClass(edu.javatraining.knowledgecheck.domain.Test.class);
+        verify(testService, only()).delete(arg.capture());
+        Assert.assertEquals(arg.getValue().getId(), testId);
+    }
+
+    @Test
+    public void getRemoveTestByTutorAfterDelShouldRedirectMyTests() throws Exception {
+
+        final Long testId = 1L;
+        when(session.getAttribute("user")).thenReturn(UserFactory.getTutor());
+        when(request.getServletPath()).thenReturn("/testing/remove");
+        when(request.getParameter("testId")).thenReturn("" + testId);
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(arg.capture());
+        Assert.assertEquals(arg.getValue(), "/testing/mytests");
+    }
+
+    @Test
+    public void getTestByAnonymShouldShowPageNotFound() throws Exception {
+        shouldShowView("/testing/test", VIEW_PAGE_NOT_FOUND);
+    }
+
+    @Test
+    public void getTestByNotStudentShouldShowPageNotFound() throws Exception {
+        when(session.getAttribute("user")).thenReturn(UserFactory.getAdmin());
+        shouldShowView("/testing/test", VIEW_PAGE_NOT_FOUND);
+    }
+
+    @Test
+    public void getTestByStudentWithOutTestIdShouldShowPageNotFound() throws Exception {
+        when(session.getAttribute("user")).thenReturn(UserFactory.getStudent());
+        shouldShowView("/testing/test", VIEW_PAGE_NOT_FOUND);
+    }
+
+    @Test
+    public void getTestByStudentWithTestIdShouldReadTestFromDB() throws Exception {
+        Long testId = 1L;
+        when(session.getAttribute("user")).thenReturn(UserFactory.getStudent());
+        when(request.getServletPath()).thenReturn("/testing/test");
+        when(request.getPathInfo()).thenReturn("/" + testId);
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<Long> attr = ArgumentCaptor.forClass(Long.class);
+        verify(testService).findComplexOneById(attr.capture());
+        Assert.assertEquals(attr.getValue(), testId);
+    }
+
+    @Test
+    public void getTestByStudentWithCorrectTestIdShouldRunTest() throws Exception {
+
+        Long testId = 1L;
+        when(session.getAttribute("user")).thenReturn(UserFactory.getStudent());
+        when(request.getPathInfo()).thenReturn("/" + testId);
+        when(testService.findComplexOneById(any())).thenReturn(new edu.javatraining.knowledgecheck.domain.Test());
+
+        shouldShowView("/testing/test", VIEW_TEST);
+    }
+
+    @Test
+    public void getTestByStudentWithWrongTestIdShouldRedirectHome() throws Exception {
+
+        Long testId = 1L;
+        when(session.getAttribute("user")).thenReturn(UserFactory.getStudent());
+        when(request.getPathInfo()).thenReturn("/" + testId);
+        when(request.getServletPath()).thenReturn("/testing/test");
+        when(testService.findComplexOneById(any())).thenReturn(null);
+        servlet.doGet(request, response);
+
+        ArgumentCaptor<String> attr = ArgumentCaptor.forClass(String.class);
+        verify(response).sendRedirect(attr.capture());
+        Assert.assertEquals(attr.getValue(), "/");
     }
 
     private void shouldShowView(String url, String view) throws Exception {

@@ -1,5 +1,8 @@
 package edu.javatraining.knowledgecheck.domain;
 
+import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
+
 public class User {
 
     private Long id;
@@ -136,5 +139,22 @@ public class User {
                     : (id != null) ? id == ((User) other).getId()
                         : (username != null) ? username.equals(((User) other).getUsername())
                             : false;
+    }
+
+
+    public boolean fullEquals(User other) {
+
+        if(other == null) {
+            return false;
+        }
+
+        return id == other.getId()
+                && StringUtils.equals(firstName, other.getFirstName() )
+                && StringUtils.equals(lastName,  other.getLastName() )
+                && StringUtils.equals(username, other.getUsername())
+                && StringUtils.equals(password,  other.getPassword() )
+                && StringUtils.equals(email, other.getEmail() )
+                && role == other.getRole()
+                && verified == other.isVerified();
     }
 }

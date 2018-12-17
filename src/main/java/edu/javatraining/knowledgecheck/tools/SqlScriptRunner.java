@@ -4,9 +4,8 @@ import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.Reader;
+import java.io.*;
+import java.net.URL;
 import java.sql.*;
 
 public class SqlScriptRunner {
@@ -21,6 +20,26 @@ public class SqlScriptRunner {
      */
     public SqlScriptRunner(ConnectionPool pool) {
         this.connectionPool = pool;
+    }
+
+    /**
+     * Runs an SQL script (read in using the Reader parameter)
+     *
+     * @param sqlResource
+     *            - the resource of the script
+     */
+    public void runScript(String sqlResource) {
+        try {
+            URL resource = getClass().getResource(sqlResource);
+            File file = new File(resource.getFile());
+            Reader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file), "UTF-8"));
+
+            runScript(reader);
+        } catch(SQLException | IOException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**

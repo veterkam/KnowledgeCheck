@@ -29,24 +29,8 @@ public class ConnectionPoolProvider implements Provider<ConnectionPool> {
                 props.getProperty("db.user"),
                 props.getProperty("db.password"));
 
-        prepareDataBase(pool);
+        new SqlScriptRunner(pool).runScript("/init.sql");
 
         return pool;
-    }
-
-    private void prepareDataBase(ConnectionPool connectionPool) {
-        logger.trace("Check&Prepare Data Base");
-        try {
-            URL resource = getClass().getResource("/init.sql");
-            File file = new File(resource.getFile());
-            Reader reader = new BufferedReader(
-                    new InputStreamReader(new FileInputStream(file), "UTF-8"));
-
-            SqlScriptRunner runner = new SqlScriptRunner(connectionPool);
-            runner.runScript(reader);
-        } catch(SQLException | IOException e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
     }
 }

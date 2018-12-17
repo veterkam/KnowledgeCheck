@@ -1,7 +1,6 @@
 package edu.javatraining.knowledgecheck.domain;
 
-import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class User {
 
@@ -131,29 +130,21 @@ public class User {
     @Override
     public boolean equals(Object other) {
 
-        if(other == null) {
-            return false;
-        }
-
-        return (! (other instanceof User)) ? false
-                    : (id != null) ? id == ((User) other).getId()
-                        : (username != null) ? username.equals(((User) other).getUsername())
-                            : false;
+        return (other != null)
+                && (other instanceof User)
+                && Objects.equals(id, ((User) other).getId())
+                && Objects.equals(username, (((User) other).getUsername()));
     }
-
 
     public boolean fullEquals(User other) {
 
-        if(other == null) {
-            return false;
-        }
-
-        return id == other.getId()
-                && StringUtils.equals(firstName, other.getFirstName() )
-                && StringUtils.equals(lastName,  other.getLastName() )
-                && StringUtils.equals(username, other.getUsername())
-                && StringUtils.equals(password,  other.getPassword() )
-                && StringUtils.equals(email, other.getEmail() )
+        return (other != null)
+                && Objects.equals(id, other.getId() )
+                && Objects.equals(firstName, other.getFirstName() )
+                && Objects.equals(lastName,  other.getLastName() )
+                && Objects.equals(username, other.getUsername())
+                && Objects.equals(password,  other.getPassword() )
+                && Objects.equals(email, other.getEmail() )
                 && role == other.getRole()
                 && verified == other.isVerified();
     }

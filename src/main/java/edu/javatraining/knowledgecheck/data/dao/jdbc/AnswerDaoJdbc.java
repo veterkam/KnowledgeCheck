@@ -58,7 +58,7 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
 
     @Override
     public Long count() {
-        String sql = "SELECT * FROM answers";
+        String sql = "SELECT COUNT(*) FROM answers";
         return count(sql);
     }
 
@@ -147,7 +147,9 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
                     statement.setLong(1, id);
                 }),
                 (resultSet -> {
-                    answer.value = extractAnswerFromResultSet(resultSet);
+                    if(resultSet.next()) {
+                        answer.value = extractAnswerFromResultSet(resultSet);
+                    }
                 }));
 
         return answer.value;

@@ -1,5 +1,7 @@
 package edu.javatraining.knowledgecheck.domain;
 
+import java.util.Objects;
+
 public class Answer {
     private Long id;
     private Long questionId;
@@ -51,5 +53,22 @@ public class Answer {
 
     public void setCorrect(boolean correct) {
         this.correct = correct;
+    }
+
+
+    @Override
+    public boolean equals(Object other) {
+
+        return (other != null)
+                && (other instanceof Answer)
+                && Objects.equals(id, ((Answer) other).getId());
+    }
+
+    public boolean fullEquals(Answer other) {
+
+        return (other != null)
+                && Objects.equals(id, other.getId() )
+                && Objects.equals(questionId, other.getQuestionId())
+                && Objects.equals(description, other.getDescription() );
     }
 }

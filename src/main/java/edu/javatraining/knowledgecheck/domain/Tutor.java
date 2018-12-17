@@ -1,6 +1,6 @@
 package edu.javatraining.knowledgecheck.domain;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class Tutor extends User {
     private String position;
@@ -46,8 +46,8 @@ public class Tutor extends User {
     public boolean fullEquals(Tutor other) {
 
         return super.fullEquals(other)
-                && StringUtils.equals(position, other.getPosition())
-                && StringUtils.equals(academicTitle, other.getAcademicTitle())
-                && StringUtils.equals(scientificDegree, other.getScientificDegree());
+                && Objects.equals(position, other.getPosition())
+                && Objects.equals(academicTitle, other.getAcademicTitle())
+                && Objects.equals(scientificDegree, other.getScientificDegree());
     }
 }

@@ -1,6 +1,6 @@
 package edu.javatraining.knowledgecheck.domain;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class Student extends User{
     private String specialty;
@@ -43,7 +43,7 @@ public class Student extends User{
 
         return super.fullEquals(other)
                 && year == other.getYear()
-                && StringUtils.equals(specialty, other.getSpecialty())
-                && StringUtils.equals(group, other.getGroup());
+                && Objects.equals(specialty, other.getSpecialty())
+                && Objects.equals(group, other.getGroup());
     }
 }

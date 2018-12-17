@@ -126,6 +126,28 @@ public class UserDaoJdbc extends BasicDaoJdbc implements UserDao {
         return super.count(sql);
     }
 
+    protected Long count(User.Role userRole) {
+
+        final int role = userRole.ordinal();
+        String sql = "SELECT COUNT(*) FROM users WHERE role = ?";
+
+        PrimitiveEnvelope<Long>  count = new PrimitiveEnvelope<>();
+
+        select(sql,
+
+                (statement -> {
+                    statement.setInt(1, role);
+                }),
+
+                (resultSet -> {
+                    if(resultSet.next()) {
+                        count.value = resultSet.getLong(1);
+                    }
+                }));
+
+        return count.value;
+    }
+
     @Override
     public Long insert(User user) {
 

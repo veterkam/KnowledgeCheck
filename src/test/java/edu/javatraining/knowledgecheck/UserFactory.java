@@ -75,6 +75,51 @@ public class UserFactory {
         return u;
     }
 
+    public static Tutor getTutorAlex() {
+        Tutor u = new Tutor();
+        u.setFirstName("Alex");
+        u.setLastName("Lapaz");
+        u.setUsername("alex");
+        u.setVerified(true);
+        u.setEmail("alex@mail.edu");
+        u.setRole(User.Role.TUTOR);
+        u.setPassword("1000:ed1f2367300c535ccd03e1798b7997cf:5fc67e01468149d9795cd05048bd28752373577f4b4d0054a7fb1afc027b657547bc93ddb8bf966c52de0328c5a1e61380a8e8821e42e7f8647c6bd11b901d9c");
+        u.setScientificDegree("Master of Biology");
+        u.setPosition("Lector");
+        u.setAcademicTitle("Lector of Biology");
+        return u;
+    }
+
+    public static Tutor getTutorAnn() {
+        Tutor u = new Tutor();
+        u.setFirstName("Ann");
+        u.setLastName("White");
+        u.setUsername("ann");
+        u.setVerified(true);
+        u.setEmail("ann@mail.edu");
+        u.setRole(User.Role.TUTOR);
+        u.setPassword("1000:ed1f2367300c535ccd03e1798b7997cf:5fc67e01468149d9795cd05048bd28752373577f4b4d0054a7fb1afc027b657547bc93ddb8bf966c52de0328c5a1e61380a8e8821e42e7f8647c6bd11b901d9c");
+        u.setScientificDegree("Master of English");
+        u.setPosition("Teacher");
+        u.setAcademicTitle("Teacher of English");
+        return u;
+    }
+
+    public static Tutor getTutorFelix() {
+        Tutor u = new Tutor();
+        u.setFirstName("Felix");
+        u.setLastName("Pit");
+        u.setUsername("felix");
+        u.setVerified(true);
+        u.setEmail("felix@mail.edu");
+        u.setRole(User.Role.TUTOR);
+        u.setPassword("1000:ed1f2367300c535ccd03e1798b7997cf:5fc67e01468149d9795cd05048bd28752373577f4b4d0054a7fb1afc027b657547bc93ddb8bf966c52de0328c5a1e61380a8e8821e42e7f8647c6bd11b901d9c");
+        u.setScientificDegree("Master of Physics");
+        u.setPosition("Teacher");
+        u.setAcademicTitle("Teacher of Physics");
+        return u;
+    }
+
     public static Student getStudent() {
         Student u = new Student();
         u.setId(3L);

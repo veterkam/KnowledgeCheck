@@ -208,6 +208,11 @@ public class StudentDaoJdbc extends UserDaoJdbc implements StudentDao {
         return  students;//.toArray(new Student[students.size()]);
     }
 
+    @Override
+    public Long count() {
+        return super.count(User.Role.STUDENT);
+    }
+
     private boolean updateProfile(Student student) {
         String sql = "UPDATE student_profiles SET "
                 +"`specialty` = ?, `group` = ?, `year` = ? "

@@ -209,24 +209,7 @@ public class TutorDaoJdbc extends UserDaoJdbc implements TutorDao {
 
     @Override
     public Long count() {
-        final int role = User.Role.TUTOR.ordinal();
-        String sql = "SELECT COUNT(*) FROM users WHERE role = ";
-
-        PrimitiveEnvelope<Long>  count = new PrimitiveEnvelope<>();
-
-        select(sql,
-
-                (statement -> {
-                    statement.setInt(1, role);
-                }),
-
-                (resultSet -> {
-                    if(resultSet.next()) {
-                        count.value = resultSet.getLong(1);
-                    }
-                }));
-
-        return count.value;
+        return super.count(User.Role.TUTOR);
     }
 
     private void insertProfile(Tutor tutor) {

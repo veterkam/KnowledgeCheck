@@ -10,15 +10,15 @@ import javax.validation.constraints.Size;
 
 public class TutorDto extends UserDto{
     @NotBlank(message="app.account.validation.position.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.position.size")
+    @Size(min=3, max=100, message="app.account.validation.position.size")
     private String position;
 
     @NotBlank(message="app.account.validation.scientificDegree.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.scientificDegree.size")
+    @Size(min=3, max=100, message="app.account.validation.scientificDegree.size")
     private String scientificDegree;
 
     @NotBlank(message="app.account.validation.academicTitle.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.academicTitle.size")
+    @Size(min=3, max=100, message="app.account.validation.academicTitle.size")
     private String academicTitle;
 
     public String getPosition() {

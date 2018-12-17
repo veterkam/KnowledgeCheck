@@ -27,7 +27,7 @@ create table IF NOT EXISTS `tutor_profiles` (
 create table IF NOT EXISTS `student_profiles` (
   `id` bigint(11) not null,
   `specialty` varchar(100),
-  `group` varchar(10),
+  `group` varchar(100),
   `year` int(4),
   primary key (`id`),
   unique key `id_unique` (`id`),

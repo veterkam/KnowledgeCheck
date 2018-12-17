@@ -12,14 +12,14 @@ import javax.validation.constraints.Size;
 
 public class StudentDto extends UserDto{
     @NotBlank(message="app.account.validation.specialty.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.specialty.size")
+    @Size(min=3, max=100, message="app.account.validation.specialty.size")
     private String specialty;
     @NotBlank(message="app.account.validation.year.not_empty")
     @Size(min=1, max=4, message="app.account.validation.year.size")
     @Digits(integer=4, fraction=0,  message="app.account.validation.year.only_digits")
     private String year;
     @NotBlank(message="app.account.validation.group.not_empty")
-    @Size(min=3, max=50, message="app.account.validation.group.size")
+    @Size(min=3, max=100, message="app.account.validation.group.size")
     private String group;
 
     public String getSpecialty() {

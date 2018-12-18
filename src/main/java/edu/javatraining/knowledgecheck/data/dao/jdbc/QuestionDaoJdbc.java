@@ -106,6 +106,30 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
     }
 
     @Override
+    public List<Question> findPlainAll() {
+        List<Question> questionList = new ArrayList<>();
+        String sql = "SELECT * FROM questions";
+
+        select(sql,
+                (statement -> { }),
+                (resultSet -> {
+                    while (resultSet.next()) {
+                        Question question = new Question();
+                        extractQuestionFromResultSet(resultSet, question);
+                        questionList.add(question);
+                    }
+                }));
+
+        return questionList;
+    }
+
+    @Override
+    public Long count() {
+        String sql = "SELECT COUNT(*) FROM questions";
+        return count(sql);
+    }
+
+    @Override
     public boolean delete(Question question) {
         return deleteById(question.getId());
     }
@@ -196,6 +220,26 @@ public class QuestionDaoJdbc extends BasicDaoJdbc implements QuestionDao {
                 }));
 
         return question;
+    }
+
+    @Override
+    public Long savePlain(Question question) {
+        Long id = question.getId();
+        if(!updatePlain(question)) {
+            id = insertPlain(question);
+        }
+
+        return id;
+    }
+
+    @Override
+    public Long saveComplex(Question question) {
+        Long id = question.getId();
+        if(!updateComplex(question)) {
+            id = insertComplex(question);
+        }
+
+        return id;
     }
 
     private void extractQuestionFromResultSet(ResultSet resultSet, Question question) throws SQLException {

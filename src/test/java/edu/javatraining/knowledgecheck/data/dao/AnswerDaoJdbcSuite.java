@@ -3,7 +3,6 @@ package edu.javatraining.knowledgecheck.data.dao;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.connection.impl.ConnectionPoolJdbc;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.AnswerDaoJdbc;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.UserDaoJdbc;
 import edu.javatraining.knowledgecheck.domain.Answer;
 import edu.javatraining.knowledgecheck.exception.DAOException;
 import edu.javatraining.knowledgecheck.tools.PropertyFileReader;
@@ -22,7 +21,7 @@ public class AnswerDaoJdbcSuite {
 
     private final String SCRIPT_CLEAR_DB = "/sql/clear_db.sql";
     private final String SCRIPT_CREATE_TABLES = "/sql/create_tables.sql";
-    private final String SCRIPT_CLEAR_TABLES = "/sql/clear_tables.sql";
+    private final String SCRIPT_CLEAR_TABLES = "/sql/clear_tables_for_answer_test.sql";
     private final String SCRIPT_FILL_TABLES = "/sql/fill_tables_for_answer_test.sql";
 
     private List<Answer> answers;
@@ -30,8 +29,6 @@ public class AnswerDaoJdbcSuite {
     private ConnectionPool pool;
     private SqlScriptRunner sqlRunner;
     private AnswerDaoJdbc dao;
-
-    private UserDaoJdbc userDaoJdbc;
 
     @BeforeClass
     public void setUp() {
@@ -48,6 +45,7 @@ public class AnswerDaoJdbcSuite {
         sqlRunner = new SqlScriptRunner(pool);
         sqlRunner.runScript(SCRIPT_CLEAR_DB);
         sqlRunner.runScript(SCRIPT_CREATE_TABLES);
+        sqlRunner.runScript(SCRIPT_FILL_TABLES);
     }
 
     @BeforeMethod
@@ -68,17 +66,15 @@ public class AnswerDaoJdbcSuite {
     @Test(expectedExceptions = DAOException.class)
     public void testTryInsertWithWrongQuestionId() {
 
-        Answer expected = new Answer();
-        expected.setId(1L);
-        expected.setQuestionId(1L);
-        expected.setDescription("answer");
-        dao.insert(expected);
+        Answer question = new Answer();
+        question.setId(1L);
+        question.setQuestionId(1000L);
+        question.setDescription("answer");
+        dao.insert(question);
     }
 
     @Test
     public void testTryInsertWithCorrectQuestionId() {
-
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
 
         Answer expected = new Answer();
         expected.setQuestionId(1L);
@@ -95,7 +91,6 @@ public class AnswerDaoJdbcSuite {
         List<Answer> stored = dao.findAll();
         Assert.assertTrue(stored.size() == 0);
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         for(Answer a : answers) {
             dao.insert(a);
         }
@@ -108,7 +103,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testFindByQuestionID() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         Long count = dao.count();
         Assert.assertTrue(count == 0);
         for(Answer a : answers) {
@@ -129,7 +123,6 @@ public class AnswerDaoJdbcSuite {
         Long count = dao.count();
         Assert.assertTrue(count == 0);
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         for(Answer a : answers) {
             dao.insert(a);
         }
@@ -141,7 +134,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testDeleteById() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         for(Answer a : answers) {
             dao.insert(a);
         }
@@ -160,7 +152,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testDelete() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         for(Answer a : answers) {
             dao.insert(a);
         }
@@ -180,7 +171,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testUpdate() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         Answer expected = answers.get(0);
         Long id = dao.insert(expected);
         expected = answers.get(2);
@@ -194,7 +184,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testUpdateWithWrongQuestionIDShouldNotUpdate() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         Answer expected = answers.get(0);
         Long id = dao.insert(expected);
         Answer wrong = answers.get(2);
@@ -209,7 +198,6 @@ public class AnswerDaoJdbcSuite {
     @Test
     public void testSave() {
 
-        sqlRunner.runScript(SCRIPT_FILL_TABLES);
         Answer expected = answers.get(0);
         Long id = dao.save(expected);
 

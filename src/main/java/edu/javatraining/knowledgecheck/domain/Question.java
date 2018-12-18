@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Question {
     private Long id;
@@ -61,5 +62,21 @@ public class Question {
     public void setAnswers(Answer[] answers) {
         this.answers.clear();
         this.answers = Arrays.asList(answers);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+
+        return (other != null)
+                && (other instanceof Question)
+                && Objects.equals(id, ((Question) other).getId());
+    }
+
+    public boolean fullEquals(Question other) {
+
+        return (other != null)
+                && Objects.equals(id, other.getId() )
+                && Objects.equals(testId, other.getTestId())
+                && Objects.equals(description, other.getDescription() );
     }
 }

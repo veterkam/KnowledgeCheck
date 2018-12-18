@@ -34,6 +34,11 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    public List<Question> findPlainAll() {
+        return dao.findPlainAll();
+    }
+
+    @Override
     public List<Question> findPlainAll(Long testId) {
         return dao.findPlainAll(testId);
     }
@@ -56,6 +61,16 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public boolean updatePlain(Question question) {
         return dao.updatePlain(question);
+    }
+
+    @Override
+    public Long saveComplex(Question question) {
+        return dao.saveComplex(question);
+    }
+
+    @Override
+    public Long savePlain(Question question) {
+        return dao.savePlain(question);
     }
 
     @Override

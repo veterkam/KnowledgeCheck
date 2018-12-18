@@ -1,6 +1,6 @@
 package edu.javatraining.knowledgecheck.data.dao;
 
-import edu.javatraining.knowledgecheck.UserFactory;
+import edu.javatraining.knowledgecheck.factory.UserFactory;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.connection.impl.ConnectionPoolJdbc;
 import edu.javatraining.knowledgecheck.data.dao.jdbc.UserDaoJdbc;

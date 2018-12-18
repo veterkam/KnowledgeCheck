@@ -2,7 +2,7 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import edu.javatraining.knowledgecheck.UserFactory;
+import edu.javatraining.knowledgecheck.factory.UserFactory;
 import edu.javatraining.knowledgecheck.configure.WebAppServletModule;
 import edu.javatraining.knowledgecheck.controller.dto.TestDto;
 import edu.javatraining.knowledgecheck.domain.Tutor;
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 @Guice(modules = WebAppServletModule.class)
@@ -83,7 +82,7 @@ public class TestingControllerSuite {
         when(request.getSession()).thenReturn(session);
         when(request.getContextPath()).thenReturn("");
         when(servlet.getServletContext()).thenReturn(context);
-        when(context.getRequestDispatcher(anyString())).thenReturn(dispatcher);
+        when(context.getRequestDispatcher(any())).thenReturn(dispatcher);
 
         when(testServiceProvider.get()).thenReturn(testService);
         when(questionServiceProvider.get()).thenReturn(questionService);
@@ -152,7 +151,7 @@ public class TestingControllerSuite {
         shouldShowView("/testing/subjects", VIEW_SUBJECTS_FORM);
 
         ArgumentCaptor<String> attrName = ArgumentCaptor.forClass(String.class);
-        verify(session).setAttribute( attrName.capture(), anyString());
+        verify(session).setAttribute( attrName.capture(), any());
         Assert.assertTrue(attrName.getAllValues().contains("FID"));
 
         verify(request).setAttribute( attrName.capture(), any());

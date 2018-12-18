@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Servlet controls requests to account:
+ * login, logout, registration, account recovery
+ */
 @WebServlet(urlPatterns = {
         "/account/login",
         "/account/logout",
@@ -59,21 +63,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private Provider<TutorService> tutorServiceProvider;
 
     private Provider<StudentService> studentServiceProvider;
-
-    @Inject
-    public void setUserServiceProvider(Provider<UserService> userServiceProvider) {
-        this.userServiceProvider = userServiceProvider;
-    }
-
-    @Inject
-    public void setTutorServiceProvider(Provider<TutorService> tutorServiceProvider) {
-        this.tutorServiceProvider = tutorServiceProvider;
-    }
-
-    @Inject
-    public void setStudentServiceProvider(Provider<StudentService> studentServiceProvider) {
-        this.studentServiceProvider = studentServiceProvider;
-    }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -184,6 +173,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             return;
         }
 
+        // Process parameters
         AlertManager alertManager = getAlertManager(request);
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -193,7 +183,8 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
         if (user != null && user.isVerified() &&
                 Cipher.validate(password, user.getPassword())) {
-
+            // Login user with valid password
+            // Encode password (we want to have new hash every login)
             password = Cipher.encode(password);
             user.setPassword(password);
             userService.updatePassword(user);
@@ -203,6 +194,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             request.getSession().setAttribute("user", user);
             redirect(request, response, "/");
         } else {
+            // Login failed
             alertManager.danger("app.account.login_error");
             loginForm(request, response);
         }
@@ -221,7 +213,6 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void forwardRegistrationForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         genFormId(request.getSession());
-        // Add list of User.Roles to request
         request.setAttribute("roles", User.Role.values());
         forward(request, response, VIEW_REGISTRATION_FORM);
     }
@@ -279,6 +270,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         AlertManager alertManager = getAlertManager(request);
 
         if ( checkConfirmation(request) ) {
+            // Verification code is correct.
             // Insert user to data base.
             HttpSession session = request.getSession();
             UserDto userDto = (UserDto) session.getAttribute("userDto");
@@ -286,7 +278,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
 
             boolean verified = ( user.getRole() != User.Role.ADMINISTRATOR );
             user.setVerified(verified);
-
+            // Encode password and save
             String password = Cipher.encode(user.getPassword());
             user.setPassword(password);
 
@@ -295,6 +287,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
                 userService.insert(user);
             } catch (DAOException e) {
 
+                // Insert failed, may be it is duplicate?
                 Throwable childException = e.getCause();
                 if(childException instanceof SQLException) {
                     SQLException sqlException = (SQLException) childException;
@@ -403,21 +396,26 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         AlertManager alertManager = getAlertManager(request);
 
         if ( checkConfirmation(request) ) {
+            // Verification code is correct.
             UserRecoveryDto userDto = (UserRecoveryDto) session.getAttribute("userDto");
             UserService userService = userServiceProvider.get();
             User user = userService.findOneByUsername(userDto.getUsername());
 
             if (user != null) {
+                // Find user
+                // Try to set new password
                 user = attachProfile(user);
                 String password = Cipher.encode(userDto.getPassword());
                 user.setPassword(password);
                 if ( userService.updatePassword(user) ) {
+                    // Password changing success, login automatically
                     session.setAttribute("user", user);
                     session.removeAttribute("userDto");
                     alertManager.success("app.account.recovery_password_success");
                     redirect(request, response, "/");
                     return;
                 } else {
+                    // Password changing failed
                     alertManager.danger("app.account.can_not_change_password");
                 }
             } else {
@@ -544,7 +542,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         }
 
         if ( checkConfirmation(request) ) {
-            // save profile modification
+            // Save profile modification
             HttpSession session = request.getSession();
             UserDto userDto = (UserDto) session.getAttribute("userDto");
             User modifedUser = userDto.toUser();
@@ -566,9 +564,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void showUserList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User user = (User) request.getSession().getAttribute("user");
-
-        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+        if (checkPermit(request, User.Role.ADMINISTRATOR) == null) {
             pageNotFound(request, response);
             return;
         }
@@ -616,9 +612,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void removeUser(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User user = (User) request.getSession().getAttribute("user");
-
-        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+        if (checkPermit(request, User.Role.ADMINISTRATOR) == null) {
             pageNotFound(request, response);
             return;
         }
@@ -640,9 +634,7 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
     private void changeUserVerificationStatus(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        User user = (User) request.getSession().getAttribute("user");
-
-        if (user == null || user.getRole() != User.Role.ADMINISTRATOR) {
+        if (checkPermit(request, User.Role.ADMINISTRATOR) == null) {
             pageNotFound(request, response);
             return;
         }
@@ -853,5 +845,20 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
             default:
                 return user;
         }
+    }
+
+    @Inject
+    public void setUserServiceProvider(Provider<UserService> userServiceProvider) {
+        this.userServiceProvider = userServiceProvider;
+    }
+
+    @Inject
+    public void setTutorServiceProvider(Provider<TutorService> tutorServiceProvider) {
+        this.tutorServiceProvider = tutorServiceProvider;
+    }
+
+    @Inject
+    public void setStudentServiceProvider(Provider<StudentService> studentServiceProvider) {
+        this.studentServiceProvider = studentServiceProvider;
     }
 }

@@ -1,4 +1,4 @@
-package edu.javatraining.knowledgecheck;
+package edu.javatraining.knowledgecheck.factory;
 
 import edu.javatraining.knowledgecheck.domain.Student;
 import edu.javatraining.knowledgecheck.domain.Tutor;

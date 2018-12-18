@@ -26,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Servlet controls requests to testing:
+ * create test, edit test, remove test
+ * pass test and etc.
+ */
 @WebServlet(urlPatterns = {
         "/",
         "/testing",
@@ -90,7 +95,7 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException {
 
         String action = request.getServletPath();
 
@@ -888,17 +893,6 @@ public class TestingControllerServlet extends AbstractBaseControllerServlet {
             this.presentation = presentation;
             this.pagination = pagination;
         }
-    }
-
-    private User checkPermit(HttpServletRequest request, User.Role role) {
-
-        User user = (User) request.getSession().getAttribute("user");
-
-        if(user == null || user.getRole() != role) {
-            return null;
-        }
-
-        return user;
     }
 
 

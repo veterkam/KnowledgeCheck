@@ -15,6 +15,9 @@ import org.apache.logging.log4j.Logger;
 import java.math.BigInteger;
 import java.sql.*;
 
+/**
+ * Basic DAO JDBC class
+ */
 @Singleton
 public class BasicDaoJdbc {
     protected static final Logger logger = LogManager.getLogger("Data");
@@ -22,6 +25,9 @@ public class BasicDaoJdbc {
 
     protected ConnectionPool connectionPool;
 
+    // If we want to use manual commit
+    // we need use single connection
+    // for commit and rollback transaction
     private Connection singleConn;
     private boolean isSingleConnOwner;
 
@@ -113,6 +119,12 @@ public class BasicDaoJdbc {
         }
     }
 
+    /**
+     * The method return autoincrement ID
+     * @param ps    prepared statement
+     * @return      ID of new record
+     * @throws SQLException
+     */
     public BigInteger getGenKey(PreparedStatement ps) throws SQLException {
         BigInteger resultId;
         try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -128,6 +140,12 @@ public class BasicDaoJdbc {
         return resultId;
     }
 
+    /**
+     * Update record
+     * @param sql       SQL script
+     * @param writer    writer to statement
+     * @return
+     */
     protected boolean update(String sql, StatementWriter writer) {
 
         Connection connection = null;
@@ -150,6 +168,12 @@ public class BasicDaoJdbc {
         return isRowUpdated;
     }
 
+    /**
+     * Select record(s)
+     * @param sql       SQL script
+     * @param writer    writer to statement
+     * @param reader    reader from result set
+     */
     protected void select(String sql, StatementWriter writer, ResultSetReader reader) {
 
         Connection connection = null;
@@ -172,6 +196,10 @@ public class BasicDaoJdbc {
         }
     }
 
+    /**
+     * Calculate count of records
+     * @param sql       SQL script
+     */
     public Long count(String sql) {
         PrimitiveEnvelope<Long> count = new PrimitiveEnvelope<Long>();
 
@@ -190,6 +218,12 @@ public class BasicDaoJdbc {
         return insert(sql, writer, true);
     }
 
+    /**
+     * Insert record(s)
+     * @param sql       SQL script
+     * @param writer    writer to statement
+     * @param returnId  we need ID of record?
+     */
     protected Long insert(String sql, StatementWriter writer, boolean returnId) {
 
         Long resultId;
@@ -222,6 +256,11 @@ public class BasicDaoJdbc {
         return resultId;
     }
 
+    /**
+     * Delete record(s)
+     * @param sql       SQL script
+     * @param writer    writer to statement
+     */
     protected boolean delete(String sql, StatementWriter writer) {
 
         Connection connection = null;

@@ -11,7 +11,7 @@ import java.io.IOException;
 @WebFilter(filterName = "SessionLocaleFilter", urlPatterns = {"/*"})
 @Singleton
 public class SessionLocaleFilter implements Filter {
-
+    
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         // Read locale code (ru/en/etc.) from URL end save into session

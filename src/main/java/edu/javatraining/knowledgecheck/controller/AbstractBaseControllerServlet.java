@@ -1,5 +1,6 @@
 package edu.javatraining.knowledgecheck.controller;
 
+import edu.javatraining.knowledgecheck.domain.User;
 import edu.javatraining.knowledgecheck.tools.AlertManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 
-
+/**
+ * Basic controller servlet
+ */
 public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected final String VIEW_LOGIN_FORM = "/WEB-INF/view/account/LoginForm.jsp";
@@ -32,6 +35,11 @@ public class AbstractBaseControllerServlet extends HttpServlet {
 
     protected static final Logger logger = LogManager.getLogger("Controller");
 
+    /**
+     * Return AlertManager object from session
+     * @param request
+     * @return          AlertManager object
+     */
     protected AlertManager getAlertManager(HttpServletRequest request) {
         HttpSession session = request.getSession();
         AlertManager manager = (AlertManager)session.getAttribute("alertManager");
@@ -62,15 +70,44 @@ public class AbstractBaseControllerServlet extends HttpServlet {
         forward(request, response, VIEW_PAGE_NOT_FOUND);
     }
 
+    /**
+     * Generate form ID and store it into session
+     * (for avoiding cross-site attack)
+     * @param session
+     */
     protected void genFormId(HttpSession session) {
         session.setAttribute("FID", "" + Math.random());
     }
 
+    /**
+     * The method compare two form identificators:
+     * from request and from session
+     * (for avoiding cross-site attack)
+     * @param request
+     * @return
+     */
     protected boolean checkFormId(HttpServletRequest request) {
         String originalFormId = (String) request.getSession().getAttribute("FID");
         String formId = request.getParameter("_FID");
         request.getSession().removeAttribute("FID");
 
         return originalFormId.equals(formId);
+    }
+
+    /**
+     * Check user permission to page access
+     * @param request
+     * @param role      user role
+     * @return          return user reference, if there is permission
+     */
+    protected User checkPermit(HttpServletRequest request, User.Role role) {
+
+        User user = (User) request.getSession().getAttribute("user");
+
+        if(user == null || user.getRole() != role) {
+            return null;
+        }
+
+        return user;
     }
 }

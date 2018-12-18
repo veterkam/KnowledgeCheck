@@ -1,0 +1,44 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Full KnowledgeCheck Web App test" verbose="1">
+    <test name="Account Controller Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.controller.AccountControllerSuite" />
+        </classes>
+    </test>
+    <test name="Testing Controller Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.controller.TestingControllerSuite" />
+        </classes>
+    </test>
+    <test name="Answer DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.AnswerDaoJdbcSuite" />
+        </classes>
+    </test>
+    <test name="Question DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.QuestionDaoJdbcSuite" />
+        </classes>
+    </test>
+    <test name="Student DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.StudentDaoJdbcSuite" />
+        </classes>
+    </test>
+    <test name="Test DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.TestDaoJdbcSuite" />
+        </classes>
+    </test>
+    <test name="Tutor DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.TutorDaoJdbcSuite" />
+        </classes>
+    </test>
+    <test name="User DAO JDBC Test">
+        <classes>
+            <class name="edu.javatraining.knowledgecheck.data.dao.UserDaoJdbcSuite" />
+        </classes>
+    </test>
+
+</suite>

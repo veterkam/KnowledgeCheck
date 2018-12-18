@@ -2,7 +2,7 @@ package edu.javatraining.knowledgecheck.controller;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import edu.javatraining.knowledgecheck.UserFactory;
+import edu.javatraining.knowledgecheck.factory.UserFactory;
 import edu.javatraining.knowledgecheck.configure.WebAppServletModule;
 import edu.javatraining.knowledgecheck.controller.dto.UserDto;
 import edu.javatraining.knowledgecheck.domain.Student;
@@ -30,7 +30,6 @@ import javax.servlet.http.HttpSession;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 

@@ -8,6 +8,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
+/**
+ * The class used to send email message
+ */
 public class EmailSender {
     private static final Logger logger = LogManager.getLogger("Tools");
 
@@ -29,6 +32,14 @@ public class EmailSender {
 
     }
 
+    /**
+     * The method used to simply send message
+     * @param subject       subject of message
+     * @param text          test of message
+     * @param fromEmail     e-mail message sending box from
+     * @param toEmail       e-mail message sending box to
+     * @throws MessagingException
+     */
     public void send(String subject, String text, String fromEmail, String toEmail)
         throws MessagingException {
         Session session = Session.getDefaultInstance(props, new Authenticator() {

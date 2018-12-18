@@ -2,6 +2,9 @@ package edu.javatraining.knowledgecheck.tools;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * The class used to read locale messages.properties file
+ */
 public class LocaleMsgReader {
     private static final String RESOURCE_BASE = "/locale/messages";
     private static final String RESOURCE_EXTENSION = ".properties";

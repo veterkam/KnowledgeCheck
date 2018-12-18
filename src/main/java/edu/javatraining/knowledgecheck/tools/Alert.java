@@ -1,5 +1,8 @@
 package edu.javatraining.knowledgecheck.tools;
 
+/**
+ *  The class is used to store typed user's messages
+ */
 public class Alert {
     private String type;
     private String message;

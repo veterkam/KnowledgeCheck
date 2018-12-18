@@ -3,6 +3,9 @@ package edu.javatraining.knowledgecheck.tools;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The class is used to manage typed user's messages
+ */
 public class AlertManager {
     private  List<Alert> alerts = new ArrayList<>();
 

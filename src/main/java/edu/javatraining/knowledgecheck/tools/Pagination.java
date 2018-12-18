@@ -1,5 +1,8 @@
 package edu.javatraining.knowledgecheck.tools;
 
+/**
+ * The class used for calculate and store pagination data
+ */
 public class Pagination {
     private int begin;
     private int end;

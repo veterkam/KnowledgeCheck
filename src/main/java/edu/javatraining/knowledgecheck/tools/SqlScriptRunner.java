@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.URL;
 import java.sql.*;
 
+/**
+ * The class used for simply sql script executing
+ */
 public class SqlScriptRunner {
     private static final Logger logger = LogManager.getLogger("Tools");
     private static final String DEFAULT_DELIMITER = ";";
@@ -25,8 +28,7 @@ public class SqlScriptRunner {
     /**
      * Runs an SQL script (read in using the Reader parameter)
      *
-     * @param sqlResource
-     *            - the resource of the script
+     * @param sqlResource   the resource of the script
      */
     public void runScript(String sqlResource) {
         try {

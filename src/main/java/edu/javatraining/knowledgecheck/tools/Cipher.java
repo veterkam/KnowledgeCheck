@@ -10,9 +10,19 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
+/**
+ * The class is used to encode the password
+ * and validate passwords
+ */
 public class Cipher {
     private static final Logger logger = LogManager.getLogger("Service");
 
+    /**
+     * The method encode password
+     * @param password
+     * @return  encoded password
+     * @throws Exception
+     */
     public static String encode(String password) throws Exception {
         final int iterations = 1000;
         final int keyLen = 64 * 8;
@@ -30,9 +40,16 @@ public class Cipher {
         return iterations + ":" + toHex(salt) + ":" + toHex(hash);
     }
 
-    public static boolean validate(String original, String stored) throws Exception {
+    /**
+     * The method validate two passwords
+     * @param original  original password
+     * @param encoded   encoded password
+     * @return
+     * @throws Exception
+     */
+    public static boolean validate(String original, String encoded) throws Exception {
 
-        String[] parts = stored.split(":");
+        String[] parts = encoded.split(":");
         int iterations = Integer.parseInt(parts[0]);
         byte[] salt = fromHex(parts[1]);
         byte[] hash = fromHex(parts[2]);
@@ -54,6 +71,16 @@ public class Cipher {
         return diff == 0;
     }
 
+    /**
+     * The method hash the password
+     * @param password      original password
+     * @param salt          additional random data
+     * @param iterations    count of iterations
+     * @param keyLength     key length of hash
+     * @return  hash of password
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
     private static byte[] getHash(String password, byte[] salt, int iterations, int keyLength)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 

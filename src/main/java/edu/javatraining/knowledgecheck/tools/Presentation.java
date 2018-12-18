@@ -6,6 +6,10 @@ import org.apache.logging.log4j.util.Strings;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+/**
+ * The class used for store presentation data
+ * for filtering and ordering
+ */
 public class Presentation {
     public static final String DATE_DESCENDING = "app.presentation.date_descending";
     public static final String DATE_ASCENDING = "app.presentation.date_ascending";

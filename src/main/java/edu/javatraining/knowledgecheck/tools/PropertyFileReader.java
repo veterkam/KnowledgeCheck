@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * The class used for simply property file reading
+ */
 public class PropertyFileReader {
     private static final Logger logger = LogManager.getLogger("Service");
 

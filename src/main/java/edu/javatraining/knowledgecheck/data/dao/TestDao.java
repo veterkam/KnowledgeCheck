@@ -13,6 +13,7 @@ public interface TestDao {
     List<Test> findAllTestsWithQuestionsAndAnswers(Long offset, Long count);
     List<Test> findAllTestsWithQuestions(Long offset, Long count);
     List<Test> findAllPlainTests(Long offset, Long count);
+    List<Test> findAllPlainTests();
     boolean delete(Test test);
     boolean updateComplex(Test test);
     boolean updatePlain(Test test);

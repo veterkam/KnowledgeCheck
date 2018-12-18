@@ -3,6 +3,7 @@ package edu.javatraining.knowledgecheck.domain;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Test {
 
@@ -119,13 +120,8 @@ public class Test {
     @Override
     public boolean equals(Object other) {
 
-        if(other == null) {
-            return false;
-        }
-
-        return (other == null) ? false
-                :(! (other instanceof Test)) ? false
-                    : (id != null) ? id == ((Test) other).getId()
-                        : false;
+        return (other != null)
+                && (other instanceof Test)
+                && Objects.equals(id, ((Test) other).getId());
     }
 }

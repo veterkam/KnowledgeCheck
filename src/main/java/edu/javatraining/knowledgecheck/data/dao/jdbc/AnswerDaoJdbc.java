@@ -38,6 +38,9 @@ public class AnswerDaoJdbc extends BasicDaoJdbc implements AnswerDao {
     public List<Answer> findAll(Long offset, Long count) {
         List<Answer> answerList = new ArrayList<>();
         String sql = "SELECT * FROM answers";
+        if(offset != null) {
+            sql += " LIMIT ?, ?";
+        }
 
         select(sql,
                 (statement -> {

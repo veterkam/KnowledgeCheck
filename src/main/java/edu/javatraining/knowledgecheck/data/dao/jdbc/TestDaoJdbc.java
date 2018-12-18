@@ -185,13 +185,22 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
     }
 
     @Override
+    public List<Test> findAllPlainTests() {
+        return findAllPlainTests(null, null);
+    }
+
+    @Override
     public List<Test> findAllPlainTests(Long offset, Long count) {
         List<Test> testList = new ArrayList<>();
         String sql = "SELECT * FROM tests " +
                 "WHERE " +
                 "(? IS NULL OR tutor_id = ? ) AND " +
                 "(? IS NULL OR subject_id = ?) "
-                + getOrder() + " LIMIT ?, ?";
+                + getOrder();
+
+        if(offset != null) {
+            sql += " LIMIT ?, ?";
+        }
 
 
         select(sql,
@@ -200,8 +209,11 @@ public class TestDaoJdbc extends BasicDaoJdbc implements TestDao {
                     statement.setObject(2, getFilterTutorId(), Types.BIGINT);
                     statement.setObject(3, getFilterSubjectId(), Types.BIGINT);
                     statement.setObject(4, getFilterSubjectId(), Types.BIGINT);
-                    statement.setLong(5, offset);
-                    statement.setLong(6, count);
+
+                    if(offset != null) {
+                        statement.setLong(5, offset);
+                        statement.setLong(6, count);
+                    }
                 }),
                 (resultSet -> {
                     while (resultSet.next()) {

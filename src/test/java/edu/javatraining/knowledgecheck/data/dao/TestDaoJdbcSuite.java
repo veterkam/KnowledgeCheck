@@ -1,10 +1,10 @@
 package edu.javatraining.knowledgecheck.data.dao;
 
+import edu.javatraining.knowledgecheck.UserFactory;
 import edu.javatraining.knowledgecheck.data.connection.ConnectionPool;
 import edu.javatraining.knowledgecheck.data.connection.impl.ConnectionPoolJdbc;
-import edu.javatraining.knowledgecheck.data.dao.jdbc.QuestionDaoJdbc;
-import edu.javatraining.knowledgecheck.domain.Question;
-import edu.javatraining.knowledgecheck.exception.DAOException;
+import edu.javatraining.knowledgecheck.data.dao.jdbc.TestDaoJdbc;
+import edu.javatraining.knowledgecheck.domain.Subject;
 import edu.javatraining.knowledgecheck.tools.PropertyFileReader;
 import edu.javatraining.knowledgecheck.tools.SqlScriptRunner;
 import org.testng.Assert;
@@ -21,14 +21,14 @@ public class TestDaoJdbcSuite {
 
     private final String SCRIPT_CLEAR_DB = "/sql/clear_db.sql";
     private final String SCRIPT_CREATE_TABLES = "/sql/create_tables.sql";
-    private final String SCRIPT_CLEAR_TABLES = "/sql/clear_tables_for_question_test.sql";
-    private final String SCRIPT_FILL_TABLES = "/sql/fill_tables_for_question_test.sql";
+    private final String SCRIPT_CLEAR_TABLES = "/sql/clear_tables_for_test_test.sql";
+    private final String SCRIPT_FILL_TABLES = "/sql/fill_tables_for_test_test.sql";
 
-    private List<Question> questions;
+    private List<edu.javatraining.knowledgecheck.domain.Test> tests;
 
     private ConnectionPool pool;
     private SqlScriptRunner sqlRunner;
-    private QuestionDaoJdbc dao;
+    private TestDaoJdbc dao;
 
     @BeforeClass
     public void setUp() {
@@ -40,7 +40,7 @@ public class TestDaoJdbcSuite {
                 props.getProperty("db.user"),
                 props.getProperty("db.password"));
 
-        dao = new QuestionDaoJdbc(pool);
+        dao = new TestDaoJdbc(pool);
 
         sqlRunner = new SqlScriptRunner(pool);
         sqlRunner.runScript(SCRIPT_CLEAR_DB);
@@ -52,10 +52,28 @@ public class TestDaoJdbcSuite {
     public void prepare() {
         sqlRunner.runScript(SCRIPT_CLEAR_TABLES);
 
-        questions = new ArrayList<>(Arrays.asList(
-                new Question(null, 1L, "Question 1"),
-                new Question(null, 2L, "Question 2"),
-                new Question(null, 1L, "Question 3")));
+        tests = new ArrayList<>(Arrays.asList(
+                new edu.javatraining.knowledgecheck.domain.Test(
+                        null,
+                        new Subject(1L, "Mathematics"),
+                        UserFactory.getTutor(),
+                        "Question 1",
+                        "Description 1",
+                        null),
+                new edu.javatraining.knowledgecheck.domain.Test(
+                        null,
+                        new Subject(1L, "Mathematics"),
+                        UserFactory.getTutor(),
+                        "Question 2",
+                        "Description 2",
+                        null),
+                new edu.javatraining.knowledgecheck.domain.Test(
+                        null,
+                        new Subject(1L, "Mathematics"),
+                        UserFactory.getTutor(),
+                        "Question 3",
+                        "Description 3",
+                        null)));
     }
 
     @Test
@@ -63,40 +81,14 @@ public class TestDaoJdbcSuite {
         Assert.assertNotNull(pool.getConnection());
     }
 
-    @Test(expectedExceptions = DAOException.class)
-    public void testTryInsertWithWrongTestId() {
-
-        Question question = new Question();
-        question.setId(1L);
-        question.setTestId(1000L);
-        question.setDescription("question");
-        dao.insertPlain(question);
-    }
-
     @Test
-    public void testTryInsertWithCorrectTestId() {
-
-        Question expected = new Question();
-        expected.setTestId(1L);
-        expected.setDescription("question");
+    public void testFindPlainOneByID() {
+        edu.javatraining.knowledgecheck.domain.Test expected = tests.get(0);
         dao.insertPlain(expected);
 
-        Question stored = dao.findPlainById(expected.getId());
-        Assert.assertTrue(stored.fullEquals(expected));
-    }
-
-    @Test
-    public void testFindByTestID() {
-        for(Question q : questions) {
-            dao.insertPlain(q);
-        }
-
-        // Remove Question of test with id==2
-        // Use only Question of test with id==1
-        questions.remove(1);
-        List<Question> stored = dao.findPlainAll(questions.get(0).getTestId());
-        Assert.assertTrue(stored.size() == questions.size());
-        Assert.assertTrue(stored.containsAll(questions));
+        edu.javatraining.knowledgecheck.domain.Test stored =
+                dao.findPlainOneById(expected.getId());
+        Assert.assertEquals(stored, expected);
     }
 
     @Test
@@ -105,85 +97,59 @@ public class TestDaoJdbcSuite {
         Assert.assertTrue(count == 0);
 
 
-        for(Question q : questions) {
-            dao.insertPlain(q);
+        for(edu.javatraining.knowledgecheck.domain.Test t : tests) {
+            dao.insertPlain(t);
         }
 
         count = dao.count();
-        Assert.assertTrue(count == questions.size());
+        Assert.assertTrue(count == tests.size());
     }
 
     @Test
     public void testDeleteById() {
-        for(Question q : questions) {
+        for(edu.javatraining.knowledgecheck.domain.Test q : tests) {
             dao.insertPlain(q);
         }
 
         final int removeIndex = 1;
-        final Long removeId = questions.get(removeIndex).getId();
-        dao.deleteById(removeId);
+        final Long removeId = tests.get(removeIndex).getId();
+        dao.delete(tests.get(removeIndex));
 
 
-        questions.remove(removeIndex);
-        List<Question> stored = dao.findPlainAll();
-        Assert.assertTrue(stored.size() == questions.size());
-        Assert.assertTrue(stored.containsAll(questions));
+        tests.remove(removeIndex);
+        List<edu.javatraining.knowledgecheck.domain.Test> stored = dao.findAllPlainTests();
+        Assert.assertTrue(stored.size() == tests.size());
+        Assert.assertTrue(stored.containsAll(tests));
     }
 
     @Test
     public void testDelete() {
-        for(Question a : questions) {
+        for(edu.javatraining.knowledgecheck.domain.Test a : tests) {
             dao.insertPlain(a);
         }
 
         final int removeIndex = 1;
-        dao.delete(questions.get(removeIndex));
+        dao.delete(tests.get(removeIndex));
 
 
-        questions.remove(removeIndex);
-        List<Question> stored = dao.findPlainAll();
-        Assert.assertTrue(stored.size() == questions.size());
-        Assert.assertTrue(stored.containsAll(questions));
+        tests.remove(removeIndex);
+        List<edu.javatraining.knowledgecheck.domain.Test> stored = dao.findAllPlainTests();
+        Assert.assertTrue(stored.size() == tests.size());
+        Assert.assertTrue(stored.containsAll(tests));
     }
 
 
 
     @Test
     public void testUpdate() {
-        Question expected = questions.get(0);
+        edu.javatraining.knowledgecheck.domain.Test expected = tests.get(0);
         Long id = dao.insertPlain(expected);
-        expected = questions.get(2);
+        expected = tests.get(2);
         expected.setId(id);
         dao.updatePlain(expected);
 
-        Question stored = dao.findPlainById(expected.getId());
-        Assert.assertTrue(stored.fullEquals(expected));
+        edu.javatraining.knowledgecheck.domain.Test stored = dao.findPlainOneById(expected.getId());
+        Assert.assertEquals(stored, expected);
     }
 
-    @Test
-    public void testUpdateWithWrongQuestionIDShouldNotUpdate() {
-
-        Question expected = questions.get(0);
-        Long id = dao.insertPlain(expected);
-        Question wrong = questions.get(2);
-        wrong.setTestId(expected.getTestId() + 10);
-        wrong.setId(id);
-        dao.updatePlain(wrong);
-
-        Question stored = dao.findPlainById(wrong.getId());
-        Assert.assertFalse(stored.fullEquals(wrong));
-    }
-
-    @Test
-    public void testSave() {
-        Question expected = questions.get(0);
-        Long id = dao.savePlain(expected);
-
-        expected = questions.get(2);
-        expected.setId(id);
-        dao.savePlain(expected);
-
-        Question stored = dao.findPlainById(expected.getId());
-        Assert.assertTrue(stored.fullEquals(expected));
-    }
 }

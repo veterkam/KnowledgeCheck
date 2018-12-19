@@ -238,22 +238,21 @@ public class AccountControllerServlet extends AbstractBaseControllerServlet {
         if (!errors.isEmpty()) {
             alertManager.danger("app.account.validation.incorrect_data_entered");
             request.setAttribute("errors", errors);
-            forwardRegistrationForm(request, response);
-            return;
-        }
-
-        // Is the username unique?
-        UserService userService = userServiceProvider.get();
-        User user = userService.findOneByUsername(userDto.getUsername());
-
-        if (user == null) {
-            // The username is unique. Verify e-mail.
-            String msg = "Hello. Thanks for registration in KnowledgeCheck!";
-            askVerificationCode(userDto.getEmail(), msg, request);
-
         } else {
-            // The username is not unique.
-            alertManager.danger("app.account.username_already_exists");
+
+            // Is the username unique?
+            UserService userService = userServiceProvider.get();
+            User user = userService.findOneByUsername(userDto.getUsername());
+
+            if (user == null) {
+                // The username is unique. Verify e-mail.
+                String msg = "Hello. Thanks for registration in KnowledgeCheck!";
+                askVerificationCode(userDto.getEmail(), msg, request);
+
+            } else {
+                // The username is not unique.
+                alertManager.danger("app.account.username_already_exists");
+            }
         }
 
         forwardRegistrationForm(request, response);

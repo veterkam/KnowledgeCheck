@@ -87,7 +87,7 @@
                        class="form-control col-sm-8 mb-1 ${(isInvalid) ? 'is-invalid' : ''}"
                        name="password"
                        value="<c:out value="${userDto.password}"/>"
-                       placeholder="<fmt:message key="app.account.enter_your_password" />" required="" type="password">
+                       placeholder="<fmt:message key="app.account.enter_your_password" />" required="" autofocus="" type="password">
             </div>
             <c:if test="${isInvalid}">
                 <c:set value='${errors.get("password")}' var="fieldErrors" />
@@ -105,7 +105,7 @@
                        class="form-control col-sm-8 mb-1 ${(isInvalid) ? 'is-invalid' : ''}"
                        name="confirmPassword"
                        value="<c:out value="${userDto.confirmPassword}"/>"
-                       placeholder="<fmt:message key="app.account.confirm_your_password" />" required="" type="password">
+                       placeholder="<fmt:message key="app.account.confirm_your_password" />" required="" autofocus="" type="password">
             </div>
             <c:if test="${isInvalid}">
                 <c:set value='${errors.get("confirmPassword")}' var="fieldErrors" />
@@ -121,7 +121,7 @@
         <c:set value='${errors != null && errors.get("role") != null}' var="isInvalid" />
         <div class="form-row">
             <label class="col-sm-4 col-form-label" for="selectRole" ><fmt:message key="app.account.role" /></label>
-            <select id="selectRole" name="role" required=""
+            <select id="selectRole" name="role" required="" autofocus=""
                     class="custom-select form-control col-sm-8 mb-1 ${(isInvalid) ? 'is-invalid' : ''}"
                     <c:if test="${verifyEmail != null}">disabled</c:if>>
                 <option disabled <c:if test="${userDto == null || userDto.role == null}">selected</c:if>><fmt:message key="app.account.choose_a_role" /></option>
